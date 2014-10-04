@@ -1,16 +1,20 @@
 /************************************************************
  * This directory contains the parse tree implementation.   *
- * Parse trees do quite a lot more than just represent the  *
- * source code; nodes also know how to compile themselves   *
- * and perform various kinds of code analysis. As a result, *
- * the files below are rather large.                        *
+ * The parse tree implementation aims to produce as correct *
+ * a representation of the source code as possible, and is  *
+ * heavily reliant on inheritance. As a result, the files   *
+ * herein are generally rather large.                       *
  *                                                          *
  * Note that the lexer/tokenizer, including the Token type, *
- * is contained within the 'parser' folder', but the Syntax *
+ * is contained within the 'parser' folder, but the Syntax  *
  * class is defined here.                                   *
  *                                                          *
  * The code in this folder may be restructured at any time, *
  * to make it easier to navigate.                           *
+ *                                                          *
+ * Note that there are also plans to make the various node  *
+ * classes auto-generated, to reduce both extraneous typing *
+ * as well as the likelihood for error.                     *
  ************************************************************/
 
 use "ArgumentList.osp";
