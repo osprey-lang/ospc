@@ -1,0 +1,107 @@
+use namespace aves;
+
+namespace osprey.compiler;
+
+public class CompilerErrorManager is ErrorManager
+{
+	public new(printErrors, printWarnings)
+	{
+		this.printErrors = bool(printErrors);
+		this.printWarnings = bool(printWarnings);
+	}
+
+	private printErrors = true;
+	private printWarnings = true;
+
+	private errors = null;
+	private warnings = null;
+
+	override get hasErrors = errors?.isEmpty ?? false;
+
+	override get hasWarnings = warnings?.isEmpty ?? false;
+
+	private printError(error)
+	{
+		var code = error.errorCode.toString("D4");
+		if error.source
+		{
+			var loc = error.source.location;
+			var col;
+			var line = loc.getLineNumber(1, ref col);
+			print(errorFormat.format([
+				loc.sourceFile.fileName,
+				line, col,
+				loc.endIndex - loc.startIndex,
+				code, error.message
+			]));
+		}
+		else
+		{
+			print(errorFormat.format([code, error.message]));
+		}
+	}
+
+	private printWarning(warning)
+	{
+		var code = warning.errorCode.toString("D4");
+		if warning.source
+		{
+			var loc = warning.source.location;
+			var col;
+			var line = loc.getLineNumber(1, ref col);
+			print(warningFormat.format([
+				loc.sourceFile.fileName,
+				line, col,
+				loc.endIndex - loc.startIndex,
+				code, warning.message
+			]));
+		}
+		else
+		{
+			print(warningFormat.format([code, warning.message]));
+		}
+	}
+
+	override addErrorInner(source, error)
+	{
+		if errors is null:
+			errors = [];
+		errors.add(error);
+		if printErrors:
+			printError(error);
+	}
+
+	override getAllErrors()
+	{
+		return errors?.slice(0);
+	}
+
+	override clearErrors()
+	{
+		errors = null;
+	}
+
+	override addWarningInner(warning)
+	{
+		if warnings is null:
+			warnings = [];
+		warnings.add(warning);
+		if printWarnings:
+			printWarning(warning);
+	}
+
+	override getAllWarnings()
+	{
+		return warnings?.slice(0);
+	}
+
+	override clearWarnings()
+	{
+		warnings = null;
+	}
+
+	private const errorFormat = "[error \"{0}\":{1}:{2}+{3}] OSP{4}: {5}";
+	private const errorFormatWithoutSource = "[error] OSP{0}: {1}";
+	private const warningFormat = "[warn \"{0}\":{1}:{2}+{3}] OSP{4}: {5}";
+	private const warningFormatWithoutSource = "[warn] OSP{0}: {1}";
+}

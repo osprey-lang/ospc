@@ -1,0 +1,182 @@
+use namespace aves;
+use namespace aves.reflection; // for Module
+use namespace io;
+use namespace osprey.compiler.parser;
+
+namespace osprey.compiler;
+
+public static class ErrorCode
+{
+	//<region: Generated code>
+
+	public const err_Unspecified = 0000;
+	public const err_Syntax = 1000;
+	public const err_InvalidCharacter = 1001;
+	public const err_DelimitedCommentNotTerminated = 1101;
+	public const err_UnderscoreWithoutDigits = 1201;
+	public const err_MultipleDecimalPoints = 1202;
+	public const err_ExponentialPartBeforeDecimalPoint = 1203;
+	public const err_MultipleExponentialParts = 1204;
+	public const err_InvalidExponentialPart = 1205;
+	public const err_UnderscoreAfterDecimalPoint = 1206;
+	public const err_MultipleConsecutiveUnderscores = 1207;
+	public const err_MultiplierOnReal = 1208;
+	public const err_UnsignedOnReal = 1209;
+	public const err_NumberOutOfRange = 1210;
+	public const err_HexNumberWithoutDigits = 1211;
+	public const err_NewlineInString = 1301;
+	public const err_StringNotTerminated = 1302;
+	public const err_NewlineInCharLiteral = 1401;
+	public const err_EmptyCharLiteral = 1402;
+	public const err_CharLiteralNotTerminated = 1403;
+	public const err_CharLiteralTooLong = 1404;
+	public const err_MissingEscapeSequence = 1501;
+	public const err_InvalidEscapeSequence = 1502;
+	public const err_InvalidUnicodeEscapeSequence = 1503;
+	public const err_UnicodeEscapeOutOfRange = 1504;
+	public const err_UnexpectedToken = 1601;
+	public const err_DuplicateModifier = 1610;
+	public const err_MultipleAccessibilityModifiers = 1611;
+	public const err_InvalidModifierForGlobalFunctionOrConstant = 1612;
+	public const err_InvalidModifierForConstructor = 1613;
+	public const err_InvalidModifierForStaticConstructor = 1614;
+	public const err_InvalidModifierForField = 1615;
+	public const err_InvalidModifierForStaticMethod = 1616;
+	public const err_MethodCannotBeInheritable = 1617;
+	public const err_AbstractMethodCannotBeOverridable = 1618;
+	public const err_InvocatorCannotBeStatic = 1619;
+	public const err_InvalidModifierForStaticProperty = 1620;
+	public const err_PropertyCannotBeInheritable = 1621;
+	public const err_AbstractPropertyCannotBeOverridable = 1622;
+	public const err_IndexerCannotBeStatic = 1623;
+	public const err_InvalidModifierForClassConstant = 1624;
+	public const err_InvalidModifierForOperator = 1625;
+	public const err_InvalidModifierForIterator = 1626;
+	public const err_ExpectedNamespaceMember = 1631;
+	public const err_InvalidNamespaceModifiers = 1632;
+	public const err_InvalidModifierForClass = 1641;
+	public const err_InvalidModifierForEnum = 1642;
+	public const err_StaticClassCannotBeAbstractOrInheritable = 1643;
+	public const err_ClassCannotBeBothAbstractAndInheritable = 1644;
+	public const err_IndexerCannotHaveOptionalParameters = 1651;
+	public const err_IndexerCannotHaveVariadicParameter = 1652;
+	public const err_IndexerCannotHaveRefParameters = 1653;
+	public const err_NonAbstractPropertyCannotHaveEmptyBody = 1654;
+	public const err_AbstractPropertyMustHaveEmptyBody = 1655;
+	public const err_NonAbstractMethodCannotHaveEmptyBody = 1661;
+	public const err_AbstractMethodMustHaveEmptyBody = 1662;
+	public const err_OperatorCannotHaveOptionalParameters = 1671;
+	public const err_OperatorCannotHaveVariadicParameter = 1672;
+	public const err_OperatorCannotHaveRefParameters = 1673;
+	public const err_WrongParameterCountForOperator = 1674;
+	public const err_PreVariadicMustBeFirstParameter = 1701;
+	public const err_VariadicParameterCannotBeOptional = 1702;
+	public const err_MultipleVariadicSpecifiers = 1703;
+	public const err_PostVariadicMustBeLastParameter = 1704;
+	public const err_CannotMixVariadicAndOptionalParameters = 1705;
+	public const err_RequiredParameterAfterOptional = 1706;
+	public const err_CannotPassVariadicByRef = 1707;
+	public const err_CannotPassOptionalByRef = 1708;
+	public const err_MultipleVariadicParameters = 1709;
+	public const err_CannotPassThisParameterByRef = 1710;
+	public const err_ExpectedArgument = 1721;
+	public const err_RefArgumentNotAllowed = 1722;
+	public const err_ExpectedLoopAfterLabel = 1801;
+	public const err_ExpectedJumpStatement = 1802;
+	public const err_SpecificCatchClauseAfterGeneric = 1803;
+	public const err_MultipleGenericCatchClauses = 1804;
+	public const err_TryStatementMustHaveCatchOrFinally = 1805;
+	public const err_ExpectedParallelAssignment = 1806;
+	public const err_ExpectedPrimaryExpression = 1851;
+	public const err_InvalidStatementExpression = 1852;
+	public const err_ExpressionMustBeAssignable = 1853;
+	public const err_x_ExpectedExternKeyword = 1901;
+	public const err_x_UnknownExternParameter = 1902;
+	public const err_NameError = 2001;
+	public const err_NameErrorWithoutName = 2002;
+	public const err_UndefinedName = 2003;
+	public const err_UndefinedNameWithoutName = 2004;
+	public const err_DuplicateName = 2005;
+	public const err_DuplicateNameWithoutName = 2006;
+	public const warn_UnreachableCode = 6001;
+	public const warn_UnusedVariable = 6002;
+	public const warn_VariableAssignedButUnused = 6003;
+	public const warn_VariableUsedButUnassigned = 6004;
+
+	//</region>
+
+	// Always loaded from the module's directory.
+	private const errorMessageFile = "messages.txt";
+	private static errorMessages;
+
+	private static loadMessages()
+	{
+		var module = Module.getCurrentModule();
+		var messageFile = Path.join(Path.getDirectory(module.fileName), errorMessageFile);
+		var parser = new Parser(SourceFile.open(messageFile, false), ParseFlags.none);
+
+		var messages = new Hash(100);
+		// messages.txt uses Osprey tokens, according to the following grammar:
+		//   message-file:
+		//     messages
+		//   messages:
+		//     message
+		//     messages  message
+		//   message:
+		//     integer-literal  ':'  identifier  '='  string-literal  ';'
+		// With the additional restriction that the integer literal must be of
+		// type aves.Int. Unsigned integers are not allowed.
+		// The identifier in the message definition is used to generate a list
+		// of error codes.
+
+		var i = 0;
+		while not parser.accept(i, TokenType.eof)
+		{
+			var code = parser.expectr(ref i, TokenType.int).literalValue;
+			parser.expectr(ref i, TokenType.colon);
+			parser.expectr(ref i, TokenType.identifier);
+
+			parser.expectr(ref i, TokenType.assign);
+
+			var message = parser.expectr(ref i, TokenType.string).literalValue;
+
+			parser.expectr(ref i, TokenType.semicolon);
+			messages.add(code, message);
+		}
+
+		errorMessages = messages;
+	}
+
+	/// Summary: Gets an error or warning message corresponding to the specified error
+	///          code. The error code is one of the {ErrorCode} constants.
+	/// Param errorCode:
+	///          An error or warning code. This code is one of the {ErrorCode} constants.
+	/// Returns: A string containing a message for the error code.
+	public static getMessage(errorCode)
+	{
+		if errorMessages is null:
+			loadMessages();
+
+		var message = fallbackMessage;
+		errorMessages.tryGet(errorCode, ref message);
+		return message;
+	}
+
+	/// Summary: Gets an error or warning message corresponding to the specified error
+	///          code, and formats it with the specified arguments. The error code is
+	///          one of the {ErrorCode} constants.
+	/// Param errorCode:
+	///          An error or warning code. This code is one of the {ErrorCode} constants.
+	/// Param formatArgs:
+	///          A List or Hash that is passed to {String.format} to format the message.
+	/// Returns: A formatted string containing a message for the error code.
+	/// Remarks: The message is formatted before being returned, according to
+	///          {String.format}. If it doesn’t contain any format placeholders,
+	///          the format arguments are ignored.
+	public static getMessage(errorCode, formatArgs)
+	{
+		return getMessage(errorCode).format(formatArgs);
+	}
+
+	private const fallbackMessage = "Unknown compile-time error.";
+}

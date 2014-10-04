@@ -1,0 +1,6 @@
+use "compiler/compiler.osp";
+use "errors/errors.osp";
+use "syntax/syntax.osp";
+use "parser/parser.osp";
+use "SourceFile.osp";
+use "SourceLocation.osp";

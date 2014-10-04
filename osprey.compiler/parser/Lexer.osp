@@ -1,0 +1,995 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+public class Lexer
+{
+	public new(sourceFile)
+	{
+		new this(sourceFile, LexerFlags.none);
+	}
+	public new(sourceFile, flags)
+	{
+		if sourceFile is null:
+			throw new ArgumentNullError("sourceFile");
+		if sourceFile is not SourceFile:
+			throw new ArgumentError("sourceFile must be an osprey.compiler.SourceFile.", "sourceFile");
+		if flags is not LexerFlags:
+			throw new ArgumentError("flags must be an osprey.compiler.parser.LexerFlags", "flags");
+
+		this.file = sourceFile;
+		this.source = sourceFile.source;
+		this.length = this.source.length;
+		this.includeComments = flags.hasFlag(LexerFlags.includeComments);
+		this.normalizeIdents = flags.hasFlag(LexerFlags.normalizeIdentifiers);
+	}
+
+	private file;
+	private source;
+	private length; // source.length, but cached for speed
+
+	private includeComments; // True to include comments in the token stream
+	private normalizeIdents; // True to normalize identifiers
+
+	private sourceIndex = 0;
+	private tokens = [];
+
+	private eof; // EOF token if EOF seen, otherwise null
+    
+    private lastDocComment; // The last seen documentation comment
+
+	/// Summary: Gets the source file that is being lexed.
+	public get sourceFile = file;
+
+	public get this[index]
+	{
+		if ensureMinIndex(index):
+			return tokens[index];
+		else:
+			return eof;
+	}
+
+	private ensureMinIndex(index)
+	{
+		if eof and index >= tokens.length:
+			return false;
+
+		while tokens.length < index + 1:
+			if not moveNext():
+				return false;
+
+		return true;
+	}
+
+	private moveNext()
+	{
+		var tok;
+		var i = sourceIndex;
+		do
+		{
+			tok = scanToken(ref i);
+		} while not includeComments and tok.type == TokenType.comment;
+		sourceIndex = i;
+
+		if lastDocComment
+		{
+			tok.documentation = lastDocComment;
+			lastDocComment = null;
+		}
+
+		tokens.add(tok);
+		return tok.type != TokenType.eof;
+	}
+
+	//<region: Token scanner>
+
+	private scanToken(ref i)
+	{
+		skipWhiteSpace(ref i);
+
+		if isEOF(i):
+			return eof = new Token(getLocation(length, length), TokenType.eof);
+
+		var ch = source[i];
+        var nextCh = not isEOF(i + 1) ? source[i + 1] : null;
+
+		if ch == '/' and (nextCh == '/' or nextCh == '*'):
+			return scanComment(ref i);
+
+		if ch >= '0' and ch <= '9' or
+			ch == '.' and (nextCh is not null and nextCh >= '0' and nextCh <= '9')
+		{
+			if ch == '0' and (nextCh == 'x' or nextCh == 'X'):
+				return scanHexNumber(ref i);
+			else:
+				return scanDecimalNumber(ref i);
+		}
+
+		if ch == '"':
+			return scanRegularString(ref i);
+
+		if (ch == 'r' or ch == 'R') and nextCh == '"':
+			return scanVerbatimString(ref i);
+
+		if ch == '\'':
+			return scanCharLiteral(ref i);
+
+		if ch == '_' or source.isLetter(i) or
+			source.getCategory(i) == UnicodeCategory.letterNumber:
+			return scanIdentifier(ref i);
+
+		return scanPunctuation(ref i);
+	}
+
+	private scanComment(ref i)
+	{
+		var startIndex = i;
+		var isMultiline = source[i + 1] == '*';
+		i += 2; // Skip "//" or "/*"
+
+		var isDocComment = isMultiline ? isChar(i, '*') : isChar(i, '/');
+
+		if isMultiline
+		{
+			var foundEnd = false;
+			while not isEOF(i)
+			{
+				var ch = source[i];
+				if ch == '*' and isChar(i + 1, '/')
+				{
+					i += 2; // skip */
+					foundEnd = true;
+					break;
+				}
+				else
+					i += ch.length;
+			}
+
+			if not foundEnd:
+				parseError(ErrorCode.err_DelimitedCommentNotTerminated,
+					startIndex, 2);
+		}
+		else
+		{
+			do
+			{
+				while not isEOF(i)
+				{
+					var ch = source[i];
+					if isNewline(ch):
+						break;
+					i += ch.length;
+				}
+				// If we're at EOF or newline, we've found the end of the comment!
+				// ... however, if this is a documentation comment, we need to look
+				// for the next line as well.
+				if isDocComment
+				{
+					var k = i;
+					skipWhiteSpace(ref k);
+					if isEOF(k + 2) or source.substr(k, 3) != "///":
+						break;
+					// If we fall through here, then k + 2 is not past the end and
+					// there is a substring "///" at k.
+					i = k;
+				}
+			} while isDocComment;
+		}
+
+		var tok = new Token(getLocation(startIndex, i), TokenType.comment);
+		if isDocComment:
+			lastDocComment = tok;
+		// i is now one past the last character in the comment
+		return tok;
+	}
+
+	private scanDecimalNumber(ref i)
+	{
+		var startIndex = i;
+
+		var emptySection = true; // False if one or more digits encountered after '_'
+
+		var hasDecimals = false; // true if we have decimals
+		var hasExp = false; // true if we have an exponential part (...e+123)
+		// Note: hasExp implies hasDecimals. It is not possible to have
+		// a numeric literal with an exponential part and no decimals.
+
+		while not isEOF(i)
+		{
+			var ch = source[i];
+			if ch == '.' and isDigit(i + 1)
+			{
+				// Decimals
+				if emptySection and startIndex != i:
+					parseError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
+				if hasDecimals:
+					parseError(ErrorCode.err_MultipleDecimalPoints, i, 1);
+				hasDecimals = true;
+			}
+			else if ch == 'e' or ch == 'E'
+			{
+				if not hasDecimals:
+					parseError(ErrorCode.err_ExponentialPartBeforeDecimalPoint, i, 1);
+				if hasExp:
+					parseError(ErrorCode.err_MultipleExponentialParts, i, 1);
+
+				i += 1; // skip e/E
+
+				// The exponential part is followed by an optional sign
+				// and one or more digits.
+				if not isEOF(i)
+				{
+					ch = source[i];
+					if ch == '+' or ch == '-':
+						i += 1;
+				}
+
+				if not isDigit(i):
+					parseError(ErrorCode.err_InvalidExponentialPart, i, 1);
+
+				hasExp = true;
+				// Keep scanning decimal digits (i += 1 below skips the first one)
+			}
+			else if ch == '_'
+			{
+				if hasDecimals:
+					parseError(ErrorCode.err_UnderscoreAfterDecimalPoint, i, 1);
+				if emptySection:
+					parseError(ErrorCode.err_MultipleConsecutiveUnderscores, i, 1);
+				emptySection = true;
+			}
+			else if ch < '0' or ch > '9':
+				break;
+			else:
+				emptySection = false;
+
+			i += 1; // All of these are single UTF-16 code units
+		}
+
+		if emptySection:
+			parseError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
+
+		// Everything after this is suffixes.
+		var literalEnd = i;
+
+		// I can has multiplier?
+		var multiplier = 1;
+		if not isEOF(i)
+		{
+			var ch = source[i];
+			if multipliers.tryGet(ch, ref multiplier)
+			{
+				if hasDecimals:
+					parseError(ErrorCode.err_MultiplierOnReal, i, 1);
+				i += 1; // skip multiplier
+			}
+		}
+
+		// Maybe unsigned suffix?
+		var isUnsigned = false;
+		if not isEOF(i)
+		{
+			var ch = source[i];
+			if ch == 'u' or ch == 'U'
+			{
+				if hasDecimals:
+					parseError(ErrorCode.err_UnsignedOnReal, i, 1);
+				isUnsigned = true;
+				i += 1; // skip u/U
+			}
+		}
+
+		// Now, let's parse the value!
+		var value = source.substr(startIndex, literalEnd - startIndex).replace("_", "");
+		var type; // TokenType
+		if hasDecimals
+		{
+			value = Real.parse(value);
+			// Infinity = overflow = error condition.
+			// NaN is not possible in this situation.
+			if value.isInfinite:
+				value = null;
+			type = TokenType.real;
+		}
+		else
+		{
+			type = TokenType.int;
+			if isUnsigned:
+				value = UInt.parse(value);
+			else:
+				value = Int.parse(value);
+
+			if value is not null:
+				try { value *= multiplier; }
+				catch OverflowError { value = null; }
+		}
+
+		// The parsing can only ever fail due to an overflow. The number is
+		// otherwise guaranteed to be in the right format.
+		if value is null
+		{
+			type = hasDecimals ? "Real" :
+				isUnsigned ? "UInt" :
+				"Int";
+			parseError(ErrorCode.err_NumberOutOfRange,
+				[type, source.substr(startIndex, i - startIndex)],
+				startIndex, i - startIndex);
+		}
+
+		return new LiteralToken(getLocation(startIndex, i), type, value);
+	}
+
+	private scanHexNumber(ref i)
+	{
+		var startIndex = i;
+		i += 2; // Skip 0x/0X
+
+		if isEOF(i) or not hexDigits.hasKey(source[i]):
+			parseError(ErrorCode.err_HexNumberWithoutDigits, startIndex, 2);
+
+		var emptySection = true; // False if one or more hex digits encountered after '_'
+
+		// We calculate the hex value while parsing the literal.
+		// Use UInt as an intermediate type, because it can fit
+		// all the positive values of Int, and literals cannot
+		// be negative.
+		var value = 0u, overflow = false;
+		while not isEOF(i)
+		{
+			var ch = source[i];
+			if ch == '_'
+			{
+				if emptySection:
+					parseError(ErrorCode.err_MultipleConsecutiveUnderscores, i, 1);
+				emptySection = true;
+			}
+			else
+			{
+				var digitValue;
+				if hexDigits.tryGet(ch, ref digitValue)
+				{
+					emptySection = false;
+					if not overflow:
+						try { value = value * 16 + digitValue; }
+						// If the operation overflows, do keep parsing the literal.
+						// That way, we can report the entire literal as the error
+						// source, rather than just part of it, which looks better.
+						catch OverflowError { overflow = true; }
+				}
+				else:
+					break;
+			}
+
+			i += 1; // Skip hex digit or underscore
+		}
+
+		if emptySection:
+			parseError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
+
+		var isUnsigned = false;
+		if not isEOF(i)
+		{
+			var ch = source[i];
+			if ch == 'u' or ch == 'U'
+			{
+				isUnsigned = true;
+				i += 1; // skip u/U
+			}
+		}
+
+		if not overflow and not isUnsigned:
+			try { value = int(value); }
+			catch OverflowError { overflow = true; }
+
+		if overflow:
+			parseError(ErrorCode.err_NumberOutOfRange,
+				[isUnsigned ? "UInt" : "Int", source.substr(startIndex, i - startIndex)],
+				startIndex, i - startIndex);
+
+		return new LiteralToken(getLocation(startIndex, i),
+			TokenType.int,
+			value);
+	}
+
+	private scanRegularString(ref i)
+	{
+		var startIndex = i;
+		i += 1; // Skip "
+
+		var sb = new StringBuffer(128);
+		var partStart = i;
+		var foundEnd = false;
+		while not isEOF(i)
+		{
+			var ch = source[i];
+			if ch == '\\'
+			{
+				// Append any pending characters
+				if i > partStart:
+					sb.appendSubstr(source, partStart, i - partStart);
+				i += 1; // Skip \
+				ch = scanEscapeSequence(ref i);
+				sb.append(ch);
+				partStart = i;
+			}
+			else if ch == '"'
+			{
+				foundEnd = true;
+				break;
+			}
+			else if isNewline(ch)
+			{
+				parseError(ErrorCode.err_NewlineInString, i, 1);
+			}
+			else
+			{
+				i += ch.length; // Skip character
+			}
+		}
+
+		if not foundEnd:
+			parseError(ErrorCode.err_StringNotTerminated, startIndex, 1);
+
+		// Append any pending characters
+		if i > partStart:
+			sb.appendSubstr(source, partStart, i - partStart);
+
+		i += 1; // Skip "
+
+		return new LiteralToken(getLocation(startIndex, i), TokenType.string, sb.toString());
+	}
+
+	private scanVerbatimString(ref i)
+	{
+		var startIndex = i;
+		i += 2; // Skip r"/R"
+
+		var foundEnd = false,
+			hasEscapes = false;
+		while not isEOF(i)
+		{
+			var ch = source[i];
+			i += 1; // Always skip the character
+			if ch == '"'
+			{
+				if not isEOF(i) and source[i] == '"'
+				{
+					// "" - escape
+					i += 1;
+					hasEscapes = true;
+				}
+				else
+				{
+					foundEnd = true;
+					break;
+				}
+			}
+			// Otherwise, it's part of the string!
+		}
+
+		if not foundEnd:
+			parseError(ErrorCode.err_StringNotTerminated, startIndex, 2);
+
+		var value = source.substr(startIndex + 2, i - startIndex - 3);
+		if hasEscapes:
+			// Replace all escapes in one go
+			value = value.replace("\"\"", "\"");
+
+		return new LiteralToken(getLocation(startIndex, i), TokenType.string, value);
+	}
+
+	private scanCharLiteral(ref i)
+	{
+		var startIndex = i;
+		i += 1; // Skip '
+
+		var ch;
+		if not isEOF(i)
+		{
+			ch = source.getCharacter(i);
+			if ch == '\\'
+			{
+				i += 1; // Skip \
+				ch = scanEscapeSequence(ref i);
+			}
+			else if isNewline(ch):
+				parseError(ErrorCode.err_NewlineInCharLiteral, i, 1);
+			else if ch == '\'':
+				parseError(ErrorCode.err_EmptyCharLiteral, i, 1);
+			else:
+				i += 1; // Skip character
+		}
+		if isEOF(i):
+			parseError(ErrorCode.err_CharLiteralNotTerminated, i, 1);
+		if source[i] != '\'':
+			parseError(ErrorCode.err_CharLiteralTooLong, i, 1);
+		i += 1; // Skip '
+
+		return new LiteralToken(getLocation(startIndex, i), TokenType.char, ch);
+	}
+
+	private scanEscapeSequence(ref i)
+	{
+		if isEOF(i):
+			parseError(ErrorCode.err_MissingEscapeSequence, i - 1, 1);
+
+		var ch = source[i];
+		i += 1; // Skip escaped character
+
+		var escapedChar;
+		if not escapes.tryGet(ch, ref escapedChar):
+			parseError(ErrorCode.err_InvalidEscapeSequence, i - 2, 2);
+		if escapedChar is Method:
+			escapedChar = escapedChar(this, ref i);
+		return escapedChar;
+	}
+
+	private scanUnicodeEscape(length, ref i)
+	{
+		var startIndex = i;
+
+		var expectedLength = length;
+		var codepoint = 0;
+		while length > 0 and not isEOF(i)
+		{
+			var digitValue;
+			if not hexDigits.tryGet(source[i], ref digitValue):
+				parseError(ErrorCode.err_InvalidUnicodeEscapeSequence,
+					[expectedLength],
+					i, 1);
+
+			codepoint = (codepoint << 4) | digitValue;
+			length -= 1;
+			i += 1;
+		}
+
+		if codepoint > 0x10FFFF:
+			parseError(ErrorCode.err_UnicodeEscapeOutOfRange, startIndex, i - startIndex);
+
+		return Char.fromCodepoint(codepoint);
+	}
+
+	private scanIdentifier(ref i)
+	{
+		var startIndex = i;
+
+		var hasFormatChars = false;
+		while not isEOF(i)
+		{
+			var ch = source.getCharacter(i);
+			var cat = ch.category;
+			if ch.isLetter or
+				cat == UnicodeCategory.decimalNumber or
+				cat == UnicodeCategory.letterNumber or
+				cat == UnicodeCategory.connectorPunct or
+				cat & UnicodeCategory.mark != UnicodeCategory.none:
+				i += ch.length;
+			else if cat == UnicodeCategory.format
+			{
+				i += ch.length;
+				hasFormatChars = true;
+			}
+			else:
+				break;
+		}
+
+		var location = getLocation(startIndex, i);
+		var ident = source.substr(startIndex, i - startIndex);
+		var type = TokenType.identifier;
+		if ident.length <= longestKeywordLength and
+			keywordToType.tryGet(ident, ref type)
+		{
+			var litValue;
+			if literalKeywordTypes.tryGet(type, ref litValue):
+				return new LiteralToken(location, type, litValue);
+			return new Token(location, type, null);
+		}
+		else if normalizeIdents:
+			ident = normalizeIdentifier(ident, hasFormatChars);
+
+		return new Identifier(location, ident.intern());
+	}
+
+	private scanPunctuation(ref i)
+	{
+		var startIndex = i;
+		var type = punctuation;
+		var ch;
+		do
+		{
+			if isEOF(i) or not type.accepts(ch = source[i], ref type)
+			{
+				// If this is the first character of the punctuation token,
+				// or the PunctInfo's baseType is null, throw an error.
+				if i == startIndex or type.baseType is null
+				{
+					if isEOF(i):
+						i -= 1;
+					parseError(ErrorCode.err_InvalidCharacter,
+						[ch, (+ch).toString("X4")],
+						i, 1);
+				}
+				// Otherwise, assign baseType to type; this is the end of
+				// the token.
+				type = type.baseType;
+				break;
+			}
+			// If we get here, then we're either at EOF, or type.accepts
+			// returned true, in which case type is now something else.
+			if ch is not null:
+				i += 1; // Skip the consumed character
+		} while type is PunctInfo;
+
+		return new Token(getLocation(startIndex, i), type);
+	}
+
+	private skipWhiteSpace(ref i)
+	{
+		while not isEOF(i)
+		{
+			var ch = source[i];
+			if not ch.isWhiteSpace:
+				break;
+			i += ch.length;
+		}
+	}
+
+	private parseError(errorCode, index, length)
+	{
+		throw new ParseError(getErrorToken(index, length),
+			errorCode,
+			ErrorCode.getMessage(errorCode));
+	}
+	private parseError(errorCode, formatArgs, index, length)
+	{
+		throw new ParseError(getErrorToken(index, length),
+			errorCode,
+			ErrorCode.getMessage(errorCode, formatArgs));
+	}
+
+	private getErrorToken(index, length)
+	{
+		if isEOF(index):
+			return new Token(getLocation(index, index), TokenType.eof, "");
+		return new Token(getLocation(index, index + length), TokenType.invalid, null);
+	}
+
+	private getLocation(startIndex, endIndex)
+	{
+		return new SourceLocation(file, startIndex, endIndex);
+	}
+    
+    private isEOF(i)
+    {
+        return i >= length;
+    }
+
+	private isChar(i, char)
+	{
+		return not isEOF(i) and source[i] == char;
+	}
+
+	private isDigit(i)
+	{
+		if isEOF(i):
+			return false;
+		var ch = source[i];
+		return ch >= '0' and ch <= '9';
+	}
+
+	private static isNewline(char)
+	{
+		const newlines = "\u000A\u000D\u0085\u2028\u2029";
+		return newlines.contains(char);
+	}
+
+	//</region>
+    
+    iter
+    {
+        return new LexerIterator(this);
+    }
+
+	//<region: Static members>
+
+	private static normalizeIdentifier(ident, hasFormatChars)
+	{
+		throw new Error("Not implemented");
+	}
+
+	private static keywordToType = {
+		"abstract":    TokenType._abstract,
+		"and":         TokenType._and,
+		"async":       TokenType._async,
+		"base":        TokenType._base,
+		"break":       TokenType._break,
+		"catch":       TokenType._catch,
+		"class":       TokenType._class,
+		"const":       TokenType._const,
+		"do":          TokenType._do,
+		"else":        TokenType._else,
+		"enum":        TokenType._enum,
+		"false":       TokenType._false,
+		"finally":     TokenType._finally,
+		"for":         TokenType._for,
+		"function":    TokenType._function,
+		"get":         TokenType._get,
+		"global":      TokenType._global,
+		"if":          TokenType._if,
+		"in":          TokenType._in,
+		"inheritable": TokenType._inheritable,
+		"is":          TokenType._is,
+		"iter":        TokenType._iter,
+		"namespace":   TokenType._namespace,
+		"new":         TokenType._new,
+		"next":        TokenType._next,
+		"not":         TokenType._not,
+		"null":        TokenType._null,
+		"operator":    TokenType._operator,
+		"or":          TokenType._or,
+		"overridable": TokenType._overridable,
+		"override":    TokenType._override,
+		"private":     TokenType._private,
+		"protected":   TokenType._protected,
+		"public":      TokenType._public,
+		"ref":         TokenType._ref,
+		"refeq":       TokenType._refeq,
+		"return":      TokenType._return,
+		"set":         TokenType._set,
+		"static":      TokenType._static,
+		"this":        TokenType._this,
+		"throw":       TokenType._throw,
+		"true":        TokenType._true,
+		"try":         TokenType._try,
+		"typeof":      TokenType._typeof,
+		"use":         TokenType._use,
+		"var":         TokenType._var,
+		"while":       TokenType._while,
+		"with":        TokenType._with,
+		"xor":         TokenType._xor,
+		"yield":       TokenType._yield,
+	};
+	private static typeToKeyword;
+
+	private static literalKeywordTypes = {
+		(TokenType._true):  true,
+		(TokenType._false): false,
+		(TokenType._null):  null,
+	};
+
+	private static longestKeywordLength;
+
+	private static hexDigits = {
+		'0': 0u,  '1': 1u,  '2': 2u,  '3': 3u,
+		'4': 4u,  '5': 5u,  '6': 6u,  '7': 7u,
+		'8': 8u,  '9': 9u,  'a': 10u, 'b': 11u,
+		'c': 12u, 'd': 13u, 'e': 14u, 'f': 15u,
+		'A': 10u, 'B': 11u, 'C': 12u, 'D': 13u,
+		'E': 14u, 'F': 15u,
+	};
+
+	private static multipliers = {
+		'k':             1_024, 'K':             1_024,
+		'm':         1_048_576, 'M':         1_048_576,
+		'g':     1_073_741_824, 'G':     1_073_741_824,
+		't': 1_099_511_627_776, 'T': 1_099_511_627_776,
+	};
+
+	private static escapes = {
+		'0':  '\u0000', // Null
+		'a':  '\u0007', // Alert
+		'b':  '\u0008', // Backspace
+		't':  '\u0009', // Horizontal tab
+		'n':  '\u000A', // New line
+		'r':  '\u000D', // Carriage return
+		'"':  '\u0022', // Double quote
+		'\'': '\u0027', // Single quote
+		'\\': '\u005C', // Backslash
+		'_':  '\u00A0', // No-break space
+		'-':  '\u00AD', // Soft hyphen
+		'u': @(lexer, ref i)
+		{
+			return lexer.scanUnicodeEscape(4, ref i);
+		},
+		'U': @(lexer, ref i)
+		{
+			return lexer.scanUnicodeEscape(8, ref i);
+		},
+	};
+
+	private static punctuation = new PunctInfo(null, {
+		// Always single: { } [ ] ( ) , ; ~ @
+		'{': TokenType.curlyOpen,
+		'}': TokenType.curlyClose,
+		'[': TokenType.squareOpen,
+		']': TokenType.squareClose,
+		'(': TokenType.parenOpen,
+		')': TokenType.parenClose,
+		',': TokenType.comma,
+		';': TokenType.semicolon,
+		'~': TokenType.tilde,
+		'@': TokenType.at,
+		'.': new PunctInfo(TokenType.dot, {
+			// .. – error
+			'.': new PunctInfo(null, {
+				// ...
+				'.': TokenType.splat,
+			}),
+		}),
+		'<': new PunctInfo(TokenType.less, {
+			// <=
+			'=': new PunctInfo(TokenType.lessEqual, {
+				// <=>
+				'>': TokenType.compare,
+			}),
+			// <<
+			'<': PunctInfo.acceptEqual(TokenType.shiftLeft,
+				// <<=
+				TokenType.shiftLeftAssign),
+		}),
+		'>': new PunctInfo(TokenType.greater, {
+			// >=
+			'=': TokenType.greaterEqual,
+			// >>
+			'>': PunctInfo.acceptEqual(TokenType.shiftRight,
+				// >>=
+				TokenType.shiftRightAssign),
+		}),
+		'*': new PunctInfo(TokenType.multiply, {
+			// *=
+			'=': TokenType.mulAssign,
+			// **
+			'*': PunctInfo.acceptEqual(TokenType.power,
+				// **=
+				TokenType.powerAssign),
+		}),
+		':': new PunctInfo(TokenType.colon, {
+			// ::
+			':': PunctInfo.acceptEqual(TokenType.concatenate,
+				// ::=
+				TokenType.concatAssign),
+		}),
+		'-': new PunctInfo(TokenType.minus, {
+			// ->
+			'>': TokenType.funcApplication,
+			'=': TokenType.minusAssign,
+		}),
+		'+': PunctInfo.acceptEqual(TokenType.plus,
+			// +=
+			TokenType.plusAssign),
+		'|': PunctInfo.acceptEqual(TokenType.pipe,
+			// |=
+			TokenType.pipeAssign),
+		'/': PunctInfo.acceptEqual(TokenType.divide,
+			// /=
+			TokenType.divAssign),
+		'%': PunctInfo.acceptEqual(TokenType.modulo,
+			// %=
+			TokenType.modAssign),
+		'&': PunctInfo.acceptEqual(TokenType.ampersand,
+			// &=
+			TokenType.ampAssign),
+		'^': PunctInfo.acceptEqual(TokenType.caret,
+			// ^=
+			TokenType.caretAssign),
+		'#': PunctInfo.acceptEqual(TokenType.hash,
+			// #=
+			TokenType.hashAssign),
+		'$': PunctInfo.acceptEqual(TokenType.dollar,
+			// $=
+			TokenType.dollarAssign),
+		'=': PunctInfo.acceptEqual(TokenType.assign,
+			// ==
+			TokenType.doubleEqual),
+		'!': PunctInfo.acceptEqual(null,
+			// !=
+			TokenType.notEqual),
+		'?': new PunctInfo(TokenType.question, {
+			// ?.
+			'.': TokenType.safeAccess,
+			// ?(
+			'(': TokenType.parenOpenSafe,
+			// ?[
+			'[': TokenType.squareOpenSafe,
+			// ??
+			'?': TokenType.nullCoalescing,
+			// ?!
+			'!': TokenType.nullOr,
+		})
+	});
+
+	static new()
+	{
+		var longestKw = 0;
+		typeToKeyword = new Hash(keywordToType.length);
+		for kw, type in keywordToType
+		{
+			typeToKeyword.add(type, kw);
+			if kw.length > longestKw:
+				longestKw = kw.length;
+		}
+
+		longestKeywordLength = longestKw;
+	}
+
+	public static getKeywordFromTokenType(type)
+	{
+		var kw;
+		typeToKeyword.tryGet(type, ref kw);
+		return kw;
+	}
+
+	//</region>
+}
+
+// Contains information about a punctuation token. Instances of this class
+// may have a base TokenType, and may have zero or more characters that can
+// follow the token to create other tokens.
+// Examples:
+//   * '<' has TokenType.less, can be folowed by '<' to make TokenType.shiftLeft,
+//     or by '=' to make TokenType.lessEqual, which in turn can be followed by '>'
+///    to make TokenType.compare.
+//   * '!' has no base token type, but can be followed by '=' to make TokenType.notEqual.
+//   * '*' has TokenType.multiply, and can be followed by '=' to make TokenType.mulAssign
+//     or by '*' to make TokenType.power.
+private class PunctInfo
+{
+	public new(this._baseType, this._nextChars);
+
+	private _baseType;
+	// The base TokenType of the punctuation token, or null if it must
+	// be followed by something.
+	public get baseType = _baseType;
+
+	private _nextChars;
+
+	public accepts(nextChar, ref nextType)
+	{
+		return _nextChars.tryGet(nextChar, ref nextType);
+	}
+
+	public static acceptEqual(baseType, equalType)
+	{
+		return new PunctInfo(baseType, {'=': equalType});
+	}
+}
+
+private class LexerIterator is Iterator
+{
+	public new(this.lexer);
+
+	private lexer;
+	private index = 0;
+	private _current = null;
+
+	override get current = _current;
+
+	override moveNext()
+	{
+		var tok = lexer[index];
+		if tok.type != TokenType.eof
+		{
+			_current = tok;
+			index += 1;
+			return true;
+		}
+		return false;
+	}
+}
+
+public enum set LexerFlags
+{
+	/// Summary: Specifies no lexer flags.
+	none = 0,
+	/// Summary: Specifies that comments should be included in
+	///          the generated token stream.
+	includeComments = 1,
+	/// Summary: Specifies that identifiers should be normalized. See Remarks.
+	/// Remarks: Normalization consists of performing the following steps:
+	///
+	///          * The keyword escape prefix, if any, is stripped. \
+	///          * The string is normalized to Normalization Form C. \
+	///          * Formatting characters (of Unicode character class Cf) are stripped.
+	normalizeIdentifiers = 2,
+}

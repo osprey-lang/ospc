@@ -1,0 +1,101 @@
+use namespace aves;
+
+namespace osprey.compiler;
+
+/// Summary: The base class of all errors caused by a single name. Prefer throwing
+///          derivatives of this class, such as {UndefinedNameError} or {DuplicateNameError},
+///          as they are more specific. This class only provides a {name} property
+///          and overrides {message} to append the name.
+public inheritable NameError is CompileTimeError
+{
+	public new(source, errorCode)
+	{
+		new this(source, errorCode, null, getDefaultMessage(null), null);
+	}
+	public new(source, errorCode, name)
+	{
+		new this(source, errorCode, name, getDefaultMessage(name), null);
+	}
+	public new(source, errorCode, name, message)
+	{
+		new this(source, errorCode, name, message ?? getDefaultMessage(name), null);
+	}
+	public new(source, errorCode, name, message, innerError)
+	{
+		new base(source, errorCode, message ?? getDefaultMessage(name), innerError);
+
+		this._name = name;
+	}
+
+	private _name;
+	/// Summary: Gets the name that caused the error.
+	public get name = _name;
+
+	overridable override get message
+	{
+		if name is not null:
+			return "{0} (name: {1})".format([base.message, name]);
+		return base.message;
+	}
+
+	private static getDefaultMessage(name)
+	{
+		return name is null ?
+			ErrorCode.getMessage(ErrorCode.err_NameErrorWithoutName) :
+			ErrorCode.getMessage(ErrorCode.err_NameError, [name]);
+	}
+}
+
+public inheritable UndefinedNameError is NameError
+{
+	public new(source, errorCode)
+	{
+		new this(source, errorCode, null, getDefaultMessage(null), null);
+	}
+	public new(source, errorCode, name)
+	{
+		new this(source, errorCode, name, getDefaultMessage(name), null);
+	}
+	public new(source, errorCode, name, message)
+	{
+		new this(source, errorCode, name, message ?? getDefaultMessage(name), null);
+	}
+	public new(source, errorCode, name, message, innerError)
+	{
+		new base(source, errorCode, name, message ?? getDefaultMessage(name), innerError);
+	}
+
+	private static getDefaultMessage(name)
+	{
+		return name is null ?
+			ErrorCode.getMessage(ErrorCode.err_UndefinedNameWithoutName) :
+			ErrorCode.getMessage(ErrorCode.err_UndefinedName, [name]);
+	}
+}
+
+public inheritable DuplicateNameError is NameError
+{
+	public new(source)
+	{
+		new this(source, null, getDefaultMessage(null), null);
+	}
+	public new(source, name)
+	{
+		new this(source, name, getDefaultMessage(name), null);
+	}
+	public new(source, name, message)
+	{
+		new this(source, name, message ?? getDefaultMessage(name), null);
+	}
+	public new(source, name, message, innerError)
+	{
+		new base(source, name, message ?? getDefaultMessage(name), innerError);
+	}
+
+	private static getDefaultMessage(name)
+	{
+		return name is null ?
+			ErrorCode.getMessage(ErrorCode.err_DuplicateNameWithoutName) :
+			ErrorCode.getMessage(ErrorCode.err_DuplicateName, [name]);
+	}
+}

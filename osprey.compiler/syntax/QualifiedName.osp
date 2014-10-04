@@ -1,0 +1,13 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Implements an immutable list of {Identifier}s, representing a qualified
+///          (or dotted) name. This is a more specialized version of {SyntaxList}.
+public inheritable QualifiedName is SyntaxList
+{
+	public new(items)
+	{
+		new base(items);
+	}
+}
