@@ -1,0 +1,71 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Implements an immutable list of {Parameter} declarations, which represent
+///          parameters of a function member (such as a method, indexer or constructor).
+///          This collection is more specialised than {NodeList}, containing members
+///          that enable easy manipulation of parameter lists.
+public inheritable ParameterList is NodeList
+{
+	public new()
+	{
+		new this([], 0, VariadicParameter.none, 0);
+	}
+	public new(items)
+	{
+		new base(items);
+	}
+	public new(items, optionalParameterCount, variadicParameter, refParameterCount)
+	{
+		new base(items);
+
+		this._optionalParameterCount = optionalParameterCount;
+		this._variadicParameter      = variadicParameter;
+		this._refParameterCount      = refParameterCount;
+	}
+
+	private _optionalParameterCount;
+	/// Summary: Gets the total number of optional parameters in this parameter list.
+	public get optionalParameterCount
+	{
+		if _optionalParameterCount is null:
+			_optionalParameterCount = count(@.isOptional);
+		return _optionalParameterCount;
+	}
+
+	/// Summary: Determines whether the parameter list has any optional parameters.
+	public get hasOptionalParameters = optionalParameterCount > 0;
+
+	private _variadicParameter;
+	/// Summary: Gets a {VariadicParameter} value that indicates which parameter, if
+	///          any, is variadic.
+	public get variadicParameter
+	{
+		if _variadicParameter is null
+		{
+			var param = VariadicParameter.none;
+			if length > 0
+			{
+				if collection[-1].isVariadic:
+					param = VariadicParameter.last;
+				else if collection[0].isVariadic:
+					param = VariadicParameter.first;
+			}
+			_variadicParameter = param;
+		}
+		return _variadicParameter;
+	}
+
+	private _refParameterCount;
+	/// Summary: Gets the total number of ref parameters in this parameter list.
+	public get refParameterCount
+	{
+		if _refParameterCount is null:
+			_refParameterCount = count(@.isRef);
+		return _refParameterCount;
+	}
+
+	/// Summary: Determines whether the parameter list has any ref parameters.
+	public get hasRefParameters = refParameterCount > 0;
+}

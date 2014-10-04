@@ -1,0 +1,164 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Represents a binary operator.
+public enum BinaryOperator
+{
+	/// Summary: ??
+	nullCoalescing,
+	/// Summary: ?!
+	nullOr,
+	/// Summary: or
+	conditionalOr,
+	/// Summary: xor
+	conditionalXor,
+	/// Summary: and
+	conditionalAnd,
+	/// Summary: ==
+	equality,
+	/// Summary: !=
+	inequality,
+	/// Summary: refeq
+	refEquality,
+	/// Summary: not refeq
+	refInequality,
+	/// Summary: <
+	less,
+	/// Summary: <=
+	lessEqual,
+	/// Summary: >
+	greater,
+	/// Summary: >=
+	greaterEqual,
+	/// Summary: <=>
+	comparison,
+	/// Summary: #
+	hash,
+	/// Summary: $
+	dollar,
+	/// Summary: <<
+	shiftLeft,
+	/// Summary: >>
+	shiftRight,
+	/// Summary: +
+	addition,
+	/// Summary: -
+	subtraction,
+	/// Summary: |
+	bitwiseOr,
+	/// Summary: ^
+	bitwiseXor,
+	/// Summary: *
+	multiplication,
+	/// Summary: /
+	division,
+	/// Summary: %
+	modulo,
+	/// Summary: &
+	bitwiseAnd,
+	/// Summary: **
+	exponentiation,
+	/// Summary: ->
+	functionApplication,
+	/// Summary: ::
+	concatenation,
+}
+
+/// Summary: Represents a unary operator.
+public enum UnaryOperator
+{
+	/// Summary: +
+	plus,
+	/// Summary: -
+	negation,
+	/// Summary: ~
+	bitwiseNot,
+	/// Summary: not
+	booleanNot,
+}
+
+/// Summary: Represents a lambda operator; that is, an operator that can follow an `@`.
+public enum LambdaOperator
+{
+	/// Summary: @or
+	conditionalOr,
+	/// Summary: @xor
+	conditionalXor,
+	/// Summary: @and
+	conditionalAnd,
+	/// Summary: @==
+	equality,
+	/// Summary: @!=
+	inequality,
+	/// Summary: @<
+	less,
+	/// Summary: @<=
+	lessEqual,
+	/// Summary: @>
+	greater,
+	/// Summary: @>=
+	greaterEqual,
+	/// Summary: @<=>
+	comparison,
+	/// Summary: @#
+	hash,
+	/// Summary: @$
+	dollar,
+	/// Summary: @<<
+	shiftLeft,
+	/// Summary: @>>
+	shiftRight,
+	/// Summary: @+
+	plus,
+	/// Summary: @-
+	minus,
+	/// Summary: @|
+	bitwiseOr,
+	/// Summary: @^
+	bitwiseXor,
+	/// Summary: @*
+	multiplication,
+	/// Summary: @/
+	division,
+	/// Summary: @%
+	modulo,
+	/// Summary: @&
+	bitwiseAnd,
+	/// Summary: @**
+	exponentiation,
+	/// Summary: @->
+	functionApplication,
+	/// Summary: @::
+	concatenation,
+	/// Summary: @~
+	bitwiseNot,
+	/// Summary: @not
+	booleanNot,
+}
+
+/// Summary: Specifies which parameter, if any, is variadic.
+public enum VariadicParameter
+{
+	/// Summary: The parameter list has no variadic parameter.
+	none = 0,
+	/// Summary: The first parameter is variadic.
+	first = 1,
+	/// Summary: The last parameter is variadic.
+	last = 2,
+}
+
+/// Summary: Specifies the accessibility of a member.
+public enum Accessibility
+{
+	/// Summary: Accessibility is not applicable to this member.
+	notApplicable = -1,
+	/// Summary: No explicitly declared accessibility.
+	none = 0,
+	/// Summary: Public accessibility.
+	_public = 1,
+	/// Summary: Protected accessibility.
+	_protected = 2,
+	/// Summary: Private accessibility.
+	_private = 3,
+}

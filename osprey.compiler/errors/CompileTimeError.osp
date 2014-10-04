@@ -1,0 +1,40 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler;
+
+public inheritable CompileTimeError is Error
+{
+	public new(source, errorCode)
+	{
+		new this(source, errorCode, defaultMessage, null);
+	}
+	public new(source, errorCode, message)
+	{
+		new this(source, errorCode, message ?? defaultMessage, null);
+	}
+	public new(source, errorCode, message, innerError)
+	{
+		new base(message ?? defaultMessage, innerError);
+
+		if source is not null and source is not Syntax:
+			throw new ArgumentError("source must be null or an osprey.compiler.syntax.Syntax",
+				"source");
+
+		this._source = source;
+		this._errorCode = errorCode;
+	}
+
+	private _source;
+	/// Summary: Gets the {Syntax} that is the source of the error, or null if
+	///          the error has no specified source.
+	public get source = _source;
+
+	private _errorCode;
+	/// Summary: Gets the error code associated with this compile-time error.
+	///          This corresponds to one of the {ErrorCode} constants.
+	public get errorCode = _errorCode;
+
+	private static get defaultMessage =
+		ErrorCode.getMessage(ErrorCode.err_Unspecified);
+}

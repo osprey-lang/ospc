@@ -1,0 +1,50 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Implements an immutable collection of {ParseNode} instances. This collection
+///          is more specialised than {SyntaxList}, and includes methods for manipulating
+///          parse nodes. It does derive from {SyntaxList}, though.
+public inheritable NodeList is SyntaxList
+{
+	public new()
+	{
+		new base([]);
+	}
+	public new(items)
+	{
+		new base(items);
+	}
+
+	/// Summary: Calls `accept` on each {ParseNode} in the collection, passing the specified
+	///          visitor and argument to the nodes.
+	/// Param visitor: An object that can visit the nodes in this collection.
+	/// Param arg:     An object that is passed to the `accept` method of each node.
+	public visitAll(visitor, arg)
+	{
+		for node in collection:
+			node.accept(visitor, arg);
+	}
+
+	/// Summary: Calls `accept` on each {ParseNode} in the collection, passing the specified
+	///          visitor and argument to the nodes, and optionally updating the argument to
+	///          the return value of each visit.
+	/// Param visitor: An object that can visit the nodes in this collection.
+	/// Param arg:     An object that is passed to the `accept` method of each node, or to
+	///                the first node only.
+	/// Param updateArg: If true, the return value of each visit becomes the second argument
+	///                to the next visit. The {arg} parameter contains the argument passed
+	///                to the first node.
+	/// Returns: If {updateArg} is true, returns the return value of the last visit.
+	///          Otherwise, returns null.
+	public visitAll(visitor, arg, updateArg)
+	{
+		if not updateArg:
+			return visitAll(visitor, arg);
+
+		for node in collection:
+			arg = node.accept(visitor, arg);
+
+		return arg;
+	}
+}

@@ -1,0 +1,98 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+public abstract class UseDirective is ParseNode
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class UseFileDirective is UseDirective
+{
+	public new(location, fileName)
+	{
+		new base(location);
+
+		this._fileName = fileName;
+	}
+
+	private _fileName;
+	/// Summary: Gets a string {LiteralToken} containing the name of the file
+	///          that is referenced by this directive.
+	public get fileName = _fileName;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseFileDirective(this, arg);
+	}
+}
+
+public class UseModuleDirective is UseDirective
+{
+	public new(location, name)
+	{
+		new base(location);
+
+		this._name = name;
+	}
+
+	private _name;
+	/// Summary: Gets the {QualifiedName} of the module that is imported
+	///          by this directive.
+	public get name = _name;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseModuleDirective(this, arg);
+	}
+}
+
+public class UseNamespaceDirective is UseDirective
+{
+	public new(location, name)
+	{
+		new base(location);
+
+		this._name = name;
+	}
+
+	private _name;
+	/// Summary: Gets the {QualifiedName} of the namespace that is imported
+	///          by this directive.
+	public get name = _name;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseNamespaceDirective(this, arg);
+	}
+}
+
+public class UseAliasDirective is UseDirective
+{
+	public new(location, alias, fullName)
+	{
+		new base(location);
+
+		this._alias = alias;
+		this._fullName = fullName;
+	}
+
+	private _alias;
+	/// Summary: Gets an {Identifier} corresponding to the alias name introduced
+	///          by this directive.
+	public get alias = _alias;
+
+	private _fullName;
+	/// Summary: Gets the {QualifiedName} of the member that is aliased.
+	public get fullName = _fullName;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseAliasDirective(this, arg);
+	}
+}

@@ -1,0 +1,4086 @@
+/************************************************************
+ * This directory contains the parser and tokenizer code.   *
+ ************************************************************/
+
+use "Lexer.osp";
+use "Token.osp";
+use "TokenType.osp";
+// ParseError is defined in errors/ParseError.osp
+
+// We can't put osprey.compiler.Parser in its own file, because of Windows.
+
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+public inheritable Parser
+{
+	/// Summary: Creates a new {Parser} with the specified source file and default flags.
+	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
+	public new(source)
+	{
+		new this(source, ParseFlags.none);
+	}
+	/// Summary: Creates a new {Parser} with the specified source file and flags.
+	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
+	/// Param flags:  A {ParseFlags} value that specifies parser flags.
+	public new(source, flags)
+	{
+		if flags is not ParseFlags:
+			throw new ArgumentError("flags must be an osprey.compiler.parser.ParseFlags", "flags");
+
+		if source is Lexer
+		{
+			this.file = source.sourceFile;
+			this.lex = source;
+		}
+		else if source is SourceFile
+		{
+			this.file = source;
+			this.lex = new Lexer(source,
+				flags.hasFlag(ParseFlags.normalizeIdentifiers) ? 
+					LexerFlags.normalizeIdentifiers :
+					LexerFlags.none);
+		}
+		else:
+			throw new ArgumentError("source must be a Lexer or SourceFile", "source");
+
+		this.flags = flags;
+	}
+
+	private file;
+	private flags;
+	private lex;
+
+	/// Summary: Determines whether the parser recognises non-standard extension keywords.
+	public get useExtensions = flags.hasFlag(ParseFlags.useExtensions);
+
+	/// Summary: Determines whether identifiers are normalized.
+	public get normalizeIdentifiers = flags.hasFlag(ParseFlags.normalizeIdentifiers);
+
+	/// Summary: Gets the {Lexer} used by this parser.
+	public get lexer = lex;
+
+	//<region: Accept helpers>
+
+	/// Summary: Determines whether the token at the specified index matches
+	///          the specified {TokenType}.
+	/// Param i:    The token’s index in the lexer.
+	/// Param type: The {TokenType} to test against.
+	/// Returns: True if the token matches the specified type; otherwise, false.
+	public accept(i, type)
+	{
+		return lex[i].match(type);
+	}
+	/// Summary: Determines whether the token at the specified index matches
+	///          any of the specified {TokenType}s.
+	/// Param i:  The token’s index in the lexer.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public accept(i, t1, t2)
+	{
+		var tok = lex[i];
+		return tok.match(t1)
+			or tok.match(t2);
+	}
+	/// Summary: Determines whether the token at the specified index matches
+	///          any of the specified {TokenType}s.
+	/// Param i:  The token’s index in the lexer.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Param t3: The third {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public accept(i, t1, t2, t3)
+	{
+		var tok = lex[i];
+		return tok.match(t1)
+			or tok.match(t2)
+			or tok.match(t3);
+	}
+	/// Summary: Determines whether the token at the specified index matches
+	///          any of the specified {TokenType}s.
+	/// Param i: The token’s index in the lexer.
+	/// Param types: A List, Iterable or Iterator of {TokenType}s to test against. This
+	///              object must support the `any` method.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptAny(i, types)
+	{
+		return types.any(lex[i].match);
+	}
+
+	/// Summary: Determines whether the token at the specified index matches
+	///          the specified {TokenType}, and if so, increments the index by 1.
+	/// Param i:    (ref) The token’s index in the lexer.
+	/// Param type: The {TokenType} to test against.
+	/// Returns: True if the token matches the specified type; otherwise, false.
+	public acceptr(ref i, type)
+	{
+		if lex[i].match(type)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+	/// Summary: Determines whether the token at the specified index matches any of
+	///          the specified {TokenType}s, and if so, increments the index by 1.
+	/// Param i:  The token’s index in the lexer.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptr(ref i, t1, t2)
+	{
+		var tok = lex[i];
+		if tok.match(t1) or tok.match(t2)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+	/// Summary: Determines whether the token at the specified index matches any of
+	///          the specified {TokenType}s, and if so, increments the index by 1.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Param t3: The third {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptr(ref i, t1, t2, t3)
+	{
+		var tok = lex[i];
+		if tok.match(t1) or tok.match(t2) or tok.match(t3)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+	/// Summary: Determines whether the token at the specified index matches any of
+	///          the specified {TokenType}s, and if so, increments the index by 1.
+	/// Param i:     The token’s index in the lexer.
+	/// Param types: A List, Iterable or Iterator of {TokenType}s to test against. This
+	///              object must support the `any` method.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptrAny(ref i, types)
+	{
+		if types.any(lex[i].match)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified contextual keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}.
+	/// Param i: The token’s index in the lexer.
+	/// Param keyword: The contextual keyword to look for. (String)
+	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
+	public acceptContextual(i, keyword)
+	{
+		var tok = lex[i];
+		if tok.match(TokenType.identifier) and tok.value == keyword:
+			return true;
+		return false;
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified contextual keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}. If the token matches, then the
+	///          index is incremented by 1.
+	/// Param i: (ref) The token’s index in the lexer.
+	/// Param keyword: The contextual keyword to look for. (String)
+	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
+	public acceptrContextual(ref i, keyword)
+	{
+		var tok = lex[i];
+		if tok.match(TokenType.identifier) and tok.value == keyword
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified extension keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}.
+	/// Param i: The token’s index in the lexer.
+	/// Param keyword: The extension keyword to look for. (String)
+	/// Returns: True if the token matches the specified extension keyword; otherwise, false.
+	/// Remarks: This method always returns false if the parser was initialized without
+	///          the {ParseFlags.useExtension} flag. Code inheriting from {Parser} does
+	///          not need to check {useExtensions} before calling this method.
+	public acceptExtension(i, keyword)
+	{
+		return useExtensions and acceptContextual(i, keyword);
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified extension keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}. If the token matches, then the
+	///          index is incremented by 1.
+	/// Param i: (ref) The token’s index in the lexer.
+	/// Param keyword: The extension keyword to look for. (String)
+	/// Returns: True if the token matches the specified extension keyword; otherwise, false.
+	/// Remarks: This method always returns false if the parser was initialized without
+	///          the {ParseFlags.useExtension} flag. Code inheriting from {Parser} does
+	///          not need to check {useExtensions} before calling this method.
+	public acceptrExtension(ref i, keyword)
+	{
+		return useExtensions and acceptrContextual(ref i, keyword);
+	}
+
+	//</region>
+
+	//<region: Expect helpers>
+
+	/// Summary: Tries to match the token at the specified index against the specified
+	///          {TokenType}, and throws an {UnexpectedTokenError} if it does not match.
+	/// Param i:         The token’s index in the lexer.
+	/// Param type:      The {TokenType} to test against.
+	/// Param errorCode: (optional) The error code of the error that is thrown if the
+	///                  match fails.
+	/// Returns: The token at the specified index.
+	public expect(i, type, errorCode = null)
+	{
+		var tok = lex[i];
+		if not tok.match(type)
+		{
+			if errorCode is null:
+				errorCode = ErrorCode.err_UnexpectedToken;
+			throw new UnexpectedTokenError(errorCode, tok, type,
+				ErrorCode.getMessage(errorCode));
+		}
+		return tok;
+	}
+	/// Summary: Tries to match the token at the specified index against the specified
+	///          {TokenType}, and throws an {UnexpectedTokenError} if it does not match,
+	///          or increments the index by 1 if it does.
+	/// Param i:         (ref) The token’s index in the lexer.
+	/// Param type:      The {TokenType} to test against.
+	/// Param errorCode: (optional) The error code of the error that is thrown if the
+	///                  match fails.
+	/// Returns: The token at the specified index.
+	public expectr(ref i, type, errorCode = null)
+	{
+		var tok = lex[i];
+		if not tok.match(type)
+		{
+			if errorCode is null:
+				errorCode = ErrorCode.err_UnexpectedToken;
+			throw new UnexpectedTokenError(errorCode, tok, type,
+				ErrorCode.getMessage(errorCode));
+		}
+		i += 1;
+		return tok;
+	}
+
+	//</region>
+
+	/// Summary: Gets a {SourceLocation} for the specified range.
+	/// Param start: A {Syntax}, {SourceLocation} or Int that represents the start
+	///              of the desired source location.
+	/// Param end:   A {Syntax}, {SourceLocation} or Int that represents the end
+	///              of the desired source location.
+	/// Returns: A {SourceLocation} that encloses the specified range.
+	/// Throws TypeError:
+	///          {start} or {end} is not a {Syntax} or {SourceLocation} and could
+	///          not be converted to an Int.
+	public getLocation(start, end)
+	{
+		if start is Syntax:
+			start = start.location.startIndex;
+		else if start is SourceLocation:
+			start = start.startIndex;
+		else:
+			start = int(start);
+
+		if end is Syntax:
+			end = end.location.endIndex;
+		else if end is SourceLocation:
+			end = end.endIndex;
+		else:
+			end = int(end);
+
+		return new SourceLocation(file, start, end);
+	}
+
+	public error(source, errorCode)
+	{
+		throw new ParseError(source, errorCode,
+			ErrorCode.getMessage(errorCode));
+	}
+	public error(source, errorCode, formatArg)
+	{
+		throw new ParseError(source, errorCode,
+			ErrorCode.getMessage(errorCode, formatArg));
+	}
+
+	/// Summary: Determines whether the specified {Expression} is classified as
+	///          assignable.
+	/// Returns: True if {expression} is classified as assignable; otherwise, false.
+	public isAssignable(expression)
+	{
+		return expression is SimpleNameExpression or
+			expression is MemberAccessExpression or
+			expression is IndexerAccessExpression or
+			expression is GlobalAccessExpression;
+	}
+
+	/// Summary: Ensures that the specified {Expression} is classified as assignable.
+	///          If the expression is not assignable, a {ParseError} is thrown.
+	/// Param errorCode: The error code that is associated with the error thrown if
+	///          {expression} is not assignable.
+	public ensureAssignable(expression, errorCode = null)
+	{
+		if not isAssignable(expression):
+			error(expression, errorCode ?? ErrorCode.err_ExpressionMustBeAssignable);
+	}
+
+	/// Summary: Determines whether the specified {Expression} is a valid statement-expression.
+	/// Returns: True if {expression} is a valid statement-expression; otherwise, false.
+	public isStatementExpression(expression)
+	{
+		/* From the grammar:
+		 *   statement-expression:
+		 *     invocation-expression
+		 *     function-application-expression
+		 *     object-creation-expression
+		 *     assignment-expression
+		 *     A safe-access whose last safe-access-link (if it has a safe-access-chain)
+		 *       or whose safe-start-component (if it does not) is a safe-invocation or
+		 *       unsafe-invocation
+		 */
+		if expression is BinaryExpression:
+			return expression.op == BinaryOperator.functionApplication;
+
+		if expression is SafeAccessExpression:
+			return expression.chain[-1] is SafeInvocation;
+
+		return expression is InvocationExpression or
+			expression is ObjectCreationExpression or
+			expression is AssignmentExpression;
+	}
+
+	/* * 
+	 * * In all the parse methods below, every single method that doesn't just directly
+	 * * call another method should have a description of the grammar it parses. This is
+	 * * partly for your reference as you write the method, partly for the benefit of
+	 * * anyone who has to read the code.
+	 * *
+	 * * Your comment should use the same basic structure as the Osprey grammar, with
+	 * * the following rules:
+	 * *   1. Nonterminal symbols are unquoted. Ex: qualified-name, null-or-expression,
+	 * *      statement.
+	 * *   2. Terminal symbols are quoted with single quotes. Use \ to escape embedded
+	 * *      single quotes and backslashes (should generally not be necessary). Other
+	 * *      escape-sequence-looking sequences are verbatim (e.g. '\t' means backslash
+	 * *      followed by t, not tab). Ex: 'inheritable', 'with', ':', '<=>'.
+	 * *   3. Optional symbols are followed by a question mark, not "_opt". This is
+	 * *      mainly for brevity. Do not surround optional symbols in square brackets.
+	 * *   4. Do not abbreviate nonterminal symbol names: it must be possible to search
+	 * *      the grammar document and this source code for their definitions. If you
+	 * *      must break a definition into multiple lines, indent subsequent lines by
+	 * *      two (2) spaces.
+	 * *   5. Do feel free to align terminal symbols in 'one of' definitions into neat-
+	 * *      looking tables if it improves legibility. Align with spaces, never tabs.
+	 * *   6. Define only the symbols your code parses fully. If you use call `accept`
+	 * *      only to detect which kind of symbol to parse, do not define that symbol
+	 * *      in your comment. For example, if you use `accept` to detect the 'var'
+	 * *      keyword only to decide whether to parse a variable declaration, do not
+	 * *      define the syntax for the variable declaration in your method, but in the
+	 * *      method that parses the declaration.
+	 * *
+	 * * The comment is structured and formatted as follows:
+	 * *   Syntax:                 <-- "Syntax" header, must be present
+	 * *     symbol-one:           <-- nonterminal being defined (indent 2 spaces)
+	 * *       foo 'bar' baz       <-- definition line (indent another 2 spaces)
+	 * *       one two three?
+	 * *         'four'? five      <-- wrapped defintion line (another 2 spaces)
+	 * *     symbol-two: one of    <-- definition using 'one of'
+	 * *       'p' 'a' 'n' 'd'     <-- no need to indent wrapped lines: every symbol is
+	 * *       'i' 'o'                 an expansion of the defined symbol
+	 * *   Additional notes/restrictions/requirements:
+	 * *     Optional plain-text description of additional notes, restrictions or
+	 * *     requirements (pick one, or a suitable synonym). It is also perfectly fine
+	 * *     to put such notes in line with the code, if it reads better.
+	 * *
+	 * * Unless otherwise necessary, prefer using 'start' for the variable holding the
+	 * * token that represents the start of the symbol being parsed. If it is not passed
+	 * * as the first argument to `getLocation`, consider using a different name. Also
+	 * * why aren't you passing the start token as the first argument to `getLocation`?
+	 * *
+	 * * If you skip more than one token, or if you skip tokens not in direct connection
+	 * * with reading them from the lexer, consider adding a brief comment that explains
+	 * * what you are skipping. Something like "// skip xyz and ':'" is usually fine.
+	 * */
+
+	public parseDocument()
+	{
+		var i = 0;
+		return parseDocument(ref i);
+	}
+
+	public parseDocument(ref i)
+	{
+		/* Syntax:
+		 *   compilation-unit:
+		 *     version-specifier? use-directives? file-namespace-declaration? top-level-members?
+		 *   use-directives:
+		 *     use-directive
+		 *     use-directives use-directive
+		 *   file-namespace-declaration:
+		 *     'namespace' qualified-name ';'
+		 *   top-level-members:
+		 *     top-level-member
+		 *     top-level-members top-level-member
+		 *   top-level-member:
+		 *     global-statement
+		 *     global-variable-declaration ';'
+		 *     namespace-member
+		 *   global-statement:
+		 *     embedded-statement
+		 *   global-variable-declaration:
+		 *     local-variable-declaration
+		 * namespace-member is defined in parseNamespaceMember.
+		 */
+
+		var start = lex[i];
+
+		// version-specifier
+		var version;
+		if accept(i, TokenType.identifier) and
+			lex[i].value == "version" and
+			accept(i + 1, TokenType.int):
+			version = parseVersionSpecifier(ref i);
+
+		// use-directives
+		var uses;
+		if accept(i, TokenType._use)
+		{
+			uses = new List(2);
+			while accept(i, TokenType._use):
+				uses.add(parseUseDirective(ref i));
+			uses = new NodeList(uses);
+		}
+
+		// file-namespace-declaration
+		var fileNamespace;
+		if accept(i, TokenType._namespace)
+		{
+			// Try to parse the beginning of a namespace declaration.
+			// If a curly bracket follows the qualified-name, we back
+			// up to the 'namespace' keyword and let top-level-members
+			// take care of it. Reduces code duplication.
+			// Note: the 'namespace' keyword must always be followed by
+			// a qualified-name, even in the file-namespace-declaration,
+			// so we can use parseQualifiedName here. If the name is
+			// invalid for file-namespace-declaration, it would be invalid
+			// for a regular namespace-declaration.
+			var k = i;
+			i += 1; // skip 'namespace'
+			fileNamespace = parseQualifiedName(ref i);
+			if not acceptr(ref i, TokenType.semicolon)
+			{
+				// back up and reset
+				i = k;
+				fileNamespace = null;
+				// Fall through to process it in the default manner.
+			}
+			// Otherwise, let fileNamespace be the consumed namespace name.
+		}
+
+		// top-level-members, grouped into global-statements and everything else.
+		var members = new List(5), statements = [];
+		var modifiers = new Modifiers();
+		while not accept(i, TokenType.eof)
+		{
+			parseModifiers(ref i, modifiers);
+
+			var token = lex[i];
+			var construct;
+			if token.match(TokenType._namespace)
+			{
+				modifiers.verifyForNamespace(this);
+				construct = parseNamespaceDeclaration(ref i);
+			}
+			else if token.match(TokenType._class):
+				construct = parseClassDeclaration(ref i, modifiers);
+			else if token.match(TokenType._enum):
+				construct = parseEnumDeclaration(ref i, modifiers);
+			else if token.match(TokenType._const):
+				construct = parseGlobalConstantDeclaration(ref i, modifiers);
+			else if token.match(TokenType._function):
+				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
+			else if not modifiers.isEmpty:
+				error(modifiers.start, ErrorCode.err_ExpectedNamespaceMember);
+			else
+			{
+				if token.match(TokenType._var)
+				{
+					construct = parseLocalVariableDeclaration(ref i);
+					construct = new GlobalVariableDeclaration(construct.location, construct);
+				}
+				else
+				{
+					construct = parseEmbeddedStatement(ref i);
+				}
+				statements.add(construct);
+				next;
+			}
+			members.add(construct);
+		}
+		members = new NodeList(members);
+		statements = new NodeList(statements);
+
+		var end = lex[i];
+		return new Document(getLocation(start, end),
+			version,
+			uses,
+			fileNamespace,
+			members,
+			statements);
+	}
+
+	public parseVersionSpecifier(ref i)
+	{
+		/* Syntax:
+		 *   version-specifier:
+		 *     'version' version-number ';'
+		 *   version-number:
+		 *     integer-literal version-field version-field? version-field?
+		 *   version-field:
+		 *     ':' integer-literal
+		 */
+		var start = expectr(ref i, TokenType.identifier);
+		if start.value != "version":
+			error(start, ErrorCode.err_UnexpectedToken);
+
+		var major, minor, build, revision;
+		major = expectr(ref i, TokenType.int);
+
+		expectr(ref i, TokenType.colon);
+		minor = expectr(ref i, TokenType.int);
+
+		if acceptr(ref i, TokenType.colon)
+		{
+			build = expectr(ref i, TokenType.int);
+			if acceptr(ref i, TokenType.colon):
+				revision = expectr(ref i, TokenType.int);
+		}
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new VersionSpecifier(getLocation(start, end),
+			major, minor, build, revision);
+	}
+
+	public parseUseDirective(ref i)
+	{
+		/* Syntax:
+		 *   use-directive:
+		 *     'use' qualified-name ';'
+		 *     'use' string-literal ';'
+		 *     'use' 'namespace' qualified-name ';'
+		 *     'use' identifier '=' qualified-name ';'
+		 */
+		var start = expectr(ref i, TokenType._use);
+
+		if accept(i, TokenType.string)
+		{
+			// UseFileDirective
+			var fileName = lex[i];
+			i += 1;
+			var end = expectr(ref i, TokenType.semicolon);
+			return new UseFileDirective(getLocation(start, end), fileName);
+		}
+
+		if accept(i, TokenType.identifier)
+		{
+			// UseModuleDirective or UseAliasDirective: if we find an '=' after
+			// the identifier, it must be a member alias; otherwise, we parse it
+			// as a UseModuleDirective.
+			if accept(i + 1, TokenType.assign)
+			{
+				// UseAliasDirective
+				var alias = lex[i];
+				i += 2; // skip alias and '='
+				var fullName = parseQualifiedName(ref i);
+				var end = expectr(ref i, TokenType.semicolon);
+				return new UseAliasDirective(getLocation(start, end), alias, fullName);
+			}
+			else
+			{
+				// UseModuleDirective
+				var name = parseQualifiedName(ref i);
+				var end = expectr(ref i, TokenType.semicolon);
+				return new UseModuleDirective(getLocation(start, end), name);
+			}
+		}
+
+		// UseNamespaceDirective
+		do
+		{
+			expectr(ref i, TokenType._namespace);
+			var name = parseQualifiedName(ref i);
+			var end = expectr(ref i, TokenType.semicolon);
+			return new UseNamespaceDirective(getLocation(start, end), name);
+		};
+	}
+
+	//<region: Member declarations>
+
+	public parseNamespaceDeclaration(ref i)
+	{
+		/* Syntax:
+		 *   namespace-declaration:
+		 *     namespace qualified-name namespace-body
+		 *   namespace-body:
+		 *     '{' namespace-members? '}'
+		 *   namespace-members:
+		 *     namespace-member
+		 *     namespace-members namespace-member
+		 *   namespace-member:
+		 *     global-constant-declaration
+		 *     global-function-declaration
+		 *     class-declaration
+		 *     enum-declaration
+		 *     namespace-declaration
+		 */
+		var start = expectr(ref i, TokenType._namespace);
+
+		var name = parseQualifiedName(ref i);
+		expectr(ref i, TokenType.curlyOpen);
+
+		var members = new List(5);
+		var modifiers = new Modifiers();
+		while not accept(i, TokenType.eof, TokenType.curlyClose)
+		{
+			parseModifiers(ref i, modifiers);
+
+			var token = lex[i];
+			var member;
+			if token.match(TokenType._const):
+				member = parseGlobalConstantDeclaration(ref i, modifiers);
+			else if token.match(TokenType._function):
+				member = parseGlobalFunctionDeclaration(ref i, modifiers);
+			else if token.match(TokenType._class) or
+				// Class declaration permits 'class' keyword to be omitted
+				// if 'inheritable' is the last modifier
+				modifiers._inheritable refeq lex[i - 1]:
+				member = parseClassDeclaration(ref i, modifiers);
+			else if token.match(TokenType._enum):
+				member = parseEnumDeclaration(ref i, modifiers);
+			else if token.match(TokenType._namespace)
+			{
+				modifiers.verifyForNamespace(this);
+				member = parseNamespaceDeclaration(ref i);
+			}
+			else:
+				error(token, ErrorCode.err_ExpectedNamespaceMember);
+
+			members.add(member);
+		}
+		members = new NodeList(members);
+
+		var end = expectr(ref i, TokenType.curlyClose);
+		return new NamespaceDeclaration(getLocation(start, end),
+			name,
+			members);
+	}
+
+	public parseGlobalConstantDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   global-constant-declaration:
+		 *     global-modifier? 'const' constant-declarators ';'
+		 *   constant-declarators:
+		 *     constant-declarator
+		 *     constant-declarators ',' constant-declarator
+		 *   constant-declarator:
+		 *     identifier '=' constant-expression
+		 * Additional notes:
+		 *   This is not the only method that parses constant-declarators, due to their
+		 *   underwhelming simplicity.
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForGlobalFunctionOrConstant(this);
+
+		var start = expectr(ref i, TokenType._const);
+
+		var constants = new List(1);
+		do
+		{
+			var name = expectr(ref i, TokenType.identifier);
+			expectr(ref i, TokenType.assign);
+			var value = parseExpression(ref i);
+
+			constants.add(
+				new VariableDeclarator(getLocation(name, value),
+					name,
+					value)
+			);
+		} while acceptr(ref i, TokenType.comma);
+		constants = new NodeList(constants);
+
+		var end = expectr(ref i, TokenType.semicolon);
+		return new GlobalConstantDeclaration(getLocation(modifiers.start ?? start, end),
+			modifiers.accessibility,
+			constants);
+	}
+
+	public parseGlobalFunctionDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   global-function-declaration:
+		 *     global-modifier? 'function' identifier '(' parameter-list? ')' block
+		 * Additional notes:
+		 *   If extensions are in use, the body block can also be an __extern reference.
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForGlobalFunctionOrConstant(this);
+
+		var start = expectr(ref i, TokenType._function);
+		var name = expectr(ref i, TokenType.identifier);
+
+		expectr(ref i, TokenType.parenOpen);
+		var parameters = parseParameterList(ref i);
+		expectr(ref i, TokenType.parenClose);
+
+		var body = parseBlockOrExtern(ref i);
+
+		return new GlobalFunctionDeclaration(getLocation(modifiers.start ?? start, body),
+			modifiers.accessibility,
+			name,
+			parameters,
+			body);
+	}
+
+	public parseClassDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   class-declaration:
+		 *     class-modifiers? 'class' identifier class-base? class-body
+		 *     class-modifiers? 'inheritable' identifier class-base? class-body
+		 *   class-modifiers:
+		 *     class-modifier
+		 *     class-modifiers class-modifier
+		 *   class-modifier:
+		 *     'public'
+		 *     'private'
+		 *     'abstract'
+		 *     'static'
+		 *     'inheritable'
+		 *   class-base:
+		 *     'is' type
+		 *     '__primitive'    (non-standard extension)
+		 *   class-body:
+		 *     '{' type-initer? class-member-declarations? '}'
+		 *   type-initer:       (non-standard extension)
+		 *     '__init_type' '(' string-literal ')' ';'
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForClass(this);
+
+		var start;
+		if modifiers._inheritable and modifiers._inheritable refeq lex[i - 1]:
+			// 'class' keyword is optional if 'inheritable' is the last modifier
+			acceptr(ref i, TokenType._class);
+		else:
+			start = expectr(ref i, TokenType._class);
+		start = modifiers.start ?? start;
+
+		var name = expectr(ref i, TokenType.identifier);
+
+		var baseType;
+		if acceptr(ref i, TokenType._is):
+			baseType = parseTypeName(ref i);
+		else if acceptrExtension(ref i, "__primitive"):
+			baseType = ClassDeclaration.primitive;
+
+		expectr(ref i, TokenType.curlyOpen);
+
+		var typeIniter;
+		if acceptrExtension(ref i, "__init_type")
+		{
+			expectr(ref i, TokenType.parenOpen);
+			typeIniter = expectr(ref i, TokenType.string);
+			expectr(ref i, TokenType.parenClose);
+			expectr(ref i, TokenType.semicolon);
+		}
+
+		var members = parseClassMembers(ref i);
+
+		var end = expectr(ref i, TokenType.curlyClose);
+		return new ClassDeclaration(getLocation(start, end),
+			modifiers,
+			name,
+			baseType,
+			members,
+			typeIniter);
+	}
+
+	private parseClassMembers(ref i)
+	{
+		/* Syntax:
+		 *   class-member-declarations:
+		 *     class-member-declaration
+		 *     class-member-declarations class-member-declaration
+		 *   class-member-declaration:
+		 *     constructor-declaration
+		 *     field-declaration
+		 *     method-declaration
+		 *     property-accessor-declaration
+		 *     indexer-declaration
+		 *     operator-declaration
+		 *     iterator-declaration
+		 *     static-constructor-declaration
+		 *     class-constant-declaration
+		 */
+		var members = new List(5);
+
+		var modifiers = new Modifiers();
+		while not accept(i, TokenType.curlyClose)
+		{
+			parseModifiers(ref i, modifiers);
+
+			var token = lex[i];
+			var member;
+			if token.match(TokenType._new):
+				member = parseConstructorDeclaration(ref i, modifiers);
+			else if token.match(TokenType._get, TokenType._set):
+				member = parsePropertyOrIndexerDeclaration(ref i, modifiers);
+			else if token.match(TokenType._var):
+				member = parseFieldDeclaration(ref i, modifiers);
+			// Modifiers + 'this' = invocator without 'function' keyword; an indexer
+			// always requires 'get' or 'set', which we check for above
+			else if token.match(TokenType._function, TokenType._this):
+				member = parseMethodDeclaration(ref i, modifiers);
+			else if token.match(TokenType._const):
+				member = parseClassConstantDeclaration(ref i, modifiers);
+			else if token.match(TokenType._iter)
+			{
+				modifiers.verifyForIterator(this);
+				member = parseIteratorDeclaration(ref i);
+			}
+			else if token.match(TokenType._operator)
+			{
+				modifiers.verifyForOperator(this);
+				member = parseOperatorDeclaration(ref i);
+			}
+			else
+			{
+				// Method declaration without 'function',
+				// or field declaration without 'var'.
+				// In both cases, we need an identifier.
+				expect(i, TokenType.identifier);
+				if accept(i + 1, TokenType.parenOpen):
+					member = parseMethodDeclaration(ref i, modifiers);
+				else:
+					member = parseFieldDeclaration(ref i, modifiers);
+			}
+
+			members.add(member);
+		}
+		members = new NodeList(members);
+
+		return members;
+	}
+
+	public parseConstructorDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   constructor-declaration:
+		 *     access-level-modifier? 'new' '(' ctor-parameter-list? ')' constructor-body
+		 *   constructor-body:
+		 *     block
+		 *     ';'
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForConstructor(this);
+
+		var start = expectr(ref i, TokenType._new);
+		start = modifiers.start ?? start;
+
+		expectr(ref i, TokenType.parenOpen);
+
+		var parameters;
+		if not modifiers._static:
+			parameters = parseConstructorParameterList(ref i);
+
+		expectr(ref i, TokenType.parenClose);
+
+		var body;
+		if modifiers._static or not acceptr(ref i, TokenType.semicolon):
+			body = parseBlockOrExtern(ref i);
+
+		var end = lex[i - 1];
+
+		if modifiers._static:
+			return new StaticConstructorDeclaration(getLocation(start, end),
+				body);
+		return new ConstructorDeclaration(getLocation(start, end),
+			modifiers.accessibility,
+			parameters,
+			body);
+	}
+
+	public parsePropertyOrIndexerDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   property-accessor-declaration:
+		 *     property-getter-declaration
+		 *     property-setter-declaration
+		 *   property-getter-declaration:
+		 *     property-modifiers? 'get' identifier property-getter-body
+		 *   property-setter-declaration:
+		 *     property-modifiers? 'set' identifier property-setter-body
+		 *   property-modifiers:
+		 *     property-modifier
+		 *     property-modifiers property-modifier
+		 *   property-modifier:
+		 *     access-level-modifier
+		 *     'static'
+		 *     'abstract'
+		 *     'overridable'
+		 *     'override'
+		 *   property-getter-body:
+		 *     '=' expression ';'
+		 *     block
+		 *     ';'
+		 *   property-setter-body:
+		 *     block
+		 *     ';'
+		 *   indexer-declaration:
+		 *     indexer-getter-declaration
+		 *     indexer-setter-declaration
+		 *   indexer-getter-declaration:
+		 *     property-modifiers? 'get' 'this' '[' parameter-list ']' property-getter-body
+		 *   indexer-setter-declaration:
+		 *     property-modifiers? 'set' 'this' '[' parameter-list ']' property-setter-body
+		 * Additional notes:
+		 *   This method parses both property-accessor-declaration and indexer-declaration,
+		 *   since they both start with property-modifiers followed by 'get' or 'set'.
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+
+		var start = lex[i];
+
+		var isSetter = acceptr(ref i, TokenType._set);
+		if not isSetter:
+			expectr(ref i, TokenType._get);
+
+		// name is null for indexer; indexerParams is null for property
+		var name, indexerParams;
+		if acceptr(ref i, TokenType._this)
+		{
+			modifiers.verifyForIndexer(this);
+			expectr(ref i, TokenType.squareOpen);
+
+			indexerParams = parseParameterList(ref i,
+				/*endToken=*/ TokenType.squareClose,
+				/*allowEmpty=*/ false);
+			if indexerParams.hasOptionalParameters:
+				error(indexerParams.first(@.isOptional), ErrorCode.err_IndexerCannotHaveOptionalParameters);
+			if indexerParams.variadicParameter != VariadicParameter.none:
+				error(indexerParams.first(@.isVariadic), ErrorCode.err_IndexerCannotHaveVariadicParameter);
+			if indexerParams.hasRefParameters:
+				error(indexerParams.first(@.isRef), ErrorCode.err_IndexerCannotHaveRefParameters);
+
+			expectr(ref i, TokenType.squareClose);
+		}
+		else
+		{
+			modifiers.verifyForProperty(this);
+			name = expectr(ref i, TokenType.identifier);
+		}
+
+		var body;
+		if acceptr(ref i, TokenType.semicolon)
+		{
+			if not modifiers._abstract:
+				error(lex[i - 1], ErrorCode.err_NonAbstractPropertyCannotHaveEmptyBody);
+			// otherwise, leave body null
+		}
+		else
+		{
+			if modifiers._abstract:
+				error(lex[i], ErrorCode.err_AbstractPropertyMustHaveEmptyBody);
+
+			if not isSetter and acceptr(ref i, TokenType.assign)
+			{
+				body = parseExpression(ref i);
+				expectr(ref i, TokenType.semicolon);
+			}
+			else
+			{
+				body = parseBlockOrExtern(ref i);
+			}
+		}
+
+		var location = getLocation(modifiers.start ?? start, lex[i - 1]);
+		if name is null:
+			return new IndexerDeclaration(location,
+				modifiers, isSetter, indexerParams, body);
+		return new PropertyDeclaration(location,
+			modifiers, isSetter, name, body);
+	}
+
+	public parseFieldDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   field-declaration:
+		 *     field-modifiers 'var'? field-declarators ';'
+		 *     field-modifiers? 'var' field-declarators ';'
+		 *   field-modifiers:
+		 *     field-modifier
+		 *     field-modifiers field-modifier
+		 *   field-modifier:
+		 *     access-level-modifier
+		 *     'static'
+		 *   field-declarators:
+		 *     field-declarator
+		 *     field-declarators ',' field-declarator
+		 *   field-declarator:
+		 *     identifier
+		 *     identifier '=' expression
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForField(this);
+
+		var start = lex[i];
+
+		acceptr(ref i, TokenType._var);
+
+		var fields = new List(1);
+		do
+		{
+			var name = expectr(ref i, TokenType.identifier);
+			var value;
+			if acceptr(ref i, TokenType.assign):
+				value = parseExpression(ref i);
+
+			fields.add(
+				new VariableDeclarator(getLocation(name, value ?? name),
+					name, value)
+			);
+		} while acceptr(ref i, TokenType.comma);
+		fields = new NodeList(fields);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new FieldDeclaration(getLocation(modifiers.start ?? start, end),
+			modifiers,
+			fields);
+	}
+
+	public parseMethodDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   method-declaration:
+		 *     method-modifiers? 'function'? method-name '(' parameter-list? ')' method-body
+		 *   method-modifiers:
+		 *     method-modifier
+		 *     method-modifiers method-modifier
+		 *   method-modifier:
+		 *     access-level-modifier
+		 *     'static'
+		 *     'abstract'
+		 *     'overridable'
+		 *     'override'
+		 *   method-name:
+		 *     identifier
+		 *     'this'
+		 *   method-body:
+		 *     block
+		 *     ';'
+		 * Additional notes:
+		 *   When extensions are enabled, a method-body can also be an `__extern` body.
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+
+		var start = lex[i];
+
+		acceptr(ref i, TokenType._function);
+
+		var name; // leave null for invocator
+		if acceptr(ref i, TokenType._this)
+		{
+			modifiers.verifyForInvocator(this);
+		}
+		else
+		{
+			modifiers.verifyForMethod(this);
+			name = expectr(ref i, TokenType.identifier);
+		}
+
+		expectr(ref i, TokenType.parenOpen);
+		var parameters = parseParameterList(ref i);
+		expectr(ref i, TokenType.parenClose);
+
+		var body;
+		if acceptr(ref i, TokenType.semicolon)
+		{
+			if not modifiers._abstract:
+				error(lex[i - 1], ErrorCode.err_NonAbstractMethodCannotHaveEmptyBody);
+			// Otherwise, leave body null
+		}
+		else
+		{
+			if modifiers._abstract:
+				error(lex[i], ErrorCode.err_AbstractMethodMustHaveEmptyBody);
+			body = parseBlockOrExtern(ref i);
+		}
+
+		var location = getLocation(modifiers.start ?? start, lex[i - 1]);
+		if name is null:
+			return new InvocatorDeclaration(location,
+				modifiers, parameters, body);
+		return new MethodDeclaration(location,
+			modifiers, name, parameters, body);
+	}
+
+	public parseClassConstantDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   class-constant-declaration:
+		 *     access-level-modifier? 'const' constant-declarators ';'
+		 * constant-declarators:
+		 *   constant-declarator
+		 *   constant-declarators ',' constant-declarator
+		 * constant-declarator:
+		 *   identifier '=' constant-expression
+		 * Additional notes:
+		 *   This is not the only method that parses constant-declarators, due to their
+		 *   underwhelming simplicity.
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForClassConstant(this);
+
+		var start = expectr(ref i, TokenType._const);
+
+		var constants = new List(1);
+		do
+		{
+			var name = expectr(ref i, TokenType.identifier);
+			expectr(ref i, TokenType.assign);
+			var value = parseExpression(ref i);
+
+			constants.add(
+				new VariableDeclarator(getLocation(name, value),
+					name, value)
+			);
+		} while acceptr(ref i, TokenType.comma);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new ClassConstantDeclaration(getLocation(modifiers.start ?? start, end),
+			modifiers.accessibility, constants);
+	}
+
+	public parseIteratorDeclaration(ref i)
+	{
+		/* Syntax:
+		 *   iterator-declaration:
+		 *     'iter' block
+		 * Additional notes:
+		 *   When extensions are enabled, the body can also be an `__extern` block.
+		 */
+		var start = expectr(ref i, TokenType._iter);
+
+		var body = parseBlockOrExtern(ref i);
+
+		return new IteratorDeclaration(getLocation(start, body),
+			body);
+	}
+
+	public parseOperatorDeclaration(ref i)
+	{
+		/* Syntax:
+		 *   operator-declaration:
+		 *     'operator' unary-operator-declarator block
+		 *     'operator' binary-operator-declarator block
+		 *   unary-operator-declarator:
+		 *     overloadable-unary-operator '(' identifier ')'
+		 *   overloadable-unary-operator: one of
+		 *     '+'  '-'  '~'
+		 *   binary-operator-declarator:
+		 *     overloadable-binary-operator '(' identifier ',' identifier ')'
+		 *   overloadable-binary-operator: one of
+		 *     '+'  '-'  '|'   '^'   '*'   '/'    '%'  '&'  '**'
+		 *     '#'  '$'  '<<'  '>>'  '=='  '<=>'
+		 * Additional notes:
+		 *   When extensions are enabled, the body can also be an `__extern` body.
+		 *
+		 *   We use parseParameterList to parse the parameters to the operator overload,
+		 *   which allows us to give better error messages if there are variadic, optional
+		 *   or ref parameters in the list.
+		 *
+		 *   The overloadable-binary-operator symbol is represented by the category
+		 *   TokenType.overloadableBinaryOperator. Note that this category contains
+		 *   '+' and '-' as well, both of which are also unary operators.
+		 */
+		var start = expectr(ref i, TokenType._operator);
+
+		var opToken, op;
+		if accept(i, TokenType.tilde)
+		{
+			opToken = lex[i];
+			i += 1;
+			op = UnaryOperator.bitwiseNot;
+		}
+		else
+		{
+			opToken = expectr(ref i, TokenType.overloadableBinaryOperator);
+			op = typeToBinaryOperator[opToken.type];
+		}
+
+		expectr(ref i, TokenType.parenOpen);
+		var parameters = parseParameterList(ref i,
+			/*endToken=*/ TokenType.parenClose, /*allowEmpty=*/ false);
+		expectr(ref i, TokenType.parenClose);
+
+		if parameters.hasOptionalParameters:
+			error(parameters.first(@.isOptional), ErrorCode.err_OperatorCannotHaveOptionalParameters);
+		if parameters.variadicParameter != VariadicParameter.none:
+			error(parameters.first(@.isVariadic), ErrorCode.err_OperatorCannotHaveVariadicParameter);
+		if parameters.hasRefParameters:
+			error(parameters.first(@.isRef), ErrorCode.err_OperatorCannotHaveRefParameters);
+
+		// If op is UnaryOperator.bitwiseNot, we always expect exactly one parameter.
+		// If it's BinaryOperator.addition or BinaryOperator.subtraction, we expect one or two
+		// (and update to UnaryOperator.plus/negation if we find one parameter).
+		// Otherwise, we always expect exactly two.
+		if op == UnaryOperator.bitwiseNot
+		{
+			if parameters.length != 1:
+				error(opToken, ErrorCode.err_WrongParameterCountForOperator,
+					[1, parameters.length]);
+		}
+		else if op == BinaryOperator.addition or op == BinaryOperator.subtraction
+		{
+			if parameters.length == 1:
+				op = op == BinaryOperator.addition ?
+					UnaryOperator.plus :
+					UnaryOperator.negation;
+			else if parameters.length != 2:
+				error(opToken, ErrorCode.err_WrongParameterCountForOperator,
+					["1–2", parameters.length]);
+		}
+		else
+		{
+			if parameters.length != 2:
+				error(opToken, ErrorCode.err_WrongParameterCountForOperator,
+					[2, parameters.length]);
+		}
+
+		var body = parseBlockOrExtern(ref i);
+
+		return new OperatorDeclaration(getLocation(start, body),
+			op, parameters, body);
+	}
+
+	public parseEnumDeclaration(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   enum-declaration:
+		 *     simple-enum-declaration
+		 *     enum-set-declaration
+		 *   simple-enum-declaration:
+		 *     enum-modifier? 'enum' identifier '{' simple-enum-body? '}'
+		 *   enum-modifier:
+		 *     'public'
+		 *     'private'
+		 *   simple-enum-body:
+		 *     enum-members ','?
+		 *   enum-members:
+		 *     enum-member
+		 *     enum-members ',' enum-member
+		 *   enum-member:
+		 *     identifier
+		 *     identifier '=' constant-expression
+		 *   enum-set-declaration:
+		 *     enum-modifier? 'enum' 'set' identifier '{' enum-set-body? '}'
+		 *   enum-set-body:
+		 *     enum-members ','?
+		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForEnum(this);
+
+		var start = expectr(ref i, TokenType._enum);
+		var isSet = acceptr(ref i, TokenType._set);
+
+		var typeName = expectr(ref i, TokenType.identifier);
+
+		expectr(ref i, TokenType.curlyOpen);
+
+		var members = new List(5);
+		if not accept(i, TokenType.curlyClose):
+			do
+			{
+				var fieldName = expectr(ref i, TokenType.identifier);
+				var value;
+				if acceptr(ref i, TokenType.assign):
+					value = parseExpression(ref i);
+
+				members.add(
+					new EnumMember(getLocation(fieldName, value ?? fieldName),
+						fieldName, value)
+				);
+			} while acceptr(ref i, TokenType.comma) and
+				not accept(i, TokenType.curlyClose);
+		members = new NodeList(members);
+
+		var end = expectr(ref i, TokenType.curlyClose);
+		return new EnumDeclaration(getLocation(modifiers.start ?? start, end),
+			modifiers.accessibility,
+			isSet,
+			typeName,
+			members);
+	}
+
+	//</region>
+
+	//<region: Statements>
+
+	public parseBlockOrExtern(ref i)
+	{
+		/* Syntax:
+		 *   block-or-extern:   (non-standard extension, replaces some function member bodies)
+		 *     block
+		 *     extern-body
+		 */
+		if acceptExtension(i, "__extern"):
+			return parseExternBody(ref i);
+		return parseBlock(ref i);
+	}
+
+	public parseExternBody(ref i)
+	{
+		/* Syntax:
+		 *   extern-body:   (non-standard extension)
+		 *     '__extern' '(' string-literal ')' ';'
+		 *     '__extern' '(' string-literal ',' extern-parameters ')' ';'
+		 *   extern-parameters:
+		 *     extern-parameter
+		 *     extern-parameters ',' extern-parameter
+		 *   extern-parameter:
+		 *     identifier '=' constant-expression
+		 * Additional notes:
+		 *   The only extern-parameters so far are "stack" and "locals".
+		 */
+		var start = lex[i];
+		if not acceptExtension(i, "__extern"):
+			error(start, ErrorCode.err_x_ExpectedExternKeyword);
+		i += 1;
+
+		expectr(ref i, TokenType.parenOpen);
+		var externName = expectr(ref i, TokenType.string);
+
+		var maxStack, locals;
+		while acceptr(ref i, TokenType.comma)
+		{
+			var param = expectr(ref i, TokenType.identifier);
+			expectr(ref i, TokenType.assign);
+			var value = parseExpression(ref i);
+
+			var paramName = param.identifier;
+			if paramName == "stack":
+				maxStack = value;
+			else if paramName == "locals":
+				locals = value;
+			else:
+				error(param, ErrorCode.err_x_UnknownExternParameter, [paramName]);
+		}
+
+		expectr(ref i, TokenType.parenClose);
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new ExternBody(getLocation(start, end),
+			externName,
+			maxStack,
+			locals);
+	}
+
+	public parseBlock(ref i)
+	{
+		/* Syntax:
+		 *   block:
+		 *     '{' statement-list? '}'
+		 *   statement-list:
+		 *     statement
+		 *     statement-list statement
+		 */
+		var start = expectr(ref i, TokenType.curlyOpen);
+
+		var statements = new List(4);
+		while not accept(i, TokenType.curlyClose):
+			statements.add(parseStatement(ref i));
+		statements = new NodeList(statements);
+
+		var end = expectr(ref i, TokenType.curlyClose);
+
+		return new Block(getLocation(start, end),
+			statements);
+	}
+
+	public parseStatement(ref i)
+	{
+		/* Syntax:
+		 *   statement:
+		 *     declaration-statement
+		 *     embedded-statement
+		 *   declaration-statement:
+		 *     local-variable-declaration
+		 *     local-constant-declaration
+		 *     local-function-declaration
+		 */
+		var token = lex[i];
+		if token.match(TokenType._var):
+			return parseLocalVariableDeclaration(ref i);
+		if token.match(TokenType._const):
+			return parseLocalConstantDeclaration(ref i);
+		if token.match(TokenType._function):
+			return parseLocalFunctionDeclaration(ref i);
+		return parseEmbeddedStatement(ref i);
+	}
+
+	public parseLocalVariableDeclaration(ref i)
+	{
+		/* Syntax:
+		 *   local-variable-declaration:
+		 *     'var' local-variable-declarators ';'
+		 *     'var' '(' identifier-list ')' '=' expression ';'
+		 *   local-variable-declarators:
+		 *     local-variable-declarator
+		 *     local-variable-declarators ',' local-variable-declarator
+		 *   local-variable-declarator:
+		 *     identifier
+		 *     identifier '=' expression
+		 *   identifier-list:
+		 *     identifier
+		 *     identifier-list ',' identifier
+		 */
+		var start = expectr(ref i, TokenType._var);
+
+		if acceptr(ref i, TokenType.parenOpen)
+		{
+			// Parallel variable declaration
+			var names = new List(2);
+			do
+			{
+				names.add(expectr(ref i, TokenType.identifier));
+			} while acceptr(ref i, TokenType.comma);
+			names = new SyntaxList(names);
+
+			expectr(ref i, TokenType.parenClose);
+			expectr(ref i, TokenType.assign);
+
+			var value = parseExpression(ref i);
+
+			var end = expectr(ref i, TokenType.semicolon);
+
+			return new ParallelLocalVariableDeclaration(getLocation(start, end),
+				names, value);
+		}
+		else
+		{
+			// Simple variable declaration
+			var variables = new List(1);
+			do
+			{
+				var name = expectr(ref i, TokenType.identifier);
+				var value;
+				if acceptr(ref i, TokenType.assign):
+					value = parseExpression(ref i);
+
+				var location = value ? 
+					getLocation(name, value) :
+					name.location;
+				variables.add(
+					new VariableDeclarator(location,
+						name, value)
+				);
+			} while acceptr(ref i, TokenType.comma);
+			variables = new NodeList(variables);
+
+			var end = expectr(ref i, TokenType.semicolon);
+
+			return new SimpleLocalVariableDeclaration(getLocation(start, end),
+				variables);
+		}
+	}
+
+	public parseLocalConstantDeclaration(ref i)
+	{
+		/* Syntax:
+		 * local-constant-declaration:
+		 *   'const' constant-declarators ';'
+		 * constant-declarators:
+		 *   constant-declarator
+		 *   constant-declarators ',' constant-declarator
+		 * constant-declarator:
+		 *   identifier '=' constant-expression
+		 * Additional notes:
+		 *   This is not the only method that parses constant-declarators, due to their
+		 *   underwhelming simplicity.
+		 */
+		var start = expectr(ref i, TokenType._const);
+
+		var constants = new List(1);
+		do
+		{
+			var name = expectr(ref i, TokenType.identifier);
+			expectr(ref i, TokenType.assign);
+			var value = parseExpression(ref i);
+
+			constants.add(
+				new VariableDeclarator(getLocation(name, value),
+					name, value)
+			);
+		} while acceptr(ref i, TokenType.comma);
+		constants = new NodeList(constants);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new LocalConstantDeclaration(getLocation(start, end),
+			constants);
+	}
+
+	public parseLocalFunctionDeclaration(ref i)
+	{
+		/* Syntax:
+		 *   local-function-declaration:
+		 *     'function' identifier '(' parameter-list? ')' block
+		 * Additional notes:
+		 *   Local functions never accept `__extern` bodies.
+		 */
+		var start = expectr(ref i, TokenType._function);
+
+		var name = expectr(ref i, TokenType.identifier);
+
+		expectr(ref i, TokenType.parenOpen);
+		var parameters = parseParameterList(ref i);
+		expectr(ref i, TokenType.parenClose);
+
+		var body = parseBlock(ref i);
+
+		return new LocalFunctionDeclaration(getLocation(start, body),
+			name, parameters, body);
+	}
+
+	public parseEmbeddedStatement(ref i)
+	{
+		/* Syntax:
+		 *  embedded-statement:
+		 *     empty-statement
+		 *     expression-statement
+		 *     if-statement
+		 *     iteration-statement
+		 *     jump-statement
+		 *     try-statement
+		 *     with-statement
+		 *     assignment-statement
+		 *     constructor-call
+		 *   iteration-statement:
+		 *     loop-label? for-statement
+		 *     loop-label? while-statement
+		 *     loop-label? do-while-statement
+		 *   loop-label:
+		 *     identifier ':'
+		 * Additional notes:
+		 *    Assignment statements are processed by parseExpressionStatement, since
+		 *    all assignment statements begin with an expression.
+		 */
+
+		// Try to see if we have a loop label first
+		var loopLabel;
+		if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon)
+		{
+			loopLabel = lex[i];
+			i += 2; // skip label and ':'
+		}
+		var token = lex[i];
+		if token.match(TokenType._for):
+			return parseForStatement(ref i, loopLabel);
+		if token.match(TokenType._while):
+			return parseWhileStatement(ref i, loopLabel);
+		if token.match(TokenType._do):
+			return parseDoWhileStatement(ref i, loopLabel);
+		// If there is a label and we didn't find an iteration statement, that's a paddlin'.
+		// I mean, that's an error.
+		if loopLabel:
+			error(loopLabel, ErrorCode.err_ExpectedLoopAfterLabel);
+
+		// Other statement kinds!
+		if token.match(TokenType._if):
+			return parseIfStatement(ref i);
+		if jumpStatementTypes.contains(token.type):
+			return parseJumpStatement(ref i);
+		if token.match(TokenType._try):
+			return parseTryStatement(ref i);
+		if token.match(TokenType._with):
+			return parseWithStatement(ref i);
+		if token.match(TokenType._new) and accept(i + 1, TokenType._this, TokenType._base):
+			return parseConstructorCall(ref i);
+		if token.match(TokenType.semicolon)
+		{
+			i += 1;
+			return new EmptyStatement(getLocation(token, token));
+		}
+
+		return parseExpressionStatement(ref i);
+	}
+
+	public parseForStatement(ref i, loopLabel = null)
+	{
+		/* Syntax:
+		 *   for-statement:
+		 *     'for' identifier-list 'in' expression control-statement else-clause?
+		 */
+		var start = expectr(ref i, TokenType._for);
+
+		var variables = new List(1);
+		do
+		{
+			variables.add(expectr(ref i, TokenType.identifier));
+		} while acceptr(ref i, TokenType.comma);
+		variables = new SyntaxList(variables);
+
+		expectr(ref i, TokenType._in);
+
+		var expression = parseExpression(ref i);
+
+		var body = parseControlStatement(ref i);
+
+		var elseClause;
+		if accept(i, TokenType._else):
+			elseClause = parseElseClause(ref i);
+
+		return new ForStatement(getLocation(start, elseClause ?? body),
+			loopLabel,
+			variables,
+			expression,
+			body,
+			elseClause);
+	}
+
+	public parseWhileStatement(ref i, loopLabel = null)
+	{
+		/* Syntax:
+		 *   while-statement:
+		 *     'while' expression control-statement
+		 */
+		var start = expectr(ref i, TokenType._while);
+
+		var condition = parseExpression(ref i);
+
+		var body = parseControlStatement(ref i);
+
+		return new WhileStatement(getLocation(start, body),
+			loopLabel,
+			condition,
+			body);
+	}
+
+	public parseDoWhileStatement(ref i, loopLabel = null)
+	{
+		/* Syntax:
+		 *   do-while-statement:
+		 *     'do' block 'while' expression ';'
+		 *     'do' block ';'
+		 */
+		var start = expectr(ref i, TokenType._do);
+
+		var body = parseBlock(ref i);
+
+		var condition;
+		if acceptr(ref i, TokenType._while):
+			condition = parseExpression(ref i);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new DoWhileStatement(getLocation(start, end),
+			loopLabel,
+			body,
+			condition);
+	}
+
+	public parseIfStatement(ref i)
+	{
+		/* Syntax:
+		 *   if-statement:
+		 *     'if' expression control-statement else-clause?
+		 */
+		var start = expectr(ref i, TokenType._if);
+
+		var condition = parseExpression(ref i);
+		var consequence = parseControlStatement(ref i);
+		var alternative;
+		if accept(i, TokenType._else):
+			alternative = parseElseClause(ref i);
+
+		return new IfStatement(getLocation(start, alternative ?? consequence),
+			condition,
+			consequence,
+			alternative);
+	}
+
+	public parseElseClause(ref i)
+	{
+		/* Syntax:
+		 *   else-clause:
+		 *     'else' ':'? embedded-statement
+		 *     'else' block
+		 */
+		expectr(ref i, TokenType._else);
+
+		if accept(i, TokenType.curlyOpen):
+			return parseBlock(ref i);
+
+		acceptr(ref i, TokenType.colon);
+		return parseEmbeddedStatement(ref i);
+	}
+
+	public parseJumpStatement(ref i)
+	{
+		/* Syntax:
+		 *   jump-statement:
+		 *     return-statement
+		 *     yield-statement
+		 *     next-statement
+		 *     break-statement
+		 *     throw-statement
+		 */
+		var token = lex[i];
+		if token.match(TokenType._return):
+			return parseReturnStatement(ref i);
+		if token.match(TokenType._yield):
+			return parseYieldStatement(ref i);
+		if token.match(TokenType._next):
+			return parseNextStatement(ref i);
+		if token.match(TokenType._break):
+			return parseBreakStatement(ref i);
+		if token.match(TokenType._throw):
+			return parseThrowStatement(ref i);
+		error(token, ErrorCode.err_ExpectedJumpStatement);
+	}
+
+	public parseReturnStatement(ref i)
+	{
+		/* Syntax:
+		 *   return-statement:
+		 *     'return' expression-list? ';'
+		 */
+		var start = expectr(ref i, TokenType._return);
+
+		var values;
+		if accept(i, TokenType.semicolon)
+		{
+			values = EmptyLists.node;
+		}
+		else
+		{
+			values = new List(1);
+			do
+			{
+				values.add(parseExpression(ref i));
+			} while acceptr(ref i, TokenType.comma);
+			values = new NodeList(values);
+		}
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new ReturnStatement(getLocation(start, end),
+			values);
+	}
+
+	public parseYieldStatement(ref i)
+	{
+		/* Syntax:
+		 *   yield-statement:
+		 *     'yield' expression-list ';'
+		 */
+		var start = expectr(ref i, TokenType._yield);
+
+		var values = new List(1);
+		do
+		{
+			values.add(parseExpression(ref i));
+		} while acceptr(ref i, TokenType.comma);
+		values = new NodeList(values);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new YieldStatement(getLocation(start, end),
+			values);
+	}
+
+	public parseNextStatement(ref i)
+	{
+		/* Syntax:
+		 *   next-statement:
+		 *     'next' identifier? ';'
+		 */
+		var start = expectr(ref i, TokenType._next);
+
+		var label;
+		if accept(i, TokenType.identifier)
+		{
+			label = lex[i];
+			i += 1;
+		}
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new NextStatement(getLocation(start, end),
+			label);
+	}
+
+	public parseBreakStatement(ref i)
+	{
+		/* Syntax:
+		 *   break-statement:
+		 *     'break' identifier? ';'
+		 */
+		var start = expectr(ref i, TokenType._break);
+
+		var label;
+		if accept(i, TokenType.identifier)
+		{
+			label = lex[i];
+			i += 1;
+		}
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new BreakStatement(getLocation(start, end),
+			label);
+	}
+
+	public parseThrowStatement(ref i)
+	{
+		/* Syntax:
+		 *   throw-statement:
+		 *     'throw' expression? ';'
+		 */
+		var start = expectr(ref i, TokenType._throw);
+
+		var expr;
+		if not accept(i, TokenType.semicolon):
+			expr = parseExpression(ref i);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new ThrowStatement(getLocation(start, end),
+			expr);
+	}
+
+	public parseTryStatement(ref i)
+	{
+		/* Syntax:
+		 *   try-statement:
+		 *     try-clause catch-clauses
+		 *     try-clause finally-clause
+		 *     try-clause catch-clauses finally-clause
+		 */
+
+		var tryClause = parseTryClause(ref i);
+		var catchClauses = parseCatchClauses(ref i);
+		var finallyClause = parseFinallyClause(ref i);
+
+		if catchClauses.length == 0 and finallyClause is null:
+			error(tryClause, ErrorCode.err_TryStatementMustHaveCatchOrFinally);
+
+		return new TryStatement(getLocation(tryClause, lex[i - 1]),
+			tryClause,
+			catchClauses,
+			finallyClause);
+	}
+
+	private parseTryClause(ref i)
+	{
+		/* Syntax:
+		 *   try-clause:
+		 *     'try' block
+		 */
+		var start = expectr(ref i, TokenType._try);
+
+		expectr(ref i, TokenType.curlyOpen);
+
+		var statements = new List(2);
+		while not accept(i, TokenType.curlyClose):
+			statements.add(parseStatement(ref i));
+		statements = new NodeList(statements);
+
+		var end = expectr(ref i, TokenType.curlyClose);
+
+		return new TryClause(getLocation(start, end),
+			statements);
+	}
+
+	private parseCatchClauses(ref i)
+	{
+		/* Syntax:
+		 *   catch-clauses:
+		 *     specific-catch-clauses generic-catch-clause?
+		 *     specific-catch-clauses? generic-catch-clause
+		 *   specific-catch-clauses:
+		 *     specific-catch-clause
+		 *     specific-catch-clauses specific-catch-clause
+		 *   specific-catch-clause:
+		 *     'catch' type 'in' identifier block
+		 *     'catch' type block
+		 *   generic-catch-clause:
+		 *     'catch' block
+		 */
+		if not accept(i, TokenType._catch):
+			return EmptyLists.node;
+
+		var clauses = new List(1);
+		var haveGeneric = false;
+		while accept(i, TokenType._catch)
+		{
+			var start = lex[i];
+			i += 1;
+
+			var type, variable;
+			if not accept(i, TokenType.curlyOpen)
+			{
+				type = parseTypeName(ref i);
+				if acceptr(ref i, TokenType._in):
+					variable = expectr(ref i, TokenType.identifier);
+			}
+
+			expectr(ref i, TokenType.curlyOpen);
+
+			var statements = new List(1);
+			while not accept(i, TokenType.curlyClose):
+				statements.add(parseStatement(ref i));
+			statements = new NodeList(statements);
+
+			var end = expectr(ref i, TokenType.curlyClose);
+			var catchClause;
+			if type
+			{
+				if haveGeneric:
+					error(type, ErrorCode.err_SpecificCatchClauseAfterGeneric);
+				catchClause = new SpecificCatchClause(getLocation(start, end),
+					type,
+					variable,
+					statements);
+			}
+			else
+			{
+				if haveGeneric:
+					error(start, ErrorCode.err_MultipleGenericCatchClauses);
+				haveGeneric = true;
+				catchClause = new GenericCatchClause(getLocation(start, end),
+					statements);
+			}
+			clauses.add(catchClause);
+		}
+
+		return new NodeList(clauses);
+	}
+
+	private parseFinallyClause(ref i)
+	{
+		/* Syntax:
+		 *   finally-clause:
+		 *     'finally' block
+		 */
+		if accept(i, TokenType._finally)
+		{
+			var start = lex[i];
+			i += 1;
+			expectr(ref i, TokenType.curlyOpen);
+
+			var statements = new List(1);
+			while not accept(i, TokenType.curlyClose):
+				statements.add(parseStatement(ref i));
+
+			var end = expectr(ref i, TokenType.curlyClose);
+
+			return new FinallyClause(getLocation(start, end),
+				statements);
+		}
+
+		return null;
+	}
+
+	public parseWithStatement(ref i)
+	{
+		/* Syntax:
+		 *   with-statement:
+		 *     'with' identifier '=' expression control-statement
+		 */
+		var start = expectr(ref i, TokenType._with);
+
+		var variable = expectr(ref i, TokenType.identifier);
+		expectr(ref i, TokenType.assign);
+		var expression = parseExpression(ref i);
+
+		var body = parseControlStatement(ref i);
+
+		return new WithStatement(getLocation(start, body),
+			variable,
+			expression,
+			body);
+	}
+
+	public parseControlStatement(ref i)
+	{
+		/* Syntax:
+		 *   control-statement:
+		 *     ':' embedded-statement
+		 *     block
+		 */
+		if acceptr(ref i, TokenType.colon):
+			return parseEmbeddedStatement(ref i);
+		return parseBlock(ref i);
+	}
+
+	public parseConstructorCall(ref i)
+	{
+		/* Syntax:
+		 *   constructor-call:
+		 *     base-initializer
+		 *     this-initializer
+		 *   base-initializer:
+		 *     'new' 'base' '(' argument-list? ')' ';'
+		 *   this-initializer:
+		 *     'new' 'this' '(' argument-list? ')' ';'
+		 */
+		var start = expectr(ref i, TokenType._new);
+		var isBase = acceptr(ref i, TokenType._base);
+		if not isBase:
+			expectr(ref i, TokenType._this);
+
+		expectr(ref i, TokenType.parenOpen);
+		var arguments = parseArgumentList(ref i);
+		expectr(ref i, TokenType.parenClose);
+		var end = expectr(ref i, TokenType.semicolon);
+
+		if isBase:
+			return new BaseConstructorCall(getLocation(start, end),
+				arguments);
+		return new ThisConstructorCall(getLocation(start, end),
+			arguments);
+	}
+
+	public parseExpressionStatement(ref i)
+	{
+		/* Syntax:
+		 *   expression-statement:
+		 *     statement-expression ';'
+		 *   statement-expression:
+		 *     invocation-expression
+		 *     function-application-expression
+		 *     object-creation-expression
+		 *     assignment-expression
+		 *     A safe-access whose last safe-access-link (if it has a safe-access-chain)
+		 *       or whose safe-start-component (if it does not) is a safe-invocation or
+		 *       unsafe-invocation
+		 *   assignment-statement:
+		 *     compound-assignment-statement
+		 *     parallel-assignment-statement
+		 * Additional notes:
+		 *   When a statement-expression is a function-application-expression, it must be
+		 *   an expression that uses the '->' operator. In this compiler, that means the
+		 *   node must be a BinaryExpression using BinaryOperator.functionApplication.
+		 *
+		 *   This method also parses assignment-statements, since they all start with an
+		 *   expression. The compound-assignment-operator symbol is represented by the
+		 *   TokenType.compoundAssign category.
+		 */
+		var expr = parseExpression(ref i);
+
+		if accept(i, TokenType.compoundAssign):
+			// compound-assignment-statement
+			return parseCompoundAssignment(ref i, expr);
+		if accept(i, TokenType.comma):
+			// parallel-assignment-statement
+			return parseParallelAssignment(ref i, expr);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		if not isStatementExpression(expr):
+			error(expr, ErrorCode.err_InvalidStatementExpression);
+
+		return new ExpressionStatement(getLocation(expr, end),
+			expr);
+	}
+
+	private parseCompoundAssignment(ref i, target)
+	{
+		/* Syntax:
+		 *   compound-assignment-statement:
+		 *     primary-expression compound-assignment-operator expression ';'
+		 *   compound-assignment-operator: one of
+		 *     '+='  '-='   '|='   '*='   '/='   '%='  '&='
+		 *     '^='  '::='  '<<='  '>>='  '**='  '#='  '$='
+		 */
+		ensureAssignable(target);
+
+		var op = typeToBinaryOperator[lex[i].type];
+		i += 1;
+
+		var value = parseExpression(ref i);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new CompoundAssignment(getLocation(target, end),
+			target, op, value);
+	}
+
+	private parseParallelAssignment(ref i, firstTarget)
+	{
+		/* Syntax:
+		 *   parallel-assignment-statement:
+		 *     primary-expression-list ',' primary-expression '=' expression-list ';'
+		 *   primary-expression-list:
+		 *     primary-expression
+		 *     primary-expression-list ',' primary-expression
+		 */
+		// Parse all the target expressions first, then expect '=', then check
+		// assignability. It feels like bad practice to verify each target is
+		// assignable before we have even seen an equals sign.
+
+		var targets = new List(2);
+		targets.add(firstTarget);
+		while acceptr(ref i, TokenType.comma):
+			targets.add(parsePrimaryExpression(ref i));
+
+		expectr(ref i, TokenType.assign, ErrorCode.err_ExpectedParallelAssignment);
+
+		targets.each(ensureAssignable);
+		targets = new NodeList(targets);
+
+		var values = new List(1);
+		do
+		{
+			values.add(parseExpression(ref i));
+		} while acceptr(ref i, TokenType.comma);
+		values = new NodeList(values);
+
+		var end = expectr(ref i, TokenType.semicolon);
+
+		return new ParallelAssignment(getLocation(firstTarget, end),
+			targets, values);
+	}
+
+	//</region>
+
+	//<region: Expressions>
+
+	public parseArgumentList(ref i, endToken = TokenType.parenClose,
+		allowEmpty = true, allowRefArgs = true)
+	{
+		/* Syntax:
+		 *   argument-list:
+		 *     arguments ','?
+		 *   arguments:
+		 *     argument
+		 *     arguments ',' argument
+		 *   argument:
+		 *     expression
+		 *     'ref' primary-expression
+		 * Additional notes:
+		 *   This method also parses empty argument lists (hence the `endToken` parameter)
+		 *   and `allowEmpty` can be used to disable this behaviour. Similarly, `allowRefArgs`
+		 *   can be used to disable 'ref' arguments, which are not permitted in indexer
+		 *   access expressions.
+		 */
+		if accept(i, endToken)
+		{
+			// Note: don't skip the end token
+			if not allowEmpty:
+				error(lex[i], ErrorCode.err_ExpectedArgument);
+			return EmptyLists.argument;
+		}
+
+		var arguments = new List(2);
+		var hasRefArguments = false;
+		do
+		{
+			var arg;
+			if accept(i, TokenType._ref)
+			{
+				if not allowRefArgs:
+					error(lex[i], ErrorCode.err_RefArgumentNotAllowed);
+
+				arg = parseRefExpression(ref i);
+				hasRefArguments = true;
+			}
+			else
+			{
+				arg = parseExpression(ref i);
+			}
+			arguments.add(arg);
+		} while acceptr(ref i, TokenType.comma) and
+			not accept(i, endToken);
+
+		return new ArgumentList(arguments, hasRefArguments);
+	}
+
+	public parseRefExpression(ref i)
+	{
+		/* Syntax:
+		 *   argument:
+		 *     ...
+		 *     'ref' primary-expression
+		 */
+		var start = expectr(ref i, TokenType._ref);
+		var inner = parsePrimaryExpression(ref i);
+		ensureAssignable(inner);
+		return new RefExpression(getLocation(start, inner), inner);
+	}
+
+	public parseExpression(ref i)
+	{
+		/* Syntax:
+		 *   expression:
+		 *     conditional-expression
+		 *     assignment-expression
+		 *     use-in-expression
+		 *   assignment-expression:
+		 *     primary-expression '=' expression
+		 */
+		if accept(i, TokenType._use):
+			return parseUseInExpression(ref i);
+
+		// Parse a conditional-expression first. If the last operand of
+		// a conditional-expression ends with an assignment, it will be
+		// eaten up by the parseConditionalExpression method.
+		var left = parseConditionalExpression(ref i);
+
+		if acceptr(ref i, TokenType.assign)
+		{
+			ensureAssignable(left);
+			var right = parseExpression(ref i);
+			left = new AssignmentExpression(getLocation(left, right),
+				left, right);
+		}
+
+		return left;
+	}
+
+	public parseConditionalExpression(ref i)
+	{
+		/* Syntax:
+		 *   conditional-expression:
+		 *     null-coalescing-expression
+		 *     null-coalescing-expression '?' expression ':' expression
+		 */
+		var left = parseNullCoalescingExpression(ref i);
+
+		if acceptr(ref i, TokenType.question)
+		{
+			var truePart = parseExpression(ref i);
+			expectr(ref i, TokenType.colon);
+			var falsePart = parseExpression(ref i);
+
+			left = new ConditionalExpression(getLocation(left, falsePart),
+				left, truePart, falsePart);
+		}
+
+		return left;
+	}
+
+	public parseNullCoalescingExpression(ref i)
+	{
+		/* Syntax:
+		 *   null-coalescing-expression:
+		 *     null-or-expression
+		 *     null-or-expression '??' null-coalescing-expression
+		 */
+		var left = parseNullOrExpression(ref i);
+
+		if acceptr(ref i, TokenType.nullCoalescing)
+		{
+			var right = parseNullCoalescingExpression(ref i);
+			left = new NullCoalescingExpression(getLocation(left, right),
+				left, right);
+		}
+
+		return left;
+	}
+
+	public parseNullOrExpression(ref i)
+	{
+		/* Syntax:
+		 *   null-or-expression:
+		 *     conditional-or-expression
+		 *     conditional-or-expression '?!' null-or-expression
+		 */
+		var left = parseConditionalOrExpression(ref i);
+
+		if acceptr(ref i, TokenType.nullOr)
+		{
+			var right = parseNullOrExpression(ref i);
+			left = new NullOrExpression(getLocation(left, right),
+				left, right);
+		}
+
+		return left;
+	}
+
+	public parseConditionalOrExpression(ref i)
+	{
+		/* Syntax:
+		 *   conditional-or-expression:
+		 *     conditional-exclusive-or-expression
+		 *     conditional-or-expression 'or' conditional-exclusive-or-expression
+		 */
+		var left = parseConditionalXorExpression(ref i);
+
+		while acceptr(ref i, TokenType._or)
+		{
+			var right = parseConditionalXorExpression(ref i);
+			left = new ConditionalOrExpression(getLocation(left, right),
+				left, right);
+		}
+
+		return left;
+	}
+
+	public parseConditionalXorExpression(ref i)
+	{
+		/* Syntax:
+		 *   conditional-exclusive-or-expression:
+		 *     conditional-and-expression
+		 *     conditional-exclusive-or-expression 'xor' conditional-and-expression
+		 */
+		var left = parseConditionalAndExpression(ref i);
+
+		while acceptr(ref i, TokenType._xor)
+		{
+			var right = parseConditionalAndExpression(ref i);
+			left = new ConditionalXorExpression(getLocation(left, right),
+				left, right);
+		}
+
+		return left;
+	}
+
+	public parseConditionalAndExpression(ref i)
+	{
+		/* Syntax:
+		 *   conditional-and-expression:
+		 *     equality-expression
+		 *     conditional-and-expression 'and' equality-expression
+		 */
+		var left = parseEqualityExpression(ref i);
+
+		while acceptr(ref i, TokenType._and)
+		{
+			var right = parseEqualityExpression(ref i);
+			left = new ConditionalAndExpression(getLocation(left, right),
+				left, right);
+		}
+
+		return left;
+	}
+
+	public parseEqualityExpression(ref i)
+	{
+		/* Syntax:
+		 *   equality-expression:
+		 *     relational-expression
+		 *     equality-expression '==' relational-expression
+		 *     equality-expression '!=' relational-expression
+		 *     equality-expression 'is' 'not'? type
+		 *     equality-expression 'is' 'not'? 'null'
+		 *     equality-expression 'not'? 'refeq' relational-expression
+		 */
+		var left = parseRelationalExpression(ref i);
+
+		if acceptr(ref i, TokenType._is)
+		{
+			var negated = acceptr(ref i, TokenType._not);
+			var type;
+			if not acceptr(ref i, TokenType._null):
+				type = parseTypeName(ref i);
+
+			return new TypeTestExpression(getLocation(left, lex[i - 1]),
+				left, type, negated);
+		}
+
+		while accept(i, TokenType.doubleEqual, TokenType.notEqual, TokenType._refeq) or
+			accept(i, TokenType._not) and accept(i + 1, TokenType._refeq)
+		{
+			var type = lex[i].type;
+			var op;
+			if type == TokenType._not
+			{
+				// not refeq
+				i += 2; // skip 'not refeq'
+				op = BinaryOperator.refInequality;
+			}
+			else
+			{
+				i += 1; // skip operator
+				op = typeToBinaryOperator[type];
+			}
+
+			var right = parseRelationalExpression(ref i);
+
+			left = new BinaryExpression(getLocation(left, right),
+				left, op, right);
+		}
+
+		return left;
+	}
+
+	public parseRelationalExpression(ref i)
+	{
+		/* Syntax:
+		 *   relational-expression:
+		 *     unreserved-expression
+		 *     relational-expression < unreserved-expression
+		 *     relational-expression > unreserved-expression
+		 *     relational-expression <= unreserved-expression
+		 *     relational-expression >= unreserved-expression
+		 *     relational-expression <=> unreserved-expression
+		 */
+		var left = parseUnreservedExpression(ref i);
+
+		while acceptAny(i, relationalOperators)
+		{
+			var op = typeToBinaryOperator[lex[i].type];
+			i += 1;
+
+			var right = parseUnreservedExpression(ref i);
+
+			left = new BinaryExpression(getLocation(left, right),
+				left, op, right);
+		}
+
+		return left;
+	}
+
+	public parseUnreservedExpression(ref i)
+	{
+		/* Syntax:
+		 *   unreserved-expression:
+		 *     shift-expression
+		 *     unreserved-expression '#' shift-expression
+		 *     unreserved-expression '$' shift-expression
+		 */
+		var left = parseShiftExpression(ref i);
+
+		while accept(i, TokenType.hash, TokenType.dollar)
+		{
+			var op = typeToBinaryOperator[lex[i].type];
+			i += 1;
+
+			var right = parseShiftExpression(ref i);
+
+			left = new BinaryExpression(getLocation(left, right),
+				left, op, right);
+		}
+
+		return left;
+	}
+
+	public parseShiftExpression(ref i)
+	{
+		/* Syntax:
+		 *   shift-expression:
+		 *     additive-expression
+		 *     shift-expression << additive-expression
+		 *     shift-expression >> additive-expression
+		 */
+		var left = parseAdditiveExpression(ref i);
+
+		while accept(i, TokenType.shiftLeft, TokenType.shiftRight)
+		{
+			var op = typeToBinaryOperator[lex[i].type];
+			i += 1;
+
+			var right = parseAdditiveExpression(ref i);
+
+			left = new BinaryExpression(getLocation(left, right),
+				left, op, right);
+		}
+
+		return left;
+	}
+
+	public parseAdditiveExpression(ref i)
+	{
+		/* Syntax:
+		 *   additive-expression:
+		 *     exclusive-or-expression
+		 *     additive-expression '+' exclusive-or-expression
+		 *     additive-expression '-' exclusive-or-expression
+		 *     additive-expression '|' exclusive-or-expression
+		 */
+		var left = parseXorExpression(ref i);
+
+		while accept(i, TokenType.plus, TokenType.minus, TokenType.pipe)
+		{
+			var op = typeToBinaryOperator[lex[i].type];
+			i += 1;
+
+			var right = parseXorExpression(ref i);
+
+			left = new BinaryExpression(getLocation(left, right),
+				left, op, right);
+		}
+
+		return left;
+	}
+
+	public parseXorExpression(ref i)
+	{
+		/* Syntax:
+		 *   exclusive-or-expression:
+		 *     multiplicative-expression
+		 *     exclusive-or-expression '^' multiplicative-expression
+		 */
+		var left = parseMultiplicativeExpression(ref i);
+
+		while acceptr(ref i, TokenType.caret)
+		{
+			var right = parseMultiplicativeExpression(ref i);
+			left = new BinaryExpression(getLocation(left, right),
+				left, BinaryOperator.bitwiseXor, right);
+		}
+
+		return left;
+	}
+
+	public parseMultiplicativeExpression(ref i)
+	{
+		/* Syntax:
+		 *   multiplicative-expression:
+		 *     concatenation-expression
+		 *     multiplicative-expression '*' concatenation-expression
+		 *     multiplicative-expression '/' concatenation-expression
+		 *     multiplicative-expression '%' concatenation-expression
+		 *     multiplicative-expression '&' concatenation-expression
+		 */
+		var left = parseConcatenationExpression(ref i);
+
+		while acceptAny(i, multiplicativeOperators)
+		{
+			var op = typeToBinaryOperator[lex[i].type];
+			i += 1;
+
+			var right = parseConcatenationExpression(ref i);
+
+			left = new BinaryExpression(getLocation(left, right),
+				left, op, right);
+		}
+
+		return left;
+	}
+
+	public parseConcatenationExpression(ref i)
+	{
+		/* Syntax:
+		 *   concatenation-expression:
+		 *     unary-expression
+		 *     concatenation-expression '::' unary-expression
+		 */
+		var left = parseUnaryExpression(ref i);
+
+		while acceptr(ref i, TokenType.concatenate)
+		{
+			var right = parseUnaryExpression(ref i);
+			left = new BinaryExpression(getLocation(left, right),
+				left, BinaryOperator.concatenation, right);
+		}
+
+		return left;
+	}
+
+	public parseUnaryExpression(ref i)
+	{
+		/* Syntax:
+		 *   unary-expression:
+		 *     exponential-expression
+		 *     '+' unary-expression
+		 *     '-' unary-expression
+		 *     '~' unary-expression
+		 *     'not' unary-expression
+		 */
+		if acceptAny(i, unaryOperators)
+		{
+			var start = lex[i];
+			var op = typeToUnaryOperator[start.type];
+			i += 1;
+
+			var inner = parseUnaryExpression(ref i);
+			return new UnaryExpression(getLocation(start, inner),
+				op, inner);
+		}
+
+		return parseExponentialExpression(ref i);
+	}
+
+	public parseExponentialExpression(ref i)
+	{
+		/* Syntax:
+		 *   exponential-expression:
+		 *     function-application-expression
+		 *     function-application-expression '**' exponential-expression
+		 */
+		var left = parseFunctionApplicationExpression(ref i);
+
+		if acceptr(ref i, TokenType.power)
+		{
+			var right = parseExponentialExpression(ref i);
+			left = new BinaryExpression(getLocation(left, right),
+				left, BinaryOperator.exponentiation, right);
+		}
+
+		return left;
+	}
+
+	public parseFunctionApplicationExpression(ref i)
+	{
+		/* Syntax:
+		 *   function-application-expression:
+		 *     primary-expression
+		 *     primary-expression '->' concatenation-expression
+		 */
+		var left = parsePrimaryExpression(ref i);
+
+		if acceptr(ref i, TokenType.funcApplication)
+		{
+			var right = parseConcatenationExpression(ref i);
+			left = new BinaryExpression(getLocation(left, right),
+				left, BinaryOperator.functionApplication, right);
+		}
+
+		return left;
+	}
+
+	public parsePrimaryExpression(ref i)
+	{
+		/* Syntax:
+		 *   primary-expression:
+		 *     literal
+		 *     simple-name
+		 *     parenthesized-expression
+		 *     member-access
+		 *     global-access
+		 *     invocation-expression
+		 *     indexer-access
+		 *     safe-access
+		 *     this-access
+		 *     base-access
+		 *     object-creation-expression
+		 *     iterator-lookup-expression
+		 *     typeof-expression
+		 *     list-creation-expression
+		 *     hash-creation-expression
+		 *     lambda-expression
+		 *   member-access:
+		 *     primary-expression '.' identifier
+		 *   invocation-expression:
+		 *     primary-expression '(' argument-list? ')'
+		 *   indexer-access:
+		 *     primary-expression '[' argument-list ']'
+		 *   safe-access:
+		 *     primary-expression safe-start-component safe-access-chain?
+		 *   iterator-lookup-expression:
+		 *     primary-expression '.' 'iter'
+		 * Additional notes:
+		 *   Of the expression kinds defined above, some begin with a primary-expression
+		 *   (e.g. member-access, indexer-access, invocation-expression, safe-access).
+		 *   The other kinds of expressions are considered “atomic”, and are parsed by
+		 *   parseAtomicExpression.
+		 *
+		 *   Specifically, parseAtomicExpression takes care of the following kinds:
+		 *     literal
+		 *     simple-name
+		 *     parenthesized-expression
+		 *     global-access
+		 *     this-access
+		 *     base-access
+		 *     object-creation-expression
+		 *     typeof-expression
+		 *     list-creation-expression
+		 *     hash-creation-expression
+		 *     lambda-expression
+		 *   which leaves this method with:
+		 *     member-access
+		 *     invocation-expression
+		 *     indexer-access
+		 *     safe-access
+		 *     iterator-lookup-expression
+		 *
+		 *   For the sake of simplicity, and because the spec treats them this way, this
+		 *   method parses a safe-access as if the safe-start-component were part of the
+		 *   safe-access-chain.
+		 */
+		var inner = parseAtomicExpression(ref i);
+
+		while acceptAny(i, primaryExpressionStarters)
+		{
+			if acceptr(ref i, TokenType.dot)
+			{
+				// member-access or iterator-lookup-expression
+				if acceptr(ref i, TokenType._iter):
+					inner = new IteratorAccessExpression(getLocation(inner, lex[i - 1]),
+						inner);
+				else
+				{
+					var name = expectr(ref i, TokenType.identifier);
+					inner = new MemberAccessExpression(getLocation(inner, name),
+						inner, name);
+				}
+			}
+			else if acceptr(ref i, TokenType.parenOpen)
+			{
+				// invocation-expression
+				var arguments = parseArgumentList(ref i);
+				var end = expectr(ref i, TokenType.parenClose);
+				inner = new InvocationExpression(getLocation(inner, end),
+					inner, arguments);
+			}
+			else if acceptr(ref i, TokenType.squareOpen)
+			{
+				// indexer-access
+				var arguments = parseArgumentList(ref i, /*endToken=*/ TokenType.squareClose,
+					/*allowEmpty=*/ false, /*allowRefArgs=*/ false);
+				var end = expectr(ref i, TokenType.squareClose);
+				inner = new IndexerAccessExpression(getLocation(inner, end),
+					inner, arguments);
+			}
+			else
+			{
+				// safe-access
+				var chain = parseSafeAccessChain(ref i);
+				inner = new SafeAccessExpression(getLocation(inner, lex[i - 1]),
+					inner, chain);
+			}
+		}
+
+		return inner;
+	}
+
+	private parseAtomicExpression(ref i)
+	{
+		/* Syntax:
+		 *   atomic-expression:   (not part of grammar)
+		 *     literal
+		 *     simple-name
+		 *     parenthesized-expression
+		 *     global-access
+		 *     this-access
+		 *     base-access
+		 *     object-creation-expression
+		 *     typeof-expression
+		 *     list-creation-expression
+		 *     hash-creation-expression
+		 *     lambda-expression
+		 *     extension-expression    (non-standard extension, not in grammar)
+		 *   simple-name:
+		 *     identifier
+		 *   parenthesized-expression:
+		 *     '(' expression ')'
+		 *   global-access:
+		 *     'global' '.' identifier
+		 *   this-access:
+		 *     'this'
+		 *   base-access:
+		 *     'base'
+		 *   typeof-expression:
+		 *     'typeof' '(' expression ')'
+		 *   extension-expression:
+		 *     named-constant-expression
+		 *     get-argc-expression
+		 *   get-argc-expression:
+		 *     '__get_argc'
+		 * Additional notes:
+		 *   An “atomic” expression is one that does not begin with a primary-expression.
+		 *   All expressions contain at least one atomic expression.
+		 */
+		var start = lex[i];
+
+		var type = start.type;
+		if type == TokenType._new:
+			return parseObjectCreationExpression(ref i);
+		if type == TokenType.squareOpen:
+			return parseListCreationExpression(ref i);
+		if type == TokenType.curlyOpen:
+			return parseHashCreationExpression(ref i);
+		if type == TokenType.at:
+			return parseLambdaExpression(ref i);
+
+		// Remaining: simple-name, parenthesized-expression, this-access, base-access,
+		//            typeof-expression, global-access, named-constant-expression,
+		//            get-argc-expression.
+		// We can always skip the first token of these.
+		i += 1; // See?
+
+		if start.match(TokenType.literal):
+			return literalFuncs[type](start);
+		if type == TokenType.identifier
+		{
+			if useExtensions
+			{
+				if start.value == "__named_const":
+					return parseNamedConstantExpression(ref i);
+				if start.value == "__get_argc":
+					return new GetArgumentCountExpression(start.location);
+			}
+			return new SimpleNameExpression(start.location, start);
+		}
+		if type == TokenType.parenOpen
+		{
+			var inner = parseExpression(ref i);
+			var end = expectr(ref i, TokenType.parenClose);
+			return new ParenthesizedExpression(getLocation(start, end),
+				inner);
+		}
+		if type == TokenType._this:
+			return new ThisAccessExpression(start.location);
+		if type == TokenType._base:
+			return new BaseAccessExpression(start.location);
+		if type == TokenType._typeof
+		{
+			expectr(ref i, TokenType.parenOpen);
+			var inner = parseExpression(ref i);
+			var end = expectr(ref i, TokenType.parenClose);
+			return new TypeOfExpression(getLocation(start, end),
+				inner);
+		}
+		if type == TokenType._global
+		{
+			expectr(ref i, TokenType.dot);
+			var end = expectr(ref i, TokenType.identifier);
+			return new GlobalAccessExpression(getLocation(start, end),
+				end);
+		}
+
+		error(start, ErrorCode.err_ExpectedPrimaryExpression, [start]);
+	}
+
+	private parseNamedConstantExpression(ref i)
+	{
+		/* Syntax:
+		 *   named-constant-expression:   (non-standard extension)
+		 *     '__named_const' '(' identifier ':' identifier ')'
+		 * Additional notes:
+		 *   This method is only ever called when '__named_const' has already been seen.
+		 *   Therefore, we don't check for that here. Also, this method is called with i
+		 *   set to one past the '__named_const' keyword.
+		 */
+		var start = lex[i - 1];
+		expectr(ref i, TokenType.parenOpen);
+
+		var type = expectr(ref i, TokenType.identifier);
+		expectr(ref i, TokenType.colon);
+		var value = expectr(ref i, TokenType.identifier);
+
+		var end = expectr(ref i, TokenType.parenClose);
+
+		return new NamedConstantExpression(getLocation(start, end),
+			type, value);
+	}
+
+	public parseObjectCreationExpression(ref i)
+	{
+		/* Syntax:
+		 *   object-creation-expression:
+		 *     'new' type '(' argument-list? ')' object-initializer?
+		 *     'new' type object-initializer
+		 *   object-initializer:
+		 *     'with' '{' member-initializer-list? '}'
+		 *     'with' '{' member-initializer-list ',' '}'
+		 *   member-initializer-list:
+		 *     member-initializer
+		 *     member-initializer-list ',' member-initializer
+		 *   member-initializer:
+		 *     identifier ':' expression
+		 */
+		var start = expectr(ref i, TokenType._new);
+
+		var type = parseTypeName(ref i);
+
+		var arguments, end;
+		if acceptr(ref i, TokenType.parenOpen)
+		{
+			arguments = parseArgumentList(ref i);
+			end = expectr(ref i, TokenType.parenClose);
+		}
+		else
+		{
+			arguments = EmptyLists.argument;
+			expect(i, TokenType._with);
+		}
+
+		var initializer;
+		if accept(i, TokenType._with)
+		{
+			var initStart = lex[i];
+			i += 1;
+			expectr(ref i, TokenType.curlyOpen);
+
+			var members = new List(2);
+			if not accept(i, TokenType.curlyClose):
+				do
+				{
+					var memberName = expectr(ref i, TokenType.identifier);
+					expectr(ref i, TokenType.colon);
+					var memberValue = parseExpression(ref i);
+
+					members.add(
+						new MemberInitializer(getLocation(memberName, memberValue),
+							memberName, memberValue)
+					);
+				} while acceptr(ref i, TokenType.comma) and
+					not accept(i, TokenType.curlyClose);
+			members = new NodeList(members);
+
+			var initEnd = expectr(ref i, TokenType.curlyClose);
+
+			initializer = new ObjectInitializer(getLocation(initStart, initEnd),
+				members);
+			end = initializer;
+		}
+
+		return new ObjectCreationExpression(getLocation(start, end),
+			type, arguments, initializer);
+	}
+
+	public parseListCreationExpression(ref i)
+	{
+		/* Syntax:
+		 *   list-creation-expression:
+		 *     simple-list-expression
+		 *     range-expression
+		 *     list-comprehension
+		 *   simple-list-expression:
+		 *     '[' expression-list? ']'
+		 *     '[' expression-list ',' ']'
+		 *   range-expression:
+		 *     '[' expression 'to' expression ']'
+		 *     '[' expression 'to' expression ',' expression ']'
+		 *   list-comprehension:
+		 *     '[' expression-list list-comprehension-parts ']'
+		 *   list-comprehension-parts:
+		 *     list-comprehension-part
+		 *     list-comprehension-parts list-comprehension-part
+		 */
+		var start = expectr(ref i, TokenType.squareOpen);
+
+		if accept(i, TokenType.squareClose)
+		{
+			var end = lex[i];
+			i += 1;
+			return new ListCreationExpression(getLocation(start, end),
+				EmptyLists.node);
+		}
+
+		var values = new List(3);
+		var endsWithComma;
+		do
+		{
+			endsWithComma = false;
+			values.add(parseExpression(ref i));
+		} while (endsWithComma = acceptr(ref i, TokenType.comma)) and
+			not accept(i, TokenType.squareClose);
+		values = new NodeList(values);
+
+		if not endsWithComma
+		{
+			// Could it be a range expression?
+			if values.length == 1 and acceptrContextual(ref i, "to")
+			{
+				var highExpr = parseExpression(ref i);
+
+				var stepExpr;
+				if acceptr(ref i, TokenType.comma):
+					stepExpr = parseExpression(ref i);
+
+				var end = expectr(ref i, TokenType.squareClose);
+
+				return new RangeExpression(getLocation(start, end),
+					values[0], highExpr, stepExpr);
+			}
+
+			// Try a list comprehension!
+			if accept(i, TokenType._for) or acceptContextual(i, "where")
+			{
+				var listCompParts = new List(1);
+				do
+				{
+					listCompParts.add(parseListComprehensionPart(ref i));
+				} while accept(i, TokenType._for) or acceptContextual(i, "where");
+				listCompParts = new NodeList(listCompParts);
+
+				var end = expectr(ref i, TokenType.squareClose);
+
+				return new ListComprehensionExpression(getLocation(start, end),
+					values, listCompParts);
+			}
+		}
+
+		do
+		{
+			var end = expectr(ref i, TokenType.squareClose);
+			return new ListCreationExpression(getLocation(start, end),
+				values);
+		};
+	}
+
+	private parseListComprehensionPart(ref i)
+	{
+		/* Syntax:
+		 *   list-comprehension-part:
+		 *     list-comprehension-iterator
+		 *     list-comprehension-condition
+		 *   list-comprehension-iterator:
+		 *     'for' identifier-list 'in' expression
+		 *   list-comprehension-condition:
+		 *     'where' expression
+		 */
+		var start = lex[i];
+		if acceptrContextual(ref i, "where")
+		{
+			var condition = parseExpression(ref i);
+			return new ListComprehensionCondition(getLocation(start, condition),
+				condition);
+		}
+
+		expectr(ref i, TokenType._for);
+		var variables = new List(1);
+		do
+		{
+			variables.add(expectr(ref i, TokenType.identifier));
+		} while acceptr(ref i, TokenType.comma);
+		variables = new SyntaxList(variables);
+
+		expectr(ref i, TokenType._in);
+
+		var expression = parseExpression(ref i);
+
+		return new ListComprehensionIterator(getLocation(start, expression),
+			variables, expression);
+	}
+
+	public parseHashCreationExpression(ref i)
+	{
+		/* Syntax:
+		 *   hash-creation-expression:
+		 *     '{' hash-member-list? '}'
+		 *     '{' hash-member-list ',' '}'
+		 *   hash-member-list:
+		 *     hash-member
+		 *     hash-member-list ',' hash-member
+		 */
+		var start = expectr(ref i, TokenType.curlyOpen), end;
+		if accept(i, TokenType.curlyClose)
+		{
+			end = lex[i];
+			i += 1;
+			return new HashCreationExpression(getLocation(start, end),
+				EmptyLists.node);
+		}
+
+		var members = new List(2);
+		do
+		{
+			members.add(parseHashMember(ref i));
+		} while acceptr(ref i, TokenType.comma) and
+			not accept(i, TokenType.curlyClose);
+
+		members = new NodeList(members);
+
+		end = expectr(ref i, TokenType.curlyClose);
+
+		return new HashCreationExpression(getLocation(start, end),
+			members);
+	}
+
+	private parseHashMember(ref i)
+	{
+		/* Syntax:
+		 *   hash-member:
+		 *     hash-key ':' expression
+		 *   hash-key:
+		 *     identifier
+		 *     string-literal
+		 *     integer-literal
+		 *     character-literal
+		 *     parenthesized-expression
+		 */
+		var key;
+		if accept(i, TokenType.identifier)
+		{
+			key = lex[i];
+			i += 1;
+		}
+		else if accept(i, TokenType.string, TokenType.int, TokenType.char)
+		{
+			var token = lex[i];
+			key = literalFuncs[token.type](token);
+			i += 1;
+		}
+		else
+		{
+			var keyStart = expectr(ref i, TokenType.parenOpen);
+			var inner = parseExpression(ref i);
+			var keyEnd = expectr(ref i, TokenType.parenClose);
+			key = new ParenthesizedExpression(getLocation(keyStart, keyEnd),
+				inner);
+		}
+
+		expectr(ref i, TokenType.colon);
+
+		var value = parseExpression(ref i);
+
+		return new HashMember(getLocation(key, value),
+			key, value);
+	}
+
+	public parseLambdaExpression(ref i)
+	{
+		/* Syntax:
+		 *   lambda-expression:
+		 *     simple-lambda-expression
+		 *     lambda-member-expression
+		 *     lambda-operator-expression
+		 *   simple-lambda-expression:
+		 *     '@' lambda-parameters? '=' expression
+		 *     '@' lambda-parameters? block
+		 *   lambda-parameters:
+		 *     identifier
+		 *     '(' parameter-list? ')'
+		 *   lambda-member-expression:
+		 *     '@' lambda-member-access lambda-member safe-access-chain?
+		 *   lambda-member-access: one of
+		 *     '?.'  '.'
+		 *   lambda-member:
+		 *     identifier
+		 *     'iter'
+		 *   lambda-operator-expression:
+		 *     '@' lambda-operator
+		 *   lambda-operator: one of
+		 *     '+'	'-'   '|'   '^'    '*'   '/'    '%'  '&'  '**'  '#'
+		 *     '$'	'<<'  '>>'  '=='   '!='  '<=>'  '<'  '>'  '<='  '>='
+		 *     '~'	'->'  '::'  'not'  'or'  'xor'  'and'
+		 * Additional notes:
+		 *   The lambda-operator symbol is represented by the TokenType.lambdaOperator
+		 *   category.
+		 */
+		var start = expectr(ref i, TokenType.at);
+
+		// Is it a lambda-operator-expression?
+		if accept(i, TokenType.lambdaOperator)
+		{
+			var op = lex[i];
+			i += 1;
+			return new LambdaOperatorExpression(getLocation(start, op),
+				typeToLambdaOperator[op.type]);
+		}
+
+		// How about a lambda-member-expression?
+		if accept(i, TokenType.dot, TokenType.safeAccess)
+		{
+			var members = parseSafeAccessChain(ref i);
+			return new LambdaMemberExpression(getLocation(start, lex[i - 1]),
+				members);
+		}
+
+		// Must be a simple-lambda-expression
+
+		// Parameters
+		var parameters;
+		if accept(i, TokenType.identifier)
+		{
+			var paramName = lex[i];
+			parameters = new ParameterList([
+				new Parameter(paramName.location,
+					paramName, null, false, false)
+			]);
+			i += 1;
+		}
+		else if acceptr(ref i, TokenType.parenOpen)
+		{
+			parameters = parseParameterList(ref i);
+			expectr(ref i, TokenType.parenClose);
+		}
+		else
+		{
+			parameters = EmptyLists.parameter;
+		}
+
+		// Body
+		var body;
+		if acceptr(ref i, TokenType.assign):
+			body = parseExpression(ref i);
+		else:
+			body = parseBlock(ref i);
+
+		return new SimpleLambdaExpression(getLocation(start, body),
+			parameters, body);
+	}
+
+	private parseSafeAccessChain(ref i)
+	{
+		/* Syntax:
+		 *   safe-access-chain:
+		 *     safe-access-link
+		 *     safe-access-chain safe-access-link
+		 *   safe-access-link:
+		 *     safe-member-access
+		 *     safe-invocation
+		 *     safe-indexer-access
+		 *     safe-iterator-lookup
+		 *     unsafe-member-access
+		 *     unsafe-invocation
+		 *     unsafe-indexer-access
+		 *     unsafe-iterator-lookup
+		 *   safe-member-access:
+		 *     '?.' identifier
+		 *   safe-invocation:
+		 *     '?(' argument-list? ')'
+		 *   safe-indexer-access:
+		 *     '?[' argument-list ']'
+		 *   safe-iterator-lookup:
+		 *     '?.' 'iter'
+		 *   unsafe-member-access:
+		 *     '.' identifier
+		 *   unsafe-invocation:
+		 *     '(' argument-list? ')'
+		 *   unsafe-indexer-access:
+		 *     '[' argument-list ']'
+		 *   unsafe-iterator-lookup:
+		 *     '.' 'iter'
+		 */
+		var links = new List(1);
+		while acceptAny(i, safeNodeStarters)
+		{
+			var start = lex[i];
+			var type = start.type;
+			i += 1;
+			var isSafe =
+				type == TokenType.safeAccess or
+				type == TokenType.parenOpenSafe or
+				type == TokenType.squareOpenSafe;
+			var link;
+			if type == TokenType.dot or type == TokenType.safeAccess
+			{
+				// safe-member-access, unsafe-member-access,
+				// safe-iterator-lookup or unsafe-iterator-lookup
+				if acceptr(ref i, TokenType._iter)
+				{
+					link = new SafeIteratorAccess(getLocation(start, lex[i - 1]),
+						isSafe);
+				}
+				else
+				{
+					var member = expectr(ref i, TokenType.identifier);
+					link = new SafeMemberAccess(getLocation(start, member),
+						isSafe, member);
+				}
+			}
+			else if type == TokenType.parenOpen or type == TokenType.parenOpenSafe
+			{
+				// safe-invocation or unsafe-invocation
+				var arguments = parseArgumentList(ref i);
+				var end = expectr(ref i, TokenType.parenClose);
+				link = new SafeInvocation(getLocation(start, end),
+					isSafe, arguments);
+			}
+			else
+			{
+				// safe-indexer-access or unsafe-indexer-access
+				var arguments = parseArgumentList(ref i, /*endToken=*/ TokenType.squareClose,
+					/*allowEmpty=*/ false, /*allowRefArgs=*/ false);
+				var end = expectr(ref i, TokenType.squareClose);
+				link = new SafeIndexerAccess(getLocation(start, end),
+					isSafe, arguments);
+			}
+			links.add(link);
+		}
+
+		return new NodeList(links);
+	}
+
+	public parseUseInExpression(ref i)
+	{
+		/* Syntax:
+		 *   use-in-expression:
+		 *     'use' use-in-variables 'in' expression
+		 *   use-in-variables:
+		 *     use-in-variable
+		 *     use-in-variables ',' use-in-variable
+		 *   use-in-variable:
+		 *     identifier '=' expression
+		 */
+		var start = expectr(ref i, TokenType._use);
+
+		var variables = new List(1);
+		do
+		{
+			var name = expectr(ref i, TokenType.identifier);
+			expectr(ref i, TokenType.assign);
+			var value = parseExpression(ref i);
+			variables.add(
+				new VariableDeclarator(getLocation(name, value),
+					name, value)
+			);
+		} while acceptr(ref i, TokenType.comma);
+		variables = new NodeList(variables);
+
+		expectr(ref i, TokenType._in);
+
+		var expression = parseExpression(ref i);
+
+		return new UseInExpression(getLocation(start, expression),
+			variables, expression);
+	}
+
+	//</region>
+
+	public parseQualifiedName(ref i)
+	{
+		/* Syntax:
+		 *   qualified-name:
+		 *     identifier
+		 *     qualified-name '.' identifier
+		 */
+		var names = new List(3);
+		do
+		{
+			var name = expectr(ref i, TokenType.identifier);
+			names.add(name);
+		} while acceptr(ref i, TokenType.dot);
+
+		return new QualifiedName(names);
+	}
+
+	public parseTypeName(ref i)
+	{
+		/* Syntax:
+		 *   type:
+		 *     qualified-name
+		 *     'global' '.' qualified-name
+		 */
+		var start = lex[i];
+		var globalToken;
+		if accept(i, TokenType._global)
+		{
+			globalToken = start;
+			i += 1;
+			expectr(ref i, TokenType.dot);
+		}
+
+		var name = parseQualifiedName(ref i);
+
+		return new TypeName(getLocation(start, lex[i - 1]),
+			globalToken is not null,
+			name);
+	}
+
+	public parseParameterList(ref i, endToken = TokenType.parenClose, allowEmpty = true)
+	{
+		/* Syntax:
+		 *   parameter-list:
+		 *     parameters
+		 *     regular-parameters '...'
+		 *     '...' regular-parameters
+		 *   parameters:
+		 *     regular-parameters
+		 *     optional-parameters
+		 *     regular-parameters ',' optional-parameters
+		 *   regular-parameters:
+		 *     parameter
+		 *     regular-parameters ',' parameter
+		 *   parameter:
+		 *     identifier
+		 *     ref identifier
+		 *   optional-parameters:
+		 *     optional-parameter
+		 *     optional-parameters ',' optional-parameter
+		 *   optional-parameter:
+		 *     identifier '=' optional-parameter-value
+		 *   optional-parameter-value:
+		 *     constant-expression
+		 *     '[' ']'
+		 *     '{' '}'
+		 * Additional notes:
+		 *   The parameter allowEmpty can be used to disallow empty parameter lists.
+		 *   This is relevant for some constructs, such as indexers.
+		 *   Since `[]` and `{}` are valid expressions and constant-expression is
+		 *   defined as expression, we use parseExpression to parse optional-parameter-value,
+		 *   and verify the value later.
+		 */
+		if accept(i, endToken):
+			return EmptyLists.parameter;
+
+		var variadic, optionalCount = 0;
+
+		var parameters = new List(2);
+		do
+		{
+			var start = lex[i];
+			var isVariadic = acceptr(ref i, TokenType.splat);
+			if isVariadic
+			{
+				if not parameters.isEmpty:
+					error(lex[i - 1], ErrorCode.err_PreVariadicMustBeFirstParameter);
+				variadic = VariadicParameter.first;
+			}
+
+			var isRef = acceptr(ref i, TokenType._ref);
+			var name = expectr(ref i, TokenType.identifier);
+
+			var defaultValue;
+			if acceptr(ref i, TokenType.assign)
+			{
+				defaultValue = parseExpression(ref i);
+				optionalCount += 1;
+			}
+			else if optionalCount:
+				error(name, ErrorCode.err_RequiredParameterAfterOptional);
+
+			if acceptr(ref i, TokenType.splat)
+			{
+				if isVariadic:
+					error(lex[i - 1], ErrorCode.err_MultipleVariadicSpecifiers);
+				if accept(i, TokenType.comma):
+					error(lex[i], ErrorCode.err_PostVariadicMustBeLastParameter);
+				if variadic:
+					error(name, ErrorCode.err_MultipleVariadicParameters);
+				isVariadic = true;
+				variadic = VariadicParameter.last;
+			}
+
+			// Variadic and optional parameters cannot be passed by reference
+			if isRef
+			{
+				if isVariadic:
+					error(name, ErrorCode.err_CannotPassVariadicByRef);
+				if defaultValue:
+					error(name, ErrorCode.err_CannotPassOptionalByRef);
+			}
+			// Variadic parameters cannot have a default value
+			if isVariadic and defaultValue:
+				error(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
+			// Cannot mix optional parameters and variadic parameters in the same parameter list
+			if optionalCount and variadic:
+				error(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
+
+			parameters.add(new Parameter(getLocation(start, lex[i - 1]),
+				name,
+				defaultValue,
+				isVariadic,
+				isRef));
+		} while acceptr(ref i, TokenType.comma);
+
+		return new ParameterList(parameters,
+			optionalCount,
+			variadic,
+			null);
+	}
+
+	public parseConstructorParameterList(ref i)
+	{
+		/* Syntax:
+		 *   ctor-parameter-list:
+		 *     ctor-parameters
+		 *     '...' regular-ctor-parameters
+		 *     regular-ctor-parameters '...'
+		 *   ctor-parameters:
+		 *     regular-ctor-parameters
+		 *     optional-ctor-parameters
+		 *     ctor-parameters ',' optional-ctor-parameters
+		 *   optional-ctor-parameters:
+		 *     optional-ctor-parameter
+		 *     optional-ctor-parameters ',' optional-ctor-parameter
+		 *   optional-ctor-parameter:
+		 *     identifier '=' optional-parameter-value
+		 *     'this' '.' identifier '=' optional-parameter-value
+		 *   regular-ctor-parameters:
+		 *     ctor-parameter
+		 *     regular-ctor-parameters ',' ctor-parameter
+		 *   ctor-parameter:
+		 *     identifier
+		 *     'ref' identifier
+		 *     'this' '.' identifier
+		 */
+		if accept(i, TokenType.parenClose):
+			return EmptyLists.parameter;
+
+		var variadic, optionalCount = 0;
+
+		var parameters = new List(2);
+		do
+		{
+			var start = lex[i];
+			var isVariadic = acceptr(ref i, TokenType.splat);
+			if isVariadic
+			{
+				if not parameters.isEmpty:
+					error(lex[i - 1], ErrorCode.err_PreVariadicMustBeFirstParameter);
+				variadic = VariadicParameter.first;
+			}
+
+			var isRef = acceptr(ref i, TokenType._ref);
+			var hasThisPrefix = acceptr(ref i, TokenType._this);
+			if hasThisPrefix:
+				expectr(ref i, TokenType.dot);
+			var name = expectr(ref i, TokenType.identifier);
+
+			var defaultValue;
+			if acceptr(ref i, TokenType.assign)
+			{
+				defaultValue = parseExpression(ref i);
+				optionalCount += 1;
+			}
+			else if optionalCount:
+				error(name, ErrorCode.err_RequiredParameterAfterOptional);
+
+			if acceptr(ref i, TokenType.splat)
+			{
+				if isVariadic:
+					error(lex[i - 1], ErrorCode.err_MultipleVariadicSpecifiers);
+				if accept(i, TokenType.comma):
+					error(lex[i], ErrorCode.err_PostVariadicMustBeLastParameter);
+				if variadic:
+					error(name, ErrorCode.err_MultipleVariadicParameters);
+				isVariadic = true;
+				variadic = VariadicParameter.last;
+			}
+
+			// Variadic, optional and 'this' parameters cannot be passed by reference
+			if isRef
+			{
+				if isVariadic:
+					error(name, ErrorCode.err_CannotPassVariadicByRef);
+				if defaultValue:
+					error(name, ErrorCode.err_CannotPassOptionalByRef);
+				if hasThisPrefix:
+					error(name, ErrorCode.err_CannotPassThisParameterByRef);
+			}
+			// Variadic parameters cannot have a default value
+			if isVariadic and defaultValue:
+				error(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
+			// Cannot mix optional parameters and variadic parameters in the same parameter list
+			if optionalCount and variadic:
+				error(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
+
+			var param;
+			if hasThisPrefix:
+				param = new ThisParameter(getLocation(start, lex[i - 1]),
+					name,
+					defaultValue,
+					isVariadic);
+			else:
+				param = new Parameter(getLocation(start, lex[i - 1]),
+					name,
+					defaultValue,
+					isVariadic,
+					isRef);
+			parameters.add(param);
+		} while acceptr(ref i, TokenType.comma);
+
+		return new ParameterList(parameters,
+			optionalCount,
+			variadic,
+			null);
+	}
+
+	/// Summary: Parses zero or more member modifiers at the specified index.
+	/// Param i: (ref) The starting token index.
+	/// Param modifiers:
+	///          (optional) A {Modifiers} instance that is updated with the parsed
+	///          modifiers, or null to construct a new instance.
+	/// Returns: A {Modifiers} instance that contains the parsed modifiers. If {modifiers}
+	///          is not null, the return value is the same instance as {modifiers}.
+	/// Throws ParseError:
+	///          A member modifier occurs more than once.
+	public parseModifiers(ref i, modifiers = null)
+	{
+		/* Syntax:
+		 *   No grammar as such. Parses a sequence of tokens matching
+		 *   TokenType.memberModifier, which may include more modifiers
+		 *   than the target member accepts.
+		 *   Sequences of modifiers are used by most kinds of non-local
+		 *   member definitions.
+		 *   The `verify*` methods on `Modifiers` should be used to
+		 *   verify that the modifiers are correct for the member.
+		 */
+		if modifiers is null:
+			modifiers = new Modifiers();
+		else:
+			modifiers.clear();
+
+		while accept(i, TokenType.memberModifier)
+		{
+			var modifier = lex[i];
+			modifierFuncs[modifier.type](this, modifiers, modifier);
+
+			i += 1; // skip modifier
+		}
+
+		return modifiers;
+	}
+
+	// Functions that set modifiers as they are being parsed.
+	private static modifierFuncs = {
+		(TokenType._public): @(parser, modifiers, token)
+		{
+			if modifiers._public:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["public"]);
+			if modifiers.hasAccessibility:
+				parser.error(token, ErrorCode.err_MultipleAccessibilityModifiers);
+
+			modifiers._public = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._protected): @(parser, modifiers, token)
+		{
+			if modifiers._protected:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["protected"]);
+			if modifiers.hasAccessibility:
+				parser.error(token, ErrorCode.err_MultipleAccessibilityModifiers);
+
+			modifiers._protected = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._private): @(parser, modifiers, token)
+		{
+			if modifiers._private:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["private"]);
+			if modifiers.hasAccessibility:
+				parser.error(token, ErrorCode.err_MultipleAccessibilityModifiers);
+
+			modifiers._private = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._static): @(parser, modifiers, token)
+		{
+			if modifiers._static:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["static"]);
+
+			modifiers._static = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._abstract): @(parser, modifiers, token)
+		{
+			if modifiers._abstract:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["abstract"]);
+
+			modifiers._abstract = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._inheritable): @(parser, modifiers, token)
+		{
+			if modifiers._inheritable:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["inheritable"]);
+
+			modifiers._inheritable = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._overridable): @(parser, modifiers, token)
+		{
+			if modifiers._overridable:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["overridable"]);
+
+			modifiers._overridable = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+		(TokenType._override): @(parser, modifiers, token)
+		{
+			if modifiers._override:
+				parser.error(token, ErrorCode.err_DuplicateModifier, ["override"]);
+
+			modifiers._override = token;
+			if modifiers.start is null:
+				modifiers.start = token;
+		},
+	};
+
+	// TokenTypes that denote the beginning of a jump statement.
+	private static jumpStatementTypes = Set.fromCollection([
+		TokenType._return,
+		TokenType._yield,
+		TokenType._next,
+		TokenType._break,
+		TokenType._throw,
+	]);
+
+	private static typeToBinaryOperator = {
+		(TokenType.doubleEqual):  BinaryOperator.equality,
+		(TokenType.notEqual):     BinaryOperator.inequality,
+		(TokenType._refeq):       BinaryOperator.refEquality,
+		(TokenType.less):         BinaryOperator.less,
+		(TokenType.greater):      BinaryOperator.greater,
+		(TokenType.lessEqual):    BinaryOperator.lessEqual,
+		(TokenType.greaterEqual): BinaryOperator.greaterEqual,
+		(TokenType.compare):      BinaryOperator.comparison,
+		(TokenType.dollar):       BinaryOperator.dollar,
+		(TokenType.hash):         BinaryOperator.hash,
+		(TokenType.shiftLeft):    BinaryOperator.shiftLeft,
+		(TokenType.shiftRight):   BinaryOperator.shiftRight,
+		(TokenType.plus):         BinaryOperator.addition,
+		(TokenType.minus):        BinaryOperator.subtraction,
+		(TokenType.pipe):         BinaryOperator.bitwiseOr,
+		(TokenType.multiply):     BinaryOperator.multiplication,
+		(TokenType.divide):       BinaryOperator.division,
+		(TokenType.modulo):       BinaryOperator.modulo,
+		(TokenType.ampersand):    BinaryOperator.bitwiseAnd,
+		// Compound assignment operators
+		(TokenType.plusAssign):       BinaryOperator.addition,
+		(TokenType.minusAssign):      BinaryOperator.subtraction,
+		(TokenType.pipeAssign):       BinaryOperator.bitwiseOr,
+		(TokenType.mulAssign):        BinaryOperator.multiplication,
+		(TokenType.divAssign):        BinaryOperator.division,
+		(TokenType.modAssign):        BinaryOperator.modulo,
+		(TokenType.ampAssign):        BinaryOperator.bitwiseAnd,
+		(TokenType.caretAssign):      BinaryOperator.bitwiseXor,
+		(TokenType.concatAssign):     BinaryOperator.concatenation,
+		(TokenType.shiftLeftAssign):  BinaryOperator.shiftLeft,
+		(TokenType.shiftRightAssign): BinaryOperator.shiftRight,
+		(TokenType.powerAssign):      BinaryOperator.exponentiation,
+		(TokenType.hashAssign):       BinaryOperator.hash,
+		(TokenType.dollarAssign):     BinaryOperator.dollar,
+	};
+
+	private static typeToUnaryOperator = {
+		(TokenType.plus):  UnaryOperator.plus,
+		(TokenType.minus): UnaryOperator.negation,
+		(TokenType.tilde): UnaryOperator.bitwiseNot,
+		(TokenType._not):  UnaryOperator.booleanNot
+	};
+
+	private static typeToLambdaOperator = {
+		(TokenType._or):             LambdaOperator.conditionalOr,
+		(TokenType._xor):            LambdaOperator.conditionalXor,
+		(TokenType._and):            LambdaOperator.conditionalAnd,
+		(TokenType.doubleEqual):     LambdaOperator.equality,
+		(TokenType.notEqual):        LambdaOperator.inequality,
+		(TokenType.less):            LambdaOperator.less,
+		(TokenType.lessEqual):       LambdaOperator.lessEqual,
+		(TokenType.greater):         LambdaOperator.greater,
+		(TokenType.greaterEqual):    LambdaOperator.greaterEqual,
+		(TokenType.compare):         LambdaOperator.comparison,
+		(TokenType.hash):            LambdaOperator.hash,
+		(TokenType.dollar):          LambdaOperator.dollar,
+		(TokenType.shiftLeft):       LambdaOperator.shiftLeft,
+		(TokenType.shiftRight):      LambdaOperator.shiftRight,
+		(TokenType.plus):            LambdaOperator.plus,
+		(TokenType.minus):           LambdaOperator.minus,
+		(TokenType.pipe):            LambdaOperator.bitwiseOr,
+		(TokenType.caret):           LambdaOperator.bitwiseXor,
+		(TokenType.multiply):        LambdaOperator.multiplication,
+		(TokenType.divide):          LambdaOperator.division,
+		(TokenType.modulo):          LambdaOperator.modulo,
+		(TokenType.ampersand):       LambdaOperator.bitwiseAnd,
+		(TokenType.power):           LambdaOperator.exponentiation,
+		(TokenType.funcApplication): LambdaOperator.functionApplication,
+		(TokenType.concatenate):     LambdaOperator.concatenation,
+		(TokenType.tilde):           LambdaOperator.bitwiseNot,
+		(TokenType._not):            LambdaOperator.booleanNot,
+	};
+
+	private static relationalOperators = [
+		TokenType.less,
+		TokenType.greater,
+		TokenType.lessEqual,
+		TokenType.greaterEqual,
+		TokenType.compare,
+	];
+
+	private static multiplicativeOperators = [
+		TokenType.multiply,
+		TokenType.divide,
+		TokenType.modulo,
+		TokenType.ampersand,
+	];
+
+	private static unaryOperators = [
+		TokenType.plus,
+		TokenType.minus,
+		TokenType.tilde,
+		TokenType._not,
+	];
+
+	private static literalFuncs = {
+		(TokenType._null):  @token = new NullLiteralExpression(token.location),
+		(TokenType._false): @token = new BooleanLiteralExpression(token.location, false),
+		(TokenType._true):  @token = new BooleanLiteralExpression(token.location, true),
+		(TokenType.int):    @token = new IntegerLiteralExpression(token.location, token.literalValue),
+		(TokenType.real):   @token = new RealLiteralExpression(token.location, token.literalValue),
+		(TokenType.string): @token = new StringLiteralExpression(token.location, token.literalValue),
+		(TokenType.char):   @token = new CharLiteralExpression(token.location, token.literalValue),
+	};
+
+	private static primaryExpressionStarters = [
+		TokenType.dot,
+		TokenType.parenOpen,
+		TokenType.squareOpen,
+		TokenType.safeAccess,
+		TokenType.parenOpenSafe,
+		TokenType.squareOpenSafe,
+	];
+
+	private static safeNodeStarters = [
+		TokenType.dot,
+		TokenType.parenOpen,
+		TokenType.squareOpen,
+		TokenType.safeAccess,
+		TokenType.parenOpenSafe,
+		TokenType.squareOpenSafe,
+	];
+}
+
+/// Summary: Configuration options passed to {Parser}.
+public enum set ParseFlags
+{
+	/// Summary: Specifies no additional parser flags.
+	none = 0,
+	/// Summary: Specifies that the parser should use non-standard extension keywords.
+	useExtensions = 1,
+	/// Summary: Specifies that identifiers should be normalized.
+	///          See {LexerFlags.normalizeIdentifiers} for more information on what this
+	///          flag does.
+	normalizeIdentifiers = 2,
+}
+
+/// Summary: Represents zero or more member modifiers that were consumed during parsing.
+///          Instances of this class are intended to be reused if modifiers need to be
+///          parsed multiple times, to avoid repeated memory allocations.
+///
+///          The {Parser.parseModifiers} method is used for parsing modifiers.
+public class Modifiers
+{
+	/// Summary: The first modifier {Token}, or null if this instance has no modifiers.
+	public start;
+
+	/// Summary: The `public` modifier {Token} if specified, otherwise null.
+	public _public;
+	/// Summary: The `protected` modifier {Token} if specified, otherwise null.
+	public _protected;
+	/// Summary: The `private` modifier {Token} if specified, otherwise null.
+	public _private;
+	/// Summary: The `static` modifier {Token} if specified, otherwise null.
+	public _static;
+	/// Summary: The `abstract` modifier {Token} if specified, otherwise null.
+	public _abstract;
+	/// Summary: The `inheritable` modifier {Token} if specified, otherwise null.
+	public _inheritable;
+	/// Summary: The `overridable` modifier {Token} if specified, otherwise null.
+	public _overridable;
+	/// Summary: The `override` modifier {Token} if specified, otherwise null.
+	public _override;
+
+	/// Summary: Determines whether this {Modifiers} instance has no modifiers.
+	public get isEmpty =
+		not (_public     or
+			_protected   or
+			_private     or
+			_static      or
+			_abstract    or
+			_inheritable or
+			_overridable or
+			_override);
+
+	/// Summary: Determines whether this {Modifiers} instance has an accessibility modifier.
+	public get hasAccessibility = _public or _protected or _private;
+
+	/// Summary: Gets an {Accessibility} value representing the declared accessibility
+	///          of the member.
+	public get accessibility
+	{
+		if _public:
+			return Accessibility._public;
+		if _protected:
+			return Accessibility._protected;
+		if _private:
+			return Accessibility._private;
+		return Accessibility.none;
+	}
+
+	/// Summary: Removes all modifiers from this instance.
+	public clear()
+	{
+		start        = null;
+		_public      = null;
+		_protected   = null;
+		_private     = null;
+		_static      = null;
+		_abstract    = null;
+		_inheritable = null;
+		_overridable = null;
+		_override    = null;
+	}
+
+	public verifyForGlobalFunctionOrConstant(parser)
+	{
+		var invalidToken = _protected ??
+			_static ??
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.error(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
+	}
+
+	public verifyForClass(parser)
+	{
+		var invalidToken = _protected ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.error(invalidToken, ErrorCode.err_InvalidModifierForClass);
+
+		if _static
+		{
+			if _abstract or _inheritable:
+				parser.error(_abstract ?? _inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
+		}
+		else if _abstract and _inheritable:
+			parser.error(_abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
+	}
+
+	public verifyForConstructor(parser)
+	{
+		if _static
+		{
+			var invalidToken =
+				_public ?? _protected ?? _private ??
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.error(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
+		}
+		else
+		{
+			var invalidToken =
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.error(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
+		}
+	}
+
+	public verifyForField(parser)
+	{
+		var invalidToken =
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.error(invalidToken, ErrorCode.err_InvalidModifierForField);
+	}
+
+	public verifyForMethod(parser)
+	{
+		if _static
+		{
+			var invalidToken =
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.error(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
+		}
+		else
+		{
+			if _inheritable:
+				parser.error(_inheritable, ErrorCode.err_MethodCannotBeInheritable);
+
+			if _abstract and _overridable:
+				parser.error(_overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
+		}
+	}
+
+	public verifyForInvocator(parser)
+	{
+		if _static:
+			parser.error(_static, ErrorCode.err_InvocatorCannotBeStatic);
+		verifyForMethod(parser);
+	}
+
+	public verifyForProperty(parser)
+	{
+		if _static
+		{
+			var invalidToken =
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.error(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
+		}
+		else
+		{
+			if _inheritable:
+				parser.error(_inheritable, ErrorCode.err_PropertyCannotBeInheritable);
+
+			if _abstract and _overridable:
+				parser.error(_overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
+		}
+	}
+
+	public verifyForIndexer(parser)
+	{
+		if _static:
+			parser.error(_static, ErrorCode.err_IndexerCannotBeStatic);
+		verifyForProperty(parser);
+	}
+
+	public verifyForClassConstant(parser)
+	{
+		var invalidToken =
+			_static ??
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.error(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
+	}
+
+	public verifyForOperator(parser)
+	{
+		if not isEmpty:
+			parser.error(start, ErrorCode.err_InvalidModifierForOperator);
+	}
+
+	public verifyForIterator(parser)
+	{
+		if not isEmpty:
+			parser.error(start, ErrorCode.err_InvalidModifierForIterator);
+	}
+
+	public verifyForEnum(parser)
+	{
+		var invalidToken = _protected ??
+			_static ??
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.error(invalidToken, ErrorCode.err_InvalidModifierForEnum);
+	}
+
+	public verifyForNamespace(parser)
+	{
+		if not isEmpty:
+			parser.error(start, ErrorCode.err_InvalidNamespaceModifiers);
+	}
+}

@@ -1,0 +1,54 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+public class SourceLocation
+{
+	public new(sourceFile, startIndex, endIndex)
+	{
+		if sourceFile is not SourceFile:
+			throw new ArgumentError("sourceFile must be an osprey.compiler.SourceFile.", "sourceFile");
+
+		this._sourceFile = sourceFile;
+		this._startIndex = int(startIndex);
+		this._endIndex   = int(endIndex);
+	}
+
+	private _sourceFile;
+	/// Summary: Gets the {SourceFile} that this location is contained within.
+	public get sourceFile = _sourceFile;
+
+	private _startIndex;
+	/// Summary: Gets the inclusive start index of this location within the source file string.
+	public get startIndex = _startIndex;
+
+	private _endIndex;
+	/// Summary: Gets the exclusive end index of this location within the source file string.
+	public get endIndex = _endIndex;
+
+	/// Summary: Gets the text value of this source location.
+	/// Returns: A string containing the text value of this source location.
+	public getText()
+	{
+		return _sourceFile.source
+			.substr(_startIndex, _endIndex - _startIndex)
+			.intern();
+	}
+
+	/// Summary: Gets the line number of this source location.
+	/// Returns: The 1-based line number of this source location within the source file.
+	public getLineNumber()
+	{
+		var column;
+		return getLineNumber(1, ref column);
+	}
+	/// Summary: Gets the line number of this source location.
+	/// Param tabSize: The size of a tab character (`'\t'`), in number of characters.
+	///                This is used when calculating the column number.
+	/// Param column:  (ref) Receives the 1-based column number of the source location.
+	/// Returns: The 1-based line number of this source location within the source file.
+	public getLineNumber(tabSize, ref column)
+	{
+		return sourceFile.getLineNumber(startIndex, tabSize, ref column);
+	}
+}

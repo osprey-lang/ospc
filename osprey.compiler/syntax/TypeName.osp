@@ -1,0 +1,27 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+public class TypeName is ParseNode
+{
+	public new(location, isGlobal, name)
+	{
+		new base(location);
+
+		this._isGlobal = isGlobal;
+		this._name     = name;
+	}
+
+	private _isGlobal;
+	/// Summary: Determines whether the type name has the `global.` prefix.
+	public get isGlobal = _isGlobal;
+
+	private _name;
+	/// Summary: Gets a {QualifiedName} that contains the components of the type name.
+	public get name = _name;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTypeName(this, arg);
+	}
+}

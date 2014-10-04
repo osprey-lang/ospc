@@ -1,0 +1,71 @@
+/************************************************************
+ * This directory contains the parse tree implementation.   *
+ * Parse trees do quite a lot more than just represent the  *
+ * source code; nodes also know how to compile themselves   *
+ * and perform various kinds of code analysis. As a result, *
+ * the files below are rather large.                        *
+ *                                                          *
+ * Note that the lexer/tokenizer, including the Token type, *
+ * is contained within the 'parser' folder', but the Syntax *
+ * class is defined here.                                   *
+ *                                                          *
+ * The code in this folder may be restructured at any time, *
+ * to make it easier to navigate.                           *
+ ************************************************************/
+
+use "ArgumentList.osp";
+use "Document.osp";
+use "Expression.osp";
+use "ExternBody.osp";
+use "NodeList.osp";
+use "ParameterList.osp";
+use "ParseNode.osp";
+use "QualifiedName.osp";
+use "Statement.osp";
+use "SyntaxList.osp";
+use "TypeName.osp";
+use "UseDirective.osp";
+use "enums.osp";
+use "helpers.osp";
+use "nodes.declaration.osp";
+use "nodes.expression.osp";
+use "nodes.statement.osp";
+
+// We can't put osprey.compiler.syntax.Syntax in its own file, because of Windows.
+
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Represents a single syntax element in source code, typically a {Token} or a
+///          {ParseNode}. All syntax elements have a source file location, and are immutable.
+public abstract class Syntax
+{
+	/// Summary: Initializes a {Syntax} element with the specified source location.
+	/// Param location: The {SourceLocation} of this syntax element.
+	public new(location)
+	{
+		this._location = location;
+	}
+
+	private _location;
+	/// Summary: Gets the {SourceLocation} of this syntax element.
+	public get location = _location;
+
+	/// Summary: Gets the line number of this syntax element.
+	/// Returns: The 1-based line number of this syntax element within the source file.
+	public getLineNumber()
+	{
+		var column;
+		return getLineNumber(1, ref column);
+	}
+	/// Summary: Gets the line number of this syntax element.
+	/// Param tabSize: The size of a tab character (`'\t'`), in number of characters.
+	///                This is used when calculating the column number.
+	/// Param column:  (ref) Receives the 1-based column number of the syntax element.
+	/// Returns: The 1-based line number of this syntax element within the source file.
+	public getLineNumber(tabSize, ref column)
+	{
+		return location.getLineNumber(tabSize, ref column);
+	}
+}

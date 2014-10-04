@@ -1,0 +1,984 @@
+use namespace aves;
+use namespace osprey.compiler.parser;
+
+namespace osprey.compiler.syntax;
+
+public inheritable BinaryExpression is Expression
+{
+	public new(location, left, op, right)
+	{
+		new base(location);
+
+		this._left  = claim(left);
+		this._op    = op;
+		this._right = claim(right);
+	}
+
+	private _left;
+	/// Summary: Gets the left-hand side operand {Expression}.
+	public get left = _left;
+
+	private _op;
+	/// Summary: Gets the {BinaryOperator} that combines the operands.
+	public get op = _op;
+
+	private _right;
+	/// Summary: Gets the right-hand side operand {Expression}.
+	public get right = _right;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitBinaryExpression(this, arg);
+	}
+}
+
+public inheritable UnaryExpression is Expression
+{
+	public new(location, op, inner)
+	{
+		new base(location);
+
+		this._op = op;
+		this._inner = claim(inner);
+	}
+
+	private _op;
+	/// Summary: Gets the {UnaryOperator} that is applied to the operand.
+	public get op = _op;
+
+	private _inner;
+	/// Summary: Gets the operand {Expression}.
+	public get inner = _inner;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitUnaryExpression(this, arg);
+	}
+}
+
+public class TypeTestExpression is Expression
+{
+	public new(location, expression, type, negated)
+	{
+		new base(location);
+
+		this._expression = claim(expression);
+		this._type       = claim(type);
+		this._negated    = bool(negated);
+	}
+
+	private _expression;
+	/// Summary: Gets the {Expression} whose type is being tested.
+	public get expression = _expression;
+
+	private _type;
+	/// Summary: Gets the {TypeName} of the type that is being tested for, or null
+	///          if the expression is being tested against null.
+	public get type = _type;
+
+	private _negated;
+	/// Summary: Determines whether the test is negated (“is not” rather than “is”).
+	public get negated = _negated;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTypeTestExpression(this, arg);
+	}
+}
+
+public class ConditionalExpression is Expression
+{
+	public new(location, condition, truePart, falsePart)
+	{
+		new base(location);
+
+		this._condition = claim(condition);
+		this._truePart  = claim(truePart);
+		this._falsePart = claim(falsePart);
+	}
+
+	private _condition;
+	/// Summary: Gets the condition (first operand).
+	public get condition = _condition;
+
+	private _truePart;
+	/// Summary: Gets the “if true” expression (second operand).
+	public get truePart = _truePart;
+
+	private _falsePart;
+	/// Summary: Gets the “if false” expression (third operand).
+	public get falsePart = _falsePart;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalExpression(this, arg);
+	}
+}
+
+public class ConditionalAndExpression is BinaryExpression
+{
+	public new(location, left, right)
+	{
+		new base(location, left, BinaryOperator.conditionalAnd, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalAndExpression(this, arg);
+	}
+}
+
+public class ConditionalOrExpression is BinaryExpression
+{
+	public new(location, left, right)
+	{
+		new base(location, left, BinaryOperator.conditionalOr, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalOrExpression(this, arg);
+	}
+}
+
+public class ConditionalXorExpression is BinaryExpression
+{
+	public new(location, left, right)
+	{
+		new base(location, left, BinaryOperator.conditionalXor, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalXorExpression(this, arg);
+	}
+}
+
+public class NullOrExpression is BinaryExpression
+{
+	public new(location, left, right)
+	{
+		new base(location, left, BinaryOperator.nullOr, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNullOrExpression(this, arg);
+	}
+}
+
+public class NullCoalescingExpression is BinaryExpression
+{
+	public new(location, left, right)
+	{
+		new base(location, left, BinaryOperator.nullCoalescing, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNullCoalescingExpression(this, arg);
+	}
+}
+
+public class AssignmentExpression is Expression
+{
+	public new(location, target, value)
+	{
+		new base(location);
+
+		this._target = claim(target);
+		this._value  = claim(value);
+	}
+
+	private _target;
+	/// Summary: Gets the target {Expression} of the assignment.
+	public get target = _target;
+
+	private _value;
+	/// Summary: Gets the value {Expression} of the assignment.
+	public get value = _value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitAssignmentExpression(this, arg);
+	}
+}
+
+public class UseInExpression is Expression
+{
+	public new(location, variables, expression)
+	{
+		new base(location);
+
+		this._variables  = claimAll(variables);
+		this._expression = claim(expression);
+	}
+
+	private _variables;
+	/// Summary: Gets a {NodeList} with the {VariableDeclarator}s associated with
+	///          this use-in expression.
+	public get variables = _variables;
+
+	private _expression;
+	/// Summary: Gets the {Expression} that generates the value of this use-in expression.
+	public get expression = _expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseInExpression(this, arg);
+	}
+}
+
+public abstract class LambdaExpression is Expression
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class SimpleLambdaExpression is LambdaExpression
+{
+	public new(location, parameters, body)
+	{
+		new base(location);
+
+		this._parameters = claimAll(parameters);
+		this._body       = claim(body);
+	}
+
+	private _parameters;
+	/// Summary: Gets a {ParameterList} containing the parameters of the lambda expression.
+	public get parameters = _parameters;
+
+	private _body;
+	/// Summary: Gets a {Statement} or {Expression} with the body of the lambda expression.
+	/// Remarks: When the body is a {Statement}, it corresponds to a lambda expression with
+	///          a `block` for its body, of the form `@x { ... }`. When it’s an {Expression},
+	///          the lambda expression is of the form `@x = ...`.
+	public get body = _body;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSimpleLambdaExpression(this, arg);
+	}
+}
+
+public class LambdaMemberExpression is LambdaExpression
+{
+	public new(location, members)
+	{
+		new base(location);
+
+		this._members = claimAll(members);
+	}
+
+	private _members;
+	/// Summary: Gets a {NodeList} containing the {SafeAccessNode}s of the lambda expression.
+	public get members = _members;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLambdaMemberExpression(this, arg);
+	}
+}
+
+public class LambdaOperatorExpression is LambdaExpression
+{
+	public new(location, op)
+	{
+		new base(location);
+
+		this._op = op;
+	}
+
+	private _op;
+	/// Summary: Gets the {LambdaOperator} used in this lambda expression.
+	public get op = _op;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLambdaOperatorExpression(this, arg);
+	}
+}
+
+public abstract class LiteralExpression is Expression
+{
+	public new(location, literalValue)
+	{
+		new base(location);
+
+		this._literalValue = literalValue;
+	}
+
+	private _literalValue;
+	/// Summary: Gets the value represented by the literal expression.
+	public get literalValue = _literalValue;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitLiteralExpression(this, arg);
+	}
+}
+
+public class NullLiteralExpression is LiteralExpression
+{
+	public new(location)
+	{
+		new base(location, null);
+	}
+}
+
+public class BooleanLiteralExpression is LiteralExpression
+{
+	public new(location, literalValue)
+	{
+		new base(location, bool(literalValue));
+	}
+}
+
+public class IntegerLiteralExpression is LiteralExpression
+{
+	public new(location, literalValue)
+	{
+		new base(location, literalValue);
+	}
+
+	/// Summary: Determines whether the expression represents an unsigned integer.
+	public get isUnsigned = literalValue is UInt;
+}
+
+public class RealLiteralExpression is LiteralExpression
+{
+	public new(location, literalValue)
+	{
+		new base(location, literalValue);
+	}
+}
+
+public class StringLiteralExpression is LiteralExpression
+{
+	public new(location, literalValue)
+	{
+		new base(location, literalValue);
+	}
+}
+
+public class CharLiteralExpression is LiteralExpression
+{
+	public new(location, literalValue)
+	{
+		new base(location, literalValue);
+	}
+}
+
+public class SimpleNameExpression is Expression
+{
+	public new(location, identifier)
+	{
+		new base(location);
+
+		this._name = identifier;
+	}
+
+	private _name;
+	/// Summary: Gets the {Identifier} associated with this expression.
+	public get name = _name;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSimpleName(this, arg);
+	}
+}
+
+public class ParenthesizedExpression is Expression
+{
+	public new(location, inner)
+	{
+		new base(location);
+
+		this._inner = claim(inner);
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} that is wrapped in parentheses.
+	public get inner = _inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitParenthesizedExpression(this, arg);
+	}
+}
+
+public class MemberAccessExpression is Expression
+{
+	public new(location, inner, member)
+	{
+		new base(location);
+
+		this._inner  = claim(inner);
+		this._member = member;
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} whose member is accessed.
+	public get inner = _inner;
+
+	private _member;
+	/// Summary: Gets the {Identifier} corresponding to the member name.
+	public get member = _member;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitMemberAccess(this, arg);
+	}
+}
+
+public class InvocationExpression is Expression
+{
+	public new(location, inner, arguments)
+	{
+		new base(location);
+
+		this._inner     = claim(inner);
+		this._arguments = claimAll(arguments ?? EmptyLists.argument);
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} that is invoked.
+	public get inner = _inner;
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the invocation.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitInvocationExpression(this, arg);
+	}
+}
+
+public class IndexerAccessExpression is Expression
+{
+	public new(location, inner, arguments)
+	{
+		new base(location);
+
+		this._inner     = claim(inner);
+		this._arguments = claimAll(arguments);
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} whose indexer is accessed.
+	public get inner = _inner;
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the indexer.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIndexerAccess(this, arg);
+	}
+}
+
+public class IteratorAccessExpression is Expression
+{
+	public new(location, inner)
+	{
+		new base(location);
+
+		this._inner = inner;
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} whose iterator is accessed.
+	public get inner = _inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIteratorAccess(this, arg);
+	}
+}
+
+public class SafeAccessExpression is Expression
+{
+	public new(location, inner, chain)
+	{
+		new base(location);
+
+		this._inner = claim(inner);
+		this._chain = claimAll(chain);
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} on which the first member access occurs.
+	public get inner = _inner;
+
+	private _chain;
+	/// Summary: Gets a {NodeList} containing the {SafeAccessNode}s associated with
+	///          this expression’s safe access chain.
+	public get chain = _chain;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeAccess(this, arg);
+	}
+}
+
+public abstract class SafeAccessNode is ParseNode
+{
+	public new(location, isSafe)
+	{
+		new base(location);
+
+		this._isSafe = bool(isSafe);
+	}
+
+	private _isSafe;
+	/// Summary: Determines whether the node is safe.
+	public get isSafe = _isSafe;
+}
+
+public class SafeMemberAccess is SafeAccessNode
+{
+	public new(location, isSafe, member)
+	{
+		new base(location, isSafe);
+
+		this._member = member;
+	}
+
+	private _member;
+	/// Summary: Gets the {Identifier} that corresponds to the member name.
+	public get member = _member;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeMemberAccess(this, arg);
+	}
+}
+
+public class SafeInvocation is SafeAccessNode
+{
+	public new(location, isSafe, arguments)
+	{
+		new base(location, isSafe);
+
+		this._arguments = claimAll(arguments ?? EmptyLists.argument);
+	}
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the invocation.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeInvocation(this, arg);
+	}
+}
+
+public class SafeIndexerAccess is SafeAccessNode
+{
+	public new(location, isSafe, arguments)
+	{
+		new base(location, isSafe);
+
+		this._arguments = claimAll(arguments);
+	}
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the indexer.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeIndexerAccess(this, arg);
+	}
+}
+
+public class SafeIteratorAccess is SafeAccessNode
+{
+	public new(location, isSafe)
+	{
+		new base(location, isSafe);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeIteratorAccess(this, arg);
+	}
+}
+
+public class GlobalAccessExpression is Expression
+{
+	public new(location, member)
+	{
+		new base(location);
+
+		this._member = member;
+	}
+
+	private _member;
+	/// Summary: Gets the {Identifier} corresponding to the name of the global member.
+	public get member = _member;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitGlobalAccess(this, arg);
+	}
+}
+
+public class ThisAccessExpression is Expression
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitThisAccess(this, arg);
+	}
+}
+
+public class BaseAccessExpression is Expression
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitBaseAccess(this, arg);
+	}
+}
+
+public class ObjectCreationExpression is Expression
+{
+	public new(location, type, arguments, initializer)
+	{
+		new base(location);
+
+		this._type        = claim(type);
+		this._arguments   = claimAll(arguments ?? EmptyLists.argument);
+		this._initializer = claim(initializer);
+	}
+
+	private _type;
+	/// Summary: Gets the {TypeName} that this expression constructs an instance of.
+	public get type = _type;
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the constructor.
+	public get arguments = _arguments;
+
+	private _initializer;
+	/// Summary: Gets the {ObjectInitializer} associated with the object creation
+	///          expression, or null if it has none.
+	public get initializer = _initializer;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitObjectCreationExpression(this, arg);
+	}
+}
+
+public class ObjectInitializer is ParseNode
+{
+	public new(location, members)
+	{
+		new base(location);
+
+		this._members = claimAll(members);
+	}
+
+	private _members;
+	/// Summary: Gets a {NodeList} with the {MemberInitializer}s of this object initializer.
+	public get members = _members;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitObjectInitializer(this, arg);
+	}
+}
+
+public class MemberInitializer is ParseNode
+{
+	public new(location, member, expression)
+	{
+		new base(location);
+
+		this._member     = member;
+		this._expression = claim(expression);
+	}
+
+	private _member;
+	/// Summary: Gets an {Identifier} corresponding to the name of the member
+	///          that is initialized.
+	public get member = _member;
+
+	private _expression;
+	/// Summary: Gets the expression that the member is initialized to.
+	public get expression = _expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitMemberInitializer(this, arg);
+	}
+}
+
+public class ListCreationExpression is Expression
+{
+	public new(location, values)
+	{
+		new base(location);
+
+		this._values = claimAll(values ?? EmptyLists.node);
+	}
+
+	private _values;
+	/// Summary: Gets a {NodeList} with the {Expression}s that make up the values in the list.
+	public get values = _values;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListCreationExpression(this, arg);
+	}
+}
+
+public class RangeExpression is Expression
+{
+	public new(location, low, high, step)
+	{
+		new base(location);
+
+		this._low  = claim(low);
+		this._high = claim(high);
+		this._step = claim(step);
+	}
+
+	private _low;
+	/// Summary: Gets the low (starting) value {Expression} of the range.
+	public get low = _low;
+
+	private _high;
+	/// Summary: Gets the high (end) value {Expression} of the range.
+	public get high = _high;
+
+	private _step;
+	/// Summary: Gets the step value {Expression} of the range, or null if absent.
+	public get step = _step;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitRangeExpression(this, arg);
+	}
+}
+
+public class ListComprehensionExpression is Expression
+{
+	public new(location, values, comprehenders)
+	{
+		new base(location);
+
+		this._values        = claimAll(values);
+		this._comprehenders = claimAll(comprehenders);
+	}
+
+	private _values;
+	/// Summary: Gets a {NodeList} of {Expression}s that the comprehension generates.
+	public get values = _values;
+
+	private _comprehenders;
+	/// Summary: Gets a {NodeList} of {ListComprehensionPart}s belonging to the list comprehension.
+	public get comprehenders = _comprehenders;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListComprehension(this, arg);
+	}
+}
+
+public abstract class ListComprehensionPart is ParseNode
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class ListComprehensionIterator is ListComprehensionPart
+{
+	public new(location, variables, expression)
+	{
+		new base(location);
+
+		this._variables  = variables;
+		this._expression = claim(expression);
+	}
+
+	private _variables;
+	/// Summary: Gets a collection of the variable names declared by this list
+	///          comprehension iterator, as a {NodeList} of {Identifier} tokens.
+	public get variables = _variables;
+
+	private _expression;
+	/// Summary: Gets the {Expression} that is evaluated to produce the collection
+	///          iterated over by the list comprehension iterator.
+	public get expression = _expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListComprehensionIterator(this, arg);
+	}
+}
+
+public class ListComprehensionCondition is ListComprehensionPart
+{
+	public new(location, condition)
+	{
+		new base(location);
+
+		this._condition = claim(condition);
+	}
+
+	private _condition;
+	/// Summary: Gets the condition {Expression} of this list comprehension condition.
+	public get condition = _condition;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListComprehensionCondition(this, arg);
+	}
+}
+
+public class HashCreationExpression is Expression
+{
+	public new(location, members)
+	{
+		new base(location);
+
+		this._members = claimAll(members);
+	}
+
+	private _members;
+	/// Summary: Gets a {NodeList} containing the {HashMember}s of this hash creation expression.
+	public get members = _members;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitHashConstructionExpression(this, arg);
+	}
+}
+
+public class HashMember is ParseNode
+{
+	public new(location, key, value)
+	{
+		new base(location);
+
+		if key is not Identifier:
+			claim(key);
+
+		this._key   = key;
+		this._value = claim(value);
+	}
+
+	private _key;
+	/// Summary: Gets the key {Expression} or {Identifier} of this hash member.
+	public get key = _key;
+
+	private _value;
+	/// Summary: Gets the value {Expression} of this hash member.
+	public get value = _value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitHashMember(this, arg);
+	}
+}
+
+public class TypeOfExpression is Expression
+{
+	public new(location, inner)
+	{
+		new base(location);
+
+		this._inner = claim(inner);
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} whose type is loaded.
+	public get inner = _inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTypeOfExpression(this, arg);
+	}
+}
+
+public class RefExpression is Expression
+{
+	public new(location, inner)
+	{
+		new base(location);
+
+		this._inner = claim(inner);
+	}
+
+	private _inner;
+	/// Summary: Gets the {Expression} that is passed by reference.
+	public get inner = _inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitRefExpression(this, arg);
+	}
+}
+
+/* ** Extension expressions ** */
+
+public class NamedConstantExpression is Expression
+{
+	public new(location, type, value)
+	{
+		new base(location);
+
+		this._type  = type;
+		this._value = value;
+	}
+
+	private _type;
+	/// Summary: Gets the first {Identifier} of the named constant, which specifies
+	///          the constant type.
+	public get type = _type;
+
+	private _value;
+	/// Summary: Gets the second {Identifier} of the named constant, which specifies
+	///          the constant value together with {type}.
+	public get value = _value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNamedConstantExpression(this, arg);
+	}
+}
+
+public class GetArgumentCountExpression is Expression
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitGetArgumentCountExpression(this, arg);
+	}
+}

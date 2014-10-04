@@ -1,0 +1,143 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+/// Summary: An error that occurs during parsing (as
+///          opposed to later stages of compilation).
+public inheritable ParseError is CompileTimeError
+{
+	public new(source, errorCode)
+	{
+		new this(source, errorCode, defaultMessage, null);
+	}
+	public new(source, errorCode, message)
+	{
+		new this(source, errorCode, message ?? defaultMessage, null);
+	}
+	public new(source, errorCode, message, innerError)
+	{
+		new base(source, errorCode, message ?? defaultMessage, innerError);
+	}
+
+	private static get defaultMessage =
+		ErrorCode.getMessage(ErrorCode.err_Syntax);
+}
+
+public inheritable UnexpectedTokenError is ParseError
+{
+	public new(errorCode, actualToken, expectedType)
+	{
+		new this(errorCode, actualToken, expectedType, defaultMessage, null);
+	}
+	public new(errorCode, actualToken, expectedType, message)
+	{
+		new this(errorCode, actualToken, expectedType, message ?? defaultMessage, null);
+	}
+	public new(errorCode, actualToken, expectedType, message, innerError)
+	{
+		new base(actualToken, errorCode, message ?? defaultMessage, innerError);
+
+		_expectedType = expectedType;
+	}
+
+	/// Summary: Gets the {Token} that was actually encountered.
+	///          This is the same as {CompileTimeError.source}.
+	public get actualToken = source;
+
+	private _expectedType;
+	/// Summary: Gets the {TokenType} that was expected.
+	public get expectedType = _expectedType;
+
+	overridable override get message
+	{
+		return base.message :: getExpectation(source, expectedType);
+	}
+
+	private static get defaultMessage =
+		ErrorCode.getMessage(ErrorCode.err_UnexpectedToken);
+
+	private static getExpectation(actualToken, expectedType)
+	{
+		return " (expected {0}, got {1})".format([tokenTypeToString(expectedType), actualToken]);
+	}
+
+	private static tokenTypeToString(type)
+	{
+		var str;
+		if specialTypeToString.tryGet(type, ref str):
+			return str;
+		if str = Lexer.getKeywordFromTokenType(type):
+			return "keyword '{0}'".format([type]);
+		if typeToPunctuation.tryGet(type, ref str):
+			return "'" :: str :: "'";
+		return "'" :: type :: "'";
+	}
+
+	private static typeToPunctuation = {
+		(TokenType.curlyOpen):        "{",
+		(TokenType.curlyClose):       "}",
+		(TokenType.squareOpen):       "[",
+		(TokenType.squareClose):      "]",
+		(TokenType.parenOpen):        "(",
+		(TokenType.parenClose):       ")",
+		(TokenType.dot):              ".",
+		(TokenType.comma):            ",",
+		(TokenType.colon):            ":",
+		(TokenType.semicolon):        ";",
+		(TokenType.tilde):            "~",
+		(TokenType.less):             "<",
+		(TokenType.lessEqual):        "<=",
+		(TokenType.greater):          ">",
+		(TokenType.greaterEqual):     ">=",
+		(TokenType.doubleEqual):      "==",
+		(TokenType.notEqual):         "!=",
+		(TokenType.question):         "?",
+		(TokenType.nullCoalescing):   "??",
+		(TokenType.nullOr):           "?!",
+		(TokenType.funcApplication):  "->",
+		(TokenType.plus):             "+",
+		(TokenType.minus):            "-",
+		(TokenType.pipe):             "|",
+		(TokenType.multiply):         "*",
+		(TokenType.divide):           "/",
+		(TokenType.modulo):           "%",
+		(TokenType.ampersand):        "&",
+		(TokenType.caret):            "^",
+		(TokenType.concatenate):      "::",
+		(TokenType.shiftLeft):        "<<",
+		(TokenType.shiftRight):       ">>",
+		(TokenType.power):            "**",
+		(TokenType.hash):             "#",
+		(TokenType.dollar):           "$",
+		(TokenType.assign):           "=",
+		(TokenType.plusAssign):       "+=",
+		(TokenType.minusAssign):      "-=",
+		(TokenType.pipeAssign):       "|=",
+		(TokenType.mulAssign):        "*=",
+		(TokenType.divAssign):        "/=",
+		(TokenType.modAssign):        "%=",
+		(TokenType.ampAssign):        "&=",
+		(TokenType.caretAssign):      "^=",
+		(TokenType.concatAssign):     "::=",
+		(TokenType.shiftLeftAssign):  "<<=",
+		(TokenType.shiftRightAssign): ">>=",
+		(TokenType.powerAssign):      "**=",
+		(TokenType.hashAssign):       "#=",
+		(TokenType.dollarAssign):     "$=",
+		(TokenType.at):               "@",
+		(TokenType.splat):            "...",
+		(TokenType.safeAccess):       "?.",
+		(TokenType.parenOpenSafe):    "?(",
+		(TokenType.squareOpenSafe):   "?[",
+		(TokenType.compare):          "<=>",
+	};
+
+	private static specialTypeToString = {
+		(TokenType.eof):    "end-of-file",
+		(TokenType.int):    "integer literal",
+		(TokenType.real):   "real literal",
+		(TokenType.string): "string literal",
+		(TokenType.char):   "character literal",
+	};
+}

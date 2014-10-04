@@ -1,0 +1,592 @@
+use namespace aves;
+use namespace osprey.compiler.parser;
+
+namespace osprey.compiler.syntax;
+
+public inheritable Block is Statement
+{
+	public new(location)
+	{
+		new this(location, null);
+	}
+	public new(location, statements)
+	{
+		new base(location);
+
+		this._statements = claimAll(statements);
+		this._statements = claimAll(statements ?? EmptyLists.node);
+	}
+
+	private _statements;
+	/// Summary: Gets a {NodeList} containing the statements of the block.
+	public get statements = _statements;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitBlock(this, arg);
+	}
+}
+
+public class EmptyStatement is Statement
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitEmptyStatement(this, arg);
+	}
+}
+
+public class ExpressionStatement is Statement
+{
+	public new(location, expression)
+	{
+		new base(location);
+
+		this._expression = claim(expression);
+	}
+
+	private _expression;
+	/// Summary: Gets the {Expression} contained within the statement.
+	public get expression = _expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitExpressionStatement(this, arg);
+	}
+}
+
+public class IfStatement is Statement
+{
+	public new(location, condition, consequence, alternative)
+	{
+		new base(location);
+
+		this._condition   = claim(condition);
+		this._consequence = claim(consequence);
+		this._alternative = claim(alternative);
+	}
+
+	private _condition;
+	/// Summary: Gets the {Expression} that makes up the condition of the if statement.
+	public get condition = _condition;
+
+	private _consequence;
+	/// Summary: Gets a {Statement} that contains the body of the if statement.
+	public get consequence = _consequence;
+
+	private _alternative;
+	/// Summary: Gets a {Statement} that contains the else clause of the if statement,
+	///          or null if it has none.
+	public get alternative = _alternative;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIfStatement(this, arg);
+	}
+}
+
+public abstract class IterationStatement is Statement
+{
+	public new(location, label, body)
+	{
+		new base(location);
+
+		this._label = label;
+		this._body  = claim(body);
+	}
+
+	private _label;
+	/// Summary: Gets the label attached to the iteration statement, as an {Identifier}
+	///          token, or null if the loop is unlabelled.
+	public get label = _label;
+
+	private _body;
+	/// Summary: Gets a {Statement} that contains the body of the iteration statement.
+	public get body = _body;
+
+	abstract override accept(visitor, arg);
+}
+
+public class ForStatement is IterationStatement
+{
+	public new(location, label, variables, expression, body, elseClause)
+	{
+		new base(location, label, body);
+
+		this._variables  = variables;
+		this._expression = claim(expression);
+		this._elseClause = claim(elseClause);
+	}
+
+	private _variables;
+	/// Summary: Gets a collection of the variable names declared by this statement,
+	///          as a {NodeList} of {Identifier} tokens.
+	public get variables = _variables;
+
+	private _expression;
+	/// Summary: Gets the {Expression} that is evaluated to produce the collection
+	///          iterated over by the for statement.
+	public get expression = _expression;
+
+	private _elseClause;
+	/// Summary: Gets a {Statement} containing the else clause of the for statement,
+	///          or null if it has none.
+	public get elseClause = _elseClause;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitForStatement(this, arg);
+	}
+}
+
+public class WhileStatement is IterationStatement
+{
+	public new(location, label, condition, body)
+	{
+		new base(location, label, body);
+
+		this._condition = claim(condition);
+	}
+
+	private _condition;
+	/// Summary: Gets the {Expression} that is the condition of the while statement.
+	public get condition = _condition;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitWhileStatement(this, arg);
+	}
+}
+
+public class DoWhileStatement is IterationStatement
+{
+	public new(location, label, body, condition)
+	{
+		new base(location, label, body);
+
+		this._condition = claim(condition);
+	}
+
+	private _condition;
+	/// Summary: Gets the {Expression} that is the condition of the do-while statement.
+	public get condition = _condition;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitDoWhileStatement(this, arg);
+	}
+}
+
+public class ReturnStatement is Statement
+{
+	public new(location, returnValues)
+	{
+		new base(location);
+
+		this._returnValues = claimAll(returnValues ?? EmptyLists.node);
+	}
+
+	private _returnValues;
+	/// Summary: Gets a {NodeList} of the return values of this statement.
+	public get returnValues = _returnValues;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitReturnStatement(this, arg);
+	}
+}
+
+public class YieldStatement is Statement
+{
+	public new(location, returnValues)
+	{
+		new base(location);
+
+		this._returnValues = claimAll(returnValues);
+	}
+
+	private _returnValues;
+	/// Summary: Gets a {NodeList} of the return values of this statement.
+	public get returnValues = _returnValues;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitYieldStatement(this, arg);
+	}
+}
+
+public class NextStatement is Statement
+{
+	public new(location, label)
+	{
+		new base(location);
+
+		this._label = label;
+	}
+
+	private _label;
+	/// Summary: Gets the name of the loop label that this statement refers to,
+	///          as an {Identifier} token, or null if the statement is unlabelled.
+	public get label = _label;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNextStatement(this, arg);
+	}
+}
+
+public class BreakStatement is Statement
+{
+	public new(location, label)
+	{
+		new base(location);
+
+		this._label = label;
+	}
+
+	private _label;
+	/// Summary: Gets the name of the loop label that this statement refers to,
+	///          as an {Identifier} token, or null if the statement is unlabelled.
+	public get label = _label;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitBreakStatement(this, arg);
+	}
+}
+
+public class ThrowStatement is Statement
+{
+	public new(location, expression)
+	{
+		new base(location);
+
+		this._expression = claim(expression);
+	}
+
+	private _expression;
+	/// Summary: Gets the expression of the throw statement, or null if it has none.
+	public get expression = _expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitThrowStatement(this, arg);
+	}
+}
+
+public class TryStatement is Statement
+{
+	public new(location, tryClause, catchClauses, finallyClause)
+	{
+		new base(location);
+
+		this._tryClause     = claim(tryClause);
+		this._catchClauses  = claimAll(catchClauses ?? EmptyLists.node);
+		this._finallyClause = claim(finallyClause);
+	}
+
+	private _tryClause;
+	/// Summary: Gets the {TryClause} of the try statement.
+	public get tryClause = _tryClause;
+
+	private _catchClauses;
+	/// Summary: Gets a {NodeList} containing the catch clauses of the try statement.
+	public get catchClauses = _catchClauses;
+
+	private _finallyClause;
+	/// Summary: Gets the {FinallyClause} of the try statement, or null if it has none.
+	public get finallyClause = _finallyClause;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTryStatement(this, arg);
+	}
+}
+
+public class TryClause is Block
+{
+	public new(location, statements)
+	{
+		new base(location, statements);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTryClause(this, arg);
+	}
+}
+
+public inheritable GenericCatchClause is Block
+{
+	public new(location, statements)
+	{
+		new base(location, statements);
+	}
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitCatchClause(this, arg);
+	}
+}
+
+public class SpecificCatchClause is GenericCatchClause
+{
+	public new(location, caughtType, variable, statements)
+	{
+		new base(location, statements);
+
+		this._caughtType = claim(caughtType);
+		this._variable   = variable;
+	}
+
+	private _caughtType;
+	/// Summary: Gets a {TypeName} that represents the type caught by the catch clause.
+	public get caughtType = _caughtType;
+
+	private _variable;
+	/// Summary: Gets an {Identifier} token containing the name of the catch variable,
+	///          or null if the catch clause specifies no variable name.
+	public get variable = _variable;
+}
+
+public class FinallyClause is Block
+{
+	public new(location, statements)
+	{
+		new base(location, statements);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitFinallyClause(this, arg);
+	}
+}
+
+public class WithStatement is Statement
+{
+	public new(location, variable, expression, body)
+	{
+		new base(location);
+
+		this._variable   = variable;
+		this._expression = claim(expression);
+		this._body       = claim(body);
+	}
+
+	private _variable;
+	/// Summary: Gets the name of the variable declared by the statement,
+	///          as an {Identifier} token.
+	public get variable = _variable;
+
+	private _expression;
+	/// Summary: Gets the initializer {Expression} of the with statement.
+	public get expression = _expression;
+
+	private _body;
+	/// Summary: Gets the {Statement} that is the body of the with statement.
+	public get body = _body;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitWithStatement(this, arg);
+	}
+}
+
+public class CompoundAssignment is Statement
+{
+	public new(location, left, op, right)
+	{
+		new base(location);
+
+		this._left  = claim(left);
+		this._op    = op;
+		this._right = claim(right);
+	}
+
+	private _left;
+	/// Summary: Gets the left-hand side {Expression} of the assignment.
+	public get left = _left;
+
+	private _op;
+	/// Summary: Gets the {BinaryOperator} that the compound assignment uses.
+	public get op = _op;
+
+	private _right;
+	/// Summary: Gets the right-hand side {Expression} of the assignment.
+	public get right = _right;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitCompoundAssignment(this, arg);
+	}
+}
+
+public class ParallelAssignment is Statement
+{
+	public new(location, targets, values)
+	{
+		new base(location);
+
+		this._targets = claimAll(targets);
+		this._values  = claimAll(values);
+	}
+
+	private _targets;
+	/// Summary: Gets a {NodeList} containing the target {Expression}s of the assignment.
+	public get targets = _targets;
+
+	private _values;
+	/// Summary: Gets a {NodeList} containing the value {Expression}s of the assignment.
+	public get values = _values;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitParallelAssignment(this, arg);
+	}
+}
+
+public class BaseConstructorCall is Statement
+{
+	public new(location, arguments)
+	{
+		new base(location);
+
+		this._arguments = claimAll(arguments);
+	}
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the base constructor.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitBaseConstructorCall(visitor, arg);
+	}
+}
+
+public class ThisConstructorCall is Statement
+{
+	public new(location, arguments)
+	{
+		new base(location);
+
+		this._arguments = claimAll(arguments);
+	}
+
+	private _arguments;
+	/// Summary: Gets an {ArgumentList} with the arguments to the constructor on the own type.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitThisConstructorCall(visitor, arg);
+	}
+}
+
+public abstract class LocalDeclaration is Statement
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class SimpleLocalVariableDeclaration is LocalDeclaration
+{
+	public new(location, variables)
+	{
+		new base(location);
+
+		this._variables = claimAll(variables);
+	}
+
+	private _variables;
+	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this
+	///          local variable declaration.
+	public get variables = _variables;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLocalVariableDeclaration(this, arg);
+	}
+}
+
+public class ParallelLocalVariableDeclaration is LocalDeclaration
+{
+	public new(location, names, value)
+	{
+		new base(location);
+
+		this._names = names;
+		this._value = claim(value);
+	}
+
+	private _names;
+	/// Summary: Gets a {SyntaxList} containing the {Identifier}s corresponding
+	///          to the names of the declared variables.
+	public get names = _names;
+
+	private _value;
+	/// Summary: Gets the initializer {Expression} of the declaration.
+	public get value = _value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitParallelLocalVariableDeclaration(this, arg);
+	}
+}
+
+public class LocalConstantDeclaration is LocalDeclaration
+{
+	public new(location, constants)
+	{
+		new base(location);
+
+		this._constants = claimAll(constants);
+	}
+
+	private _constants;
+	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this
+	///          local constant declaration.
+	public get constants = _constants;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLocalConstantDeclaration(this, arg);
+	}
+}
+
+public class LocalFunctionDeclaration is LocalDeclaration
+{
+	public new(location, name, parameters, body)
+	{
+		new base(location);
+
+		this._name       = name;
+		this._parameters = claimAll(parameters);
+		this._body       = claim(body);
+	}
+
+	private _name;
+	/// Summary: Gets an {Identifier} corresponding to the name of the function.
+	public get name = _name;
+
+	private _parameters;
+	/// Summary: Gets a {ParameterList} containing the parameters of the function.
+	public get parameters = _parameters;
+
+	private _body;
+	/// Summary: Gets a {Block} containing the body of the function.
+	public get body = _body;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLocalFunctionDeclaration(this, arg);
+	}
+}
