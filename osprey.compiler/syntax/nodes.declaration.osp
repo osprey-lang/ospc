@@ -79,7 +79,7 @@ public class GlobalFunctionDeclaration is ParseNode
 
 	private _body;
 	/// Summary: Gets a {ParseNode} containing the function’s body. This is usually
-	///          a {Block}, but may be an {ExternReference} if non-standard extensions
+	///          a {Block}, but may be an {ExternBody} if non-standard extensions
 	///          are enabled.
 	public get body = _body;
 
@@ -229,7 +229,7 @@ public class StaticConstructorDeclaration is ClassMember
 {
 	public new(location, body)
 	{
-		new base(location, Accessibility._private, EmptyLists.parameter, null);
+		new base(location, Accessibility._private, true, null);
 
 		this._body = claim(body);
 	}

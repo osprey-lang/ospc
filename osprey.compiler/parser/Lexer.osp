@@ -37,7 +37,7 @@ public class Lexer
 
 	private eof; // EOF token if EOF seen, otherwise null
     
-    private lastDocComment; // The last seen documentation comment
+	private lastDocComment; // The last seen documentation comment
 
 	/// Summary: Gets the source file that is being lexed.
 	public get sourceFile = file;
@@ -86,13 +86,35 @@ public class Lexer
 
 	private scanToken(ref i)
 	{
+		/* Syntax:
+		 *   input:
+		 *     input-elements
+		 *   input-elements:
+		 *     input-element
+		 *     input-elements input-element
+		 *   input-element:
+		 *     whitespace
+		 *     comment
+		 *     token
+		 *   token:
+		 *     identifier
+		 *     keyword
+		 *     integer-literal
+		 *     real-literal
+		 *     string-literal
+		 *     character-literal
+		 *     punctuation-token
+		 * Additional notes:
+		 *   This method skips white space, but does return comments.
+		 */
+
 		skipWhiteSpace(ref i);
 
 		if isEOF(i):
 			return eof = new Token(getLocation(length, length), TokenType.eof);
 
 		var ch = source[i];
-        var nextCh = not isEOF(i + 1) ? source[i + 1] : null;
+		var nextCh = not isEOF(i + 1) ? source[i + 1] : null;
 
 		if ch == '/' and (nextCh == '/' or nextCh == '*'):
 			return scanComment(ref i);
@@ -115,8 +137,8 @@ public class Lexer
 		if ch == '\'':
 			return scanCharLiteral(ref i);
 
-		if ch == '_' or source.isLetter(i) or
-			source.getCategory(i) == UnicodeCategory.letterNumber:
+		if isIdentifierStart(ch, i) or
+			ch == '\\' and nextCh is not null and isIdentifierStart(nextCh, i + 1):
 			return scanIdentifier(ref i);
 
 		return scanPunctuation(ref i);
@@ -124,6 +146,50 @@ public class Lexer
 
 	private scanComment(ref i)
 	{
+		/* Syntax:
+		 *   comment:
+		 *     single-line-comment
+		 *     delimited-comment
+		 *   single-line-comment:
+		 *     '//' input-characters?
+		 *   input-characters:
+		 *     input-character
+		 *     input-characters input-character
+		 *   input-character:
+		 *     Any Unicode character except a new-line-character
+		 *   new-line-character:
+		 *     Carriage return character (U+000D)
+		 *     Line feed character (U+000A)
+		 *     Next line character (U+0085)
+		 *     Line separator character (U+2028)
+		 *     Paragraph separator character (U+2029)
+		 *   delimited-comment:
+		 *     '/*' delimited-comment-text? asterisks '/'
+		 *   delimited-comment-text:
+		 *     delimited-comment-section
+		 *     delimited-comment-text delimited-comment-section
+		 *   delimited-comment-section:
+		 *     '/'
+		 *     asterisks? not-slash-or-asterisk
+		 *   asterisks:
+		 *     '*'
+		 *     asterisks '*'
+		 *   not-slash-or-asterisk:
+		 *     Any Unicode character except '/' or '*'
+		 * Additional notes:
+		 *   This method also parses documentation comments, which begin with '///'
+		 *   or '/**'. When a doc comment starts with '///', this method scans subsequent
+		 *   lines for such doc comments as well: each consecutive line that contains
+		 *   optional white space followed by a '///' comment is considered part of the
+		 *   same doc comment. For example,
+		 *
+		 *     ///one
+		 *     ///two
+		 *     ///three
+		 *
+		 *   would be processed as a single documentation comment with the text
+		 *   "///one\n  ///two\n  ///three".
+		 */
 		var startIndex = i;
 		var isMultiline = source[i + 1] == '*';
 		i += 2; // Skip "//" or "/*"
@@ -186,12 +252,48 @@ public class Lexer
 
 	private scanDecimalNumber(ref i)
 	{
+		/* Syntax:
+		 *   decimal-integer-literal:
+		 *     decimal-value multiplier-suffix? unsigned-suffix?
+		 *   decimal-value:
+		 *     decimal-digits decimal-digit-sections?
+		 *   decimal-digits:
+		 *     decimal-digit
+		 *     decimal-digits decimal-digit
+		 *   decimal-digit: one of
+		 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7'  '8'  '9'
+		 *   decimal-digit-sections:
+		 *     decimal-digit-section
+		 *     decimal-digit-sections decimal-digit-section
+		 *   decimal-digit-section:
+		 *     '_' decimal-digits
+		 *   multiplier-suffix: one of
+		 *     'k'  'K'  'm'  'M'  'g'  'G'  't'  'T'
+		 *   unsigned-suffix: one of
+		 *     'u'  'U'
+		 *   real-literal:
+		 *     decimal-value '.' decimal-digits exponent-part?
+		 *     '.' decimal-digits exponent-part?
+		 *   exponent-part:
+		 *     'e' sign? decimal-digits
+		 *     'E' sign? decimal-digits
+		 *   sign: one of
+		 *     '+'  '-'
+		 * Additional notes:
+		 *   This method parses both decimal integer literals as well as real literals,
+		 *   since they both contain decimal digits in various combinations. The lexer
+		 *   decides what type of literal it's dealing with by looking at the presence
+		 *   of a decimal point.
+		 *
+		 *   The method isDigit is technically responsible for parsing the decimal-digit
+		 *   symbol, but that symbol is expanded here anyway, for reference.
+		 */
 		var startIndex = i;
 
 		var emptySection = true; // False if one or more digits encountered after '_'
 
-		var hasDecimals = false; // true if we have decimals
-		var hasExp = false; // true if we have an exponential part (...e+123)
+		var hasDecimals = false; // True if we have decimals
+		var hasExp = false; // True if we have an exponential part (...e+123)
 		// Note: hasExp implies hasDecimals. It is not possible to have
 		// a numeric literal with an exponential part and no decimals.
 
@@ -322,6 +424,27 @@ public class Lexer
 
 	private scanHexNumber(ref i)
 	{
+		/* Syntax:
+		 *   hexadecimal-integer-literal:
+		 *     '0x' hex-value unsigned-suffix?
+		 *     '0X' hex-value unsigned-suffix?
+		 *   hex-value:
+		 *     hex-digits hex-digit-sections?
+		 *   hex-digits:
+		 *     hex-digit
+		 *     hex-digits hex-digit
+		 *   hex-digit: one of
+		 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7' 
+		 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F' 
+		 *     'a'  'b'  'c'  'd'  'e'  'f'
+		 *   hex-digit-sections:
+		 *     hex-digit-section
+		 *     hex-digit-sections hex-digit-section
+		 *   hex-digit-section:
+		 *     '_' hex-digits
+		 *   unsigned-suffix: one of
+		 *     'u'  'U'
+		 */
 		var startIndex = i;
 		i += 2; // Skip 0x/0X
 
@@ -394,6 +517,19 @@ public class Lexer
 
 	private scanRegularString(ref i)
 	{
+		/* Syntax:
+		 *   regular-string-literal:
+		 *     '"' regular-string-literal-characters? '"'
+		 *   regular-string-literal-characters:
+		 *     regular-string-literal-character
+		 *     regular-string-literal-characters regular-string-literal-character
+		 *   regular-string-literal-character:
+		 *     single-regular-string-literal-character
+		 *     simple-escape-sequence
+		 *     unicode-escape-sequence
+		 *   single-regular-string-literal-character:
+		 *     Any character except '"' (U+0022), '\\' (U+005C) and new-line-character
+		 */
 		var startIndex = i;
 		i += 1; // Skip "
 
@@ -442,6 +578,22 @@ public class Lexer
 
 	private scanVerbatimString(ref i)
 	{
+		/* Syntax:
+		 *   verbatim-string-literal:
+		 *     verbatim-string-prefix '"' verbatim-string-literal-characters? '"'
+		 *   verbatim-string-prefix: one of
+		 *     'r'  'R'
+		 *   verbatim-string-literal-characters:
+		 *     verbatim-string-literal-character
+		 *     verbatim-string-literal-characters verbatim-string-literal-character
+		 *   verbatim-string-literal-character:
+		 *     single-verbatim-string-literal-character
+		 *     quote-escape-sequence
+		 *   single-verbatim-string-literal-character:
+		 *     Any character except '"'
+		 *   quote-escape-sequence:
+		 *     '""'
+		 */
 		var startIndex = i;
 		i += 2; // Skip r"/R"
 
@@ -481,6 +633,16 @@ public class Lexer
 
 	private scanCharLiteral(ref i)
 	{
+		/* Syntax:
+		 *   character-literal:
+		 *     '\'' literal-character '\''
+		 *   literal-character:
+		 *     single-literal-character
+		 *     simple-escape-sequence
+		 *     unicode-escape-sequence
+		 *   single-literal-character:
+		 *     Any character except '\'' (U+0027), '\\' (U+005C) and new-line-character
+		 */
 		var startIndex = i;
 		i += 1; // Skip '
 
@@ -511,6 +673,13 @@ public class Lexer
 
 	private scanEscapeSequence(ref i)
 	{
+		/* Syntax:
+		 *   simple-escape-sequence: one of
+		 *     '\\"'  '\\\''  '\\\\'  '\\0'  '\\a'  '\\b'
+		 *     '\\n'  '\\r'   '\\t'   '\\_'  '\\-'
+		 * Additional notes:
+		 *   This method also parses the beginning of unicode escapes, '\\u' or '\\U'.
+		 */
 		if isEOF(i):
 			parseError(ErrorCode.err_MissingEscapeSequence, i - 1, 1);
 
@@ -527,6 +696,16 @@ public class Lexer
 
 	private scanUnicodeEscape(length, ref i)
 	{
+		/* Syntax:
+		 *   unicode-escape-sequence:
+		 *     '\\u' hex-digit hex-digit hex-digit hex-digit
+		 *     '\\U' hex-digit hex-digit hex-digit hex-digit
+		 *       hex-digit hex-digit hex-digit hex-digit
+		 * Additional notes:
+		 *   The 'length' parameter is either 4 or 8, depending on the number of
+		 *   expected hexadecimal digits. This method does not in itself parse
+		 *   the '\\u' or '\\U' part, only the code point.
+		 */
 		var startIndex = i;
 
 		var expectedLength = length;
@@ -552,18 +731,42 @@ public class Lexer
 
 	private scanIdentifier(ref i)
 	{
+		/* Syntax:
+		 *   identifier:
+		 *     An identifier-name that is not a keyword
+		 *     '\\' identifier-name
+		 *   identifier-name:
+		 *     identifier-start-character identifier-part-characters?
+		 *   identifier-start-character:
+		 *     letter-character
+		 *     '_'
+		 *   identifier-part-characters:
+		 *     identifier-part-character
+		 *     identifier-part-characters identifier-part-character
+		 *   identifier-part-character:
+		 *     letter-character
+		 *     A Unicode character of classes Mn, Mc, Nd, Pc or Cf
+		 *   letter-character:
+		 *     A Unicode character of classes Lu, Ll, Lt, Lm, Lo or Nl
+		 * Additional notes:
+		 *   An identifier that begins with \ is usually an escaped keyword. The backslash
+		 *   is not part of the name when comparing identifiers.
+		 *
+		 *   This method assumes that it is called with a valid identifier-start-character
+		 *   at i, or after the backslash.
+		 */
 		var startIndex = i;
+		var escaped = source[i] == '\\';
+		if escaped:
+			i += 1; // Skip escape
+		var identStart = i;
 
 		var hasFormatChars = false;
 		while not isEOF(i)
 		{
 			var ch = source.getCharacter(i);
 			var cat = ch.category;
-			if ch.isLetter or
-				cat == UnicodeCategory.decimalNumber or
-				cat == UnicodeCategory.letterNumber or
-				cat == UnicodeCategory.connectorPunct or
-				cat & UnicodeCategory.mark != UnicodeCategory.none:
+			if isIdentifierChar(cat):
 				i += ch.length;
 			else if cat == UnicodeCategory.format
 			{
@@ -575,17 +778,24 @@ public class Lexer
 		}
 
 		var location = getLocation(startIndex, i);
-		var ident = source.substr(startIndex, i - startIndex);
-		var type = TokenType.identifier;
-		if ident.length <= longestKeywordLength and
-			keywordToType.tryGet(ident, ref type)
+		var ident = source.substr(identStart, i - identStart);
+
+		// All keywords are valid identifier-names, so unless this identifier is
+		// escaped, let's see if it matches a keyword.
+		var keywordType;
+		if not escaped and ident.length <= longestKeywordLength and
+			keywordToType.tryGet(ident, ref keywordType)
 		{
+			// And if it matches a keyword, it might be a keyword literal
+			// (that is, true, false or null).
 			var litValue;
-			if literalKeywordTypes.tryGet(type, ref litValue):
-				return new LiteralToken(location, type, litValue);
-			return new Token(location, type, null);
+			if literalKeywordTypes.tryGet(keywordType, ref litValue):
+				return new LiteralToken(location, keywordType, litValue);
+
+			return new Token(location, keywordType, null);
 		}
-		else if normalizeIdents:
+
+		if normalizeIdents:
 			ident = normalizeIdentifier(ident, hasFormatChars);
 
 		return new Identifier(location, ident.intern());
@@ -593,6 +803,15 @@ public class Lexer
 
 	private scanPunctuation(ref i)
 	{
+		/* Syntax:
+		 *   punctuation-token: one of
+		 *     '{'   '}'    '['   ']'   '('    ')'    '.'    ','    ':'   ';'
+		 *     '~'   '<'    '<='  '>'   '>='   '=='   '!='   '?'    '??'  '?!'
+		 *     '->'  '+'    '-'   '|'   '*'    '/'    '%'    '&'    '^'   '::'
+		 *     '<<'  '>>'   '**'  '#'   '$'    '='    '+='   '-='   '|='  '*='
+		 *     '/='  '%='   '&='  '^='  '::='  '<<='  '>>='  '**='  '#='  '$='
+		 *     '@'   '...'  '?.'  '?('  '?['   '<=>'
+		 */
 		var startIndex = i;
 		var type = punctuation;
 		var ch;
@@ -626,6 +845,14 @@ public class Lexer
 
 	private skipWhiteSpace(ref i)
 	{
+		/* Syntax:
+		 *   whitespace:
+		 *     Any character with Unicode class Zs
+		 *     Horizontal tab character (U+0009)
+		 *     Vertical tab character (U+000B)
+		 *     Form feed character (U+000C)
+		 *     new-line-character
+		 */
 		while not isEOF(i)
 		{
 			var ch = source[i];
@@ -672,10 +899,54 @@ public class Lexer
 
 	private isDigit(i)
 	{
+		/* Syntax:
+		 *   decimal-digit: one of
+		 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7'  '8'  '9'
+		 */
 		if isEOF(i):
 			return false;
 		var ch = source[i];
 		return ch >= '0' and ch <= '9';
+	}
+
+	private isIdentifierStart(char, i)
+	{
+		/* Syntax:
+		 *   identifier-start-character:
+		 *     letter-character
+		 *     '_'
+		 *   letter-character:
+		 *     A Unicode character of classes Lu, Ll, Lt, Lm, Lo or Nl
+		 */
+		var cat = source.getCategory(i);
+		return char == '_' or
+			cat & UnicodeCategory.letter != UnicodeCategory.none or
+			cat == UnicodeCategory.letterNumber;
+	}
+
+	private isIdentifierChar(category)
+	{
+		/* Syntax:
+		 *   identifier-part-character:
+		 *     letter-character
+		 *     A Unicode character of classes Mn, Mc, Nd, Pc or Cf
+		 *   letter-character:
+		 *     A Unicode character of classes Lu, Ll, Lt, Lm, Lo or Nl
+		 * Additional notes:
+		 *   This method deliberately excludes formatting characters (UnicodeCategory.format),
+		 *   because they are tested for separately. Identifier normalization involves
+		 *   stripping formatting characters, but almost no identifiers contain formatting
+		 *   characters to begin with. Hence, we can improve performance by recording
+		 *   separately whether the identifier contains formatting characters, and only
+		 *   remove them (which requires a StringBuffer) when they are present.
+		 */
+		// Note: deliberately excludes UnicodeCategory.format, which is
+		// tested for separately.
+		return category & UnicodeCategory.letter != UnicodeCategory.none
+			or category == UnicodeCategory.decimalNumber
+			or category == UnicodeCategory.letterNumber
+			or category == UnicodeCategory.connectorPunct
+			or category & UnicodeCategory.mark != UnicodeCategory.none;
 	}
 
 	private static isNewline(char)
@@ -698,6 +969,20 @@ public class Lexer
 		throw new Error("Not implemented");
 	}
 
+	/* Syntax:
+	 *   keyword: one of
+	 *     'abstract'  'and'      'async'      'base'    'break'
+	 *     'catch'     'class'    'const'      'do'      'else'
+	 *     'enum'      'false'    'finally'    'for'     'function'
+	 *     'get'       'global'   'if'         'in'      'inheritable'
+	 *     'is'        'iter'     'namespace'  'new'     'next'
+	 *     'not'       'null'     'operator'   'or'      'overridable'
+	 *     'override'  'private'  'protected'  'public'  'ref'
+	 *     'refeq'     'return'   'set'        'static'  'this'
+	 *     'throw'     'true'     'try'        'typeof'  'use'
+	 *     'var'       'while'    'with'       'xor'     'yield'
+	 * Mapping from keyword string to corresponding TokenType.
+	 */
 	private static keywordToType = {
 		"abstract":    TokenType._abstract,
 		"and":         TokenType._and,
@@ -750,16 +1035,26 @@ public class Lexer
 		"xor":         TokenType._xor,
 		"yield":       TokenType._yield,
 	};
+	// Mapping from TokenType to keyword string.
 	private static typeToKeyword;
 
+	// Mapping from literal keyword type to corresponding literal value.
 	private static literalKeywordTypes = {
 		(TokenType._true):  true,
 		(TokenType._false): false,
 		(TokenType._null):  null,
 	};
 
+	// Assigned to by static constructor. Receives the length of the longest keyword.
 	private static longestKeywordLength;
 
+	/* Syntax:
+	 *   hex-digit: one of
+	 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7' 
+	 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F' 
+	 *     'a'  'b'  'c'  'd'  'e'  'f'
+	 * Mapping from hex-digit to corresponding value (as a UInt).
+	 */
 	private static hexDigits = {
 		'0': 0u,  '1': 1u,  '2': 2u,  '3': 3u,
 		'4': 4u,  '5': 5u,  '6': 6u,  '7': 7u,
@@ -769,6 +1064,11 @@ public class Lexer
 		'E': 14u, 'F': 15u,
 	};
 
+	/* Syntax:
+	 *   multiplier-suffix: one of
+	 *     'k'  'K'  'm'  'M'  'g'  'G'  't'  'T'
+	 * Mapping from multiplier-suffix to corresponding value (as an Int).
+	 */
 	private static multipliers = {
 		'k':             1_024, 'K':             1_024,
 		'm':         1_048_576, 'M':         1_048_576,
@@ -776,6 +1076,15 @@ public class Lexer
 		't': 1_099_511_627_776, 'T': 1_099_511_627_776,
 	};
 
+	/* Syntax:
+	 *   simple-escape-sequence: one of
+	 *     '\\"'  '\\\''  '\\\\'  '\\0'  '\\a'  '\\b'
+	 *     '\\n'  '\\r'   '\\t'   '\\_'  '\\-'
+	 *   unicode-escape-sequence:
+	 *     '\\u' hex-digit hex-digit hex-digit hex-digit
+	 *     '\\U' hex-digit hex-digit hex-digit hex-digit
+	 *       hex-digit hex-digit hex-digit hex-digit
+	 */
 	private static escapes = {
 		'0':  '\u0000', // Null
 		'a':  '\u0007', // Alert
@@ -798,6 +1107,15 @@ public class Lexer
 		},
 	};
 
+	/* Syntax:
+	 *   punctuation-token: one of
+	 *     '{'   '}'    '['   ']'   '('    ')'    '.'    ','    ':'   ';'
+	 *     '~'   '<'    '<='  '>'   '>='   '=='   '!='   '?'    '??'  '?!'
+	 *     '->'  '+'    '-'   '|'   '*'    '/'    '%'    '&'    '^'   '::'
+	 *     '<<'  '>>'   '**'  '#'   '$'    '='    '+='   '-='   '|='  '*='
+	 *     '/='  '%='   '&='  '^='  '::='  '<<='  '>>='  '**='  '#='  '$='
+	 *     '@'   '...'  '?.'  '?('  '?['   '<=>'
+	 */
 	private static punctuation = new PunctInfo(null, {
 		// Always single: { } [ ] ( ) , ; ~ @
 		'{': TokenType.curlyOpen,

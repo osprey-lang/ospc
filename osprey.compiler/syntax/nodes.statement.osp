@@ -124,7 +124,7 @@ public class ForStatement is IterationStatement
 
 	private _variables;
 	/// Summary: Gets a collection of the variable names declared by this statement,
-	///          as a {NodeList} of {Identifier} tokens.
+	///          as a {SyntaxList} of {Identifier} tokens.
 	public get variables = _variables;
 
 	private _expression;
