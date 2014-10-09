@@ -12,6 +12,17 @@ private enum ParseMode { expression, statement, document }
 /// Param args: Command-line arguments passed to the application.
 public function main(args)
 {
+	if not args.isEmpty
+	{
+		function parse(file)
+		{
+			var p = new Parser(SourceFile.open(file), ParseFlags.useExtensions);
+			return p.parseDocument();
+		}
+		args.each(parse >> SyntaxPrinter.print);
+		return 0;
+	}
+
 	var labels = {
 		(ParseMode.expression): "expr> ",
 		(ParseMode.statement): "stmt> ",
@@ -54,7 +65,11 @@ private function mainLoop(parsers, labels)
 	{
 		err.clearAll();
 
-		if line == "!expr"
+		if line == "!clear"
+		{
+			Console.clear();
+		}
+		else if line == "!expr"
 		{
 			mode = ParseMode.expression;
 			modeLabel = labels[mode];
@@ -93,7 +108,7 @@ private function mainLoop(parsers, labels)
 				}
 
 				if node:
-					NodePrinter.print(node);
+					SyntaxPrinter.print(node);
 			}
 		}
 
@@ -101,14 +116,16 @@ private function mainLoop(parsers, labels)
 	}
 }
 
-private static class NodePrinter
+private static class SyntaxPrinter
 {
 	private static ignoreProperties = Set.fromCollection(["location", "parent"]);
 
 	private static printColors = [ConsoleColor.gray,       ConsoleColor.black];
 	private static fieldColors = [ConsoleColor.green,      ConsoleColor.black];
 	private static typeColors  = [ConsoleColor.darkCyan,   ConsoleColor.black];
+	private static tokenColors = [ConsoleColor.white,      ConsoleColor.black];
 	private static enumColors  = [ConsoleColor.darkYellow, ConsoleColor.black];
+	private static nullColors  = [ConsoleColor.darkGray,   ConsoleColor.black];
 
 	public static print(syntax)
 	{
@@ -150,7 +167,8 @@ private static class NodePrinter
 	{
 		if value is Token
 		{
-			Console.writeLine(value);
+			writeToken(value);
+			Console.writeLine();
 		}
 		else if value is Syntax
 		{
@@ -174,7 +192,8 @@ private static class NodePrinter
 		}
 		else if value is null
 		{
-			Console.writeLine("<null>");
+			writeNull();
+			Console.writeLine();
 		}
 		else
 		{
@@ -199,11 +218,32 @@ private static class NodePrinter
 		Console.setColors -> printColors;
 	}
 
+	private static writeToken(token)
+	{
+		if token is Identifier
+		{
+			Console.setColors -> tokenColors;
+			Console.write(token.identifier);
+			Console.setColors -> printColors;
+		}
+		else
+		{
+			Console.write(token);
+		}
+	}
+
 	private static writeEnumValue(value)
 	{
 		var type = typeof(value);
 		Console.setColors -> enumColors;
 		Console.write(value is EnumSet ? "{0}({1})" : "{0}.{1}", [type.name, value]);
+		Console.setColors -> printColors;
+	}
+
+	private static writeNull()
+	{
+		Console.setColors -> nullColors;
+		Console.write("<null>");
 		Console.setColors -> printColors;
 	}
 }

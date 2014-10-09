@@ -24,6 +24,7 @@ use "ExternBody.osp";
 use "NodeList.osp";
 use "ParameterList.osp";
 use "ParseNode.osp";
+use "ParseTreeVisitor.osp";
 use "QualifiedName.osp";
 use "Statement.osp";
 use "SyntaxList.osp";

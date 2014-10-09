@@ -825,7 +825,7 @@ public class ListComprehensionIterator is ListComprehensionPart
 
 	private _variables;
 	/// Summary: Gets a collection of the variable names declared by this list
-	///          comprehension iterator, as a {NodeList} of {Identifier} tokens.
+	///          comprehension iterator, as a {SyntaxList} of {Identifier} tokens.
 	public get variables = _variables;
 
 	private _expression;
@@ -873,7 +873,7 @@ public class HashCreationExpression is Expression
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitHashConstructionExpression(this, arg);
+		return visitor.visitHashCreationExpression(this, arg);
 	}
 }
 

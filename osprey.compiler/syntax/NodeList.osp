@@ -20,7 +20,7 @@ public inheritable NodeList is SyntaxList
 	///          visitor and argument to the nodes.
 	/// Param visitor: An object that can visit the nodes in this collection.
 	/// Param arg:     An object that is passed to the `accept` method of each node.
-	public visitAll(visitor, arg)
+	public acceptAll(visitor, arg)
 	{
 		for node in collection:
 			node.accept(visitor, arg);
@@ -37,10 +37,10 @@ public inheritable NodeList is SyntaxList
 	///                to the first node.
 	/// Returns: If {updateArg} is true, returns the return value of the last visit.
 	///          Otherwise, returns null.
-	public visitAll(visitor, arg, updateArg)
+	public acceptAll(visitor, arg, updateArg)
 	{
 		if not updateArg:
-			return visitAll(visitor, arg);
+			return acceptAll(visitor, arg);
 
 		for node in collection:
 			arg = node.accept(visitor, arg);

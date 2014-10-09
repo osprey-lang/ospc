@@ -507,7 +507,10 @@ public inheritable Parser
 				modifiers.verifyForNamespace(this);
 				construct = parseNamespaceDeclaration(ref i);
 			}
-			else if token.match(TokenType._class):
+			else if token.match(TokenType._class) or
+				// Class declaration permits 'class' keyword to be omitted
+				// if 'inheritable' is the last modifier
+				modifiers._inheritable and modifiers._inheritable refeq lex[i - 1]:
 				construct = parseClassDeclaration(ref i, modifiers);
 			else if token.match(TokenType._enum):
 				construct = parseEnumDeclaration(ref i, modifiers);
@@ -670,7 +673,7 @@ public inheritable Parser
 			else if token.match(TokenType._class) or
 				// Class declaration permits 'class' keyword to be omitted
 				// if 'inheritable' is the last modifier
-				modifiers._inheritable refeq lex[i - 1]:
+				modifiers._inheritable and modifiers._inheritable refeq lex[i - 1]:
 				member = parseClassDeclaration(ref i, modifiers);
 			else if token.match(TokenType._enum):
 				member = parseEnumDeclaration(ref i, modifiers);
@@ -1182,6 +1185,7 @@ public inheritable Parser
 					name, value)
 			);
 		} while acceptr(ref i, TokenType.comma);
+		constants = new NodeList(constants);
 
 		var end = expectr(ref i, TokenType.semicolon);
 
