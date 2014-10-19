@@ -16,9 +16,9 @@ public class CompilerErrorManager is ErrorManager
 	private errors = null;
 	private warnings = null;
 
-	override get hasErrors = errors?.isEmpty ?? false;
+	override get hasErrors = not (errors?.isEmpty ?? true);
 
-	override get hasWarnings = warnings?.isEmpty ?? false;
+	override get hasWarnings = not (warnings?.isEmpty ?? true);
 
 	private printError(error)
 	{
@@ -37,7 +37,7 @@ public class CompilerErrorManager is ErrorManager
 		}
 		else
 		{
-			print(errorFormat.format([code, error.message]));
+			print(errorFormatWithoutSource.format([code, error.message]));
 		}
 	}
 
@@ -58,7 +58,7 @@ public class CompilerErrorManager is ErrorManager
 		}
 		else
 		{
-			print(warningFormat.format([code, warning.message]));
+			print(warningFormatWithoutSource.format([code, warning.message]));
 		}
 	}
 

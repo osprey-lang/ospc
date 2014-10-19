@@ -72,8 +72,7 @@ public inheritable Token is Syntax
 		if type == TokenType.eof:
 			return "end of file";
 
-		var cat = type & TokenType.categoryMask;
-		if cat == TokenType.keyword:
+		if type & TokenType.keyword == TokenType.keyword:
 			return "keyword '{0}'".format([value]);
 
 		return "'{0}' ({1})".format([value, type]);
@@ -105,15 +104,33 @@ public class Identifier is Token
 {
 	public new(location, identifier)
 	{
-		new base(location, TokenType.identifier);
+		new base(location, TokenType.identifier, null);
 
 		this._identifier = identifier;
+	}
+	public new(location, identifier, isEscaped)
+	{
+		new base(location, TokenType.identifier, null);
+
+		this._identifier = identifier;
+		this._isEscaped  = isEscaped;
 	}
 
 	private _identifier;
 	/// Summary: Gets the identifier represented by the {Identifier}. This may differ
 	///          from the token’s {value} if the identifier has been normalized.
 	public get identifier = _identifier;
+
+	private _isEscaped;
+
+	/// Summary: Determines whether the identifier is escaped; that is, the source text
+	///          begins with a backslash (`\`).
+	public get isEscaped
+	{
+		if _isEscaped is null:
+			_isEscaped = value[0] == '\\';
+		return _isEscaped;
+	}
 
 	override toString()
 	{

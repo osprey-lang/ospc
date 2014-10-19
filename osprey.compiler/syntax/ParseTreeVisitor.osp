@@ -131,6 +131,14 @@ public abstract class ParseTreeVisitor
 		return null;
 	}
 
+	public overridable visitMetadatum(meta, arg)
+	{
+		visitTypeName(meta.type, arg);
+		meta.positionalArguments.acceptAll(this, arg);
+		meta.namedArguments.acceptAll(this, arg);
+		return null;
+	}
+
 	public overridable visitMethodDeclaration(decl, arg)
 	{
 		decl.parameters.acceptAll(this, arg);
