@@ -924,7 +924,7 @@ public class Lexer
 			cat == UnicodeCategory.letterNumber;
 	}
 
-	private isIdentifierChar(category)
+	private static isIdentifierChar(category)
 	{
 		/* Syntax:
 		 *   identifier-part-character:
@@ -1200,7 +1200,7 @@ public class Lexer
 		'=': PunctInfo.acceptEqual(TokenType.assign,
 			// ==
 			TokenType.doubleEqual),
-		'!': PunctInfo.acceptEqual(null,
+		'!': PunctInfo.acceptEqual(TokenType.exclam,
 			// !=
 			TokenType.notEqual),
 		'?': new PunctInfo(TokenType.question, {

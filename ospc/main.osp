@@ -1,6 +1,5 @@
 use namespace aves;
 use namespace aves.reflection;
-use namespace io;
 use namespace osprey.compiler.parser;
 use namespace osprey.compiler.syntax;
 
@@ -90,7 +89,7 @@ private function mainLoop(parsers, labels)
 			if not line.isEmpty
 			{
 				var file = SourceFile.createAnon(line, "<stdin>");
-				var parser = new Parser(file, ParseFlags.useExtensions);
+				var parser = new Parser(file, ParseFlags.useExtensions, err);
 				var node;
 				try
 				{
@@ -107,7 +106,7 @@ private function mainLoop(parsers, labels)
 					node = null;
 				}
 
-				if node:
+				if node and not err.hasErrors:
 					SyntaxPrinter.print(node);
 			}
 		}

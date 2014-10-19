@@ -3,6 +3,7 @@
  ************************************************************/
 
 use "Lexer.osp";
+use "ParserErrorManager.osp";
 use "Token.osp";
 use "TokenType.osp";
 // ParseError is defined in errors/ParseError.osp
@@ -18,14 +19,39 @@ public inheritable Parser
 {
 	/// Summary: Creates a new {Parser} with the specified source file and default flags.
 	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
+	/// Throws ArgumentError:
+	///          {source} is not a {SourceFile} or {Lexer}.
 	public new(source)
 	{
-		new this(source, ParseFlags.none);
+		new this(source, ParseFlags.none, null);
 	}
 	/// Summary: Creates a new {Parser} with the specified source file and flags.
 	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
-	/// Param flags:  A {ParseFlags} value that specifies parser flags.
+	/// Param flags:  A {ParseFlags} value that specifies parser options.
+	/// Throws ArgumentError:
+	///          {source} is not a {SourceFile} or {Lexer}.
+	///
+	///          {flags} is not a {ParseFlags}.
 	public new(source, flags)
+	{
+		new this(source, flags, null);
+	}
+	/// Summary: Creates a new {Parser} with the specified source file, flags and error
+	///          manager.
+	/// Param source:       A {SourceFile} or {Lexer} that contains the code to parse.
+	/// Param flags:        A {ParseFlags} value that specifies parser options.
+	/// Param errorManager: An {ErrorManager} that receives recoverable parse errors.
+	///                     If this parameter is null, the parser creates its own error
+	///                     manager, which throws all errors.
+	/// Remarks: The {ErrorManager} only receives recoverable errors. Fatal parse errors,
+	///          such as invalid syntax, are always thrown.
+	/// Throws ArgumentError:
+	///          {source} is not a {SourceFile} or {Lexer}.
+	///
+	///          {flags} is not a {ParseFlags}.
+	///
+	///          {errorManager} is not null or an {ErrorManager}.
+	public new(source, flags, errorManager)
 	{
 		if flags is not ParseFlags:
 			throw new ArgumentError("flags must be an osprey.compiler.parser.ParseFlags", "flags");
@@ -46,12 +72,19 @@ public inheritable Parser
 		else:
 			throw new ArgumentError("source must be a Lexer or SourceFile", "source");
 
+		if errorManager is null:
+			errorManager = new ParserErrorManager();
+		else if errorManager is not ErrorManager:
+			throw new ArgumentError("errorManager must be an ErrorManager", "errorManager");
+
 		this.flags = flags;
+		this.errors = errorManager;
 	}
 
 	private file;
 	private flags;
 	private lex;
+	private errors; // ErrorManager
 
 	/// Summary: Determines whether the parser recognises non-standard extension keywords.
 	public get useExtensions = flags.hasFlag(ParseFlags.useExtensions);
@@ -251,6 +284,7 @@ public inheritable Parser
 		{
 			if errorCode is null:
 				errorCode = ErrorCode.err_UnexpectedToken;
+			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(errorCode, tok, type,
 				ErrorCode.getMessage(errorCode));
 		}
@@ -271,6 +305,7 @@ public inheritable Parser
 		{
 			if errorCode is null:
 				errorCode = ErrorCode.err_UnexpectedToken;
+			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(errorCode, tok, type,
 				ErrorCode.getMessage(errorCode));
 		}
@@ -308,15 +343,60 @@ public inheritable Parser
 		return new SourceLocation(file, start, end);
 	}
 
-	public error(source, errorCode)
+	/// Summary: Throws an irrecoverable {ParseError}. This indicates a syntax error
+	///          that the parser cannot recover from.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	public fatalError(source, errorCode)
 	{
-		throw new ParseError(source, errorCode,
+		throw new ParseError(source,
+			errorCode,
 			ErrorCode.getMessage(errorCode));
 	}
-	public error(source, errorCode, formatArg)
+	/// Summary: Throws an irrecoverable {ParseError}. This indicates a syntax error
+	///          that the parser cannot recover from.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	/// Param formatArg: An argument that is sent to {String.format} to format the error
+	///                  message.
+	public fatalError(source, errorCode, formatArg)
 	{
-		throw new ParseError(source, errorCode,
+		throw new ParseError(source,
+			errorCode,
 			ErrorCode.getMessage(errorCode, formatArg));
+	}
+
+	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
+	///          situations where the parser already has a correctly parsed structure,
+	///          but there is some other semantic error, such as an invalid target of
+	///          an assignment.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	public recoverableError(source, errorCode)
+	{
+		var error = new ParseError(source,
+			errorCode,
+			ErrorCode.getMessage(errorCode));
+		errors.addError(error);
+	}
+	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
+	///          situations where the parser already has a correctly parsed structure,
+	///          but there is some other semantic error, such as an invalid target of
+	///          an assignment.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	/// Param formatArg: An argument that is sent to {String.format} to format the error
+	///                  message.
+	public recoverableError(source, errorCode, formatArg)
+	{
+		var error = new ParseError(source,
+			errorCode,
+			ErrorCode.getMessage(errorCode, formatArg));
+		errors.addError(error);
 	}
 
 	/// Summary: Determines whether the specified {Expression} is classified as
@@ -324,20 +404,20 @@ public inheritable Parser
 	/// Returns: True if {expression} is classified as assignable; otherwise, false.
 	public isAssignable(expression)
 	{
-		return expression is SimpleNameExpression or
-			expression is MemberAccessExpression or
-			expression is IndexerAccessExpression or
-			expression is GlobalAccessExpression;
+		return expression is SimpleNameExpression
+			or expression is MemberAccessExpression
+			or expression is IndexerAccessExpression
+			or expression is GlobalAccessExpression;
 	}
 
 	/// Summary: Ensures that the specified {Expression} is classified as assignable.
-	///          If the expression is not assignable, a {ParseError} is thrown.
+	///          If the expression is not assignable, a recoverable error is triggered.
 	/// Param errorCode: The error code that is associated with the error thrown if
 	///          {expression} is not assignable.
 	public ensureAssignable(expression, errorCode = null)
 	{
 		if not isAssignable(expression):
-			error(expression, errorCode ?? ErrorCode.err_ExpressionMustBeAssignable);
+			recoverableError(expression, errorCode ?? ErrorCode.err_ExpressionMustBeAssignable);
 	}
 
 	/// Summary: Determines whether the specified {Expression} is a valid statement-expression.
@@ -519,7 +599,7 @@ public inheritable Parser
 			else if token.match(TokenType._function):
 				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
 			else if not modifiers.isEmpty:
-				error(modifiers.start, ErrorCode.err_ExpectedNamespaceMember);
+				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
 			else
 			{
 				if token.match(TokenType._var)
@@ -560,7 +640,7 @@ public inheritable Parser
 		 */
 		var start = expectr(ref i, TokenType.identifier);
 		if start.value != "version":
-			error(start, ErrorCode.err_UnexpectedToken);
+			fatalError(start, ErrorCode.err_UnexpectedToken);
 
 		var major, minor, build, revision;
 		major = expectr(ref i, TokenType.int);
@@ -683,7 +763,7 @@ public inheritable Parser
 				member = parseNamespaceDeclaration(ref i);
 			}
 			else:
-				error(token, ErrorCode.err_ExpectedNamespaceMember);
+				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
 
 			members.add(member);
 		}
@@ -732,6 +812,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon);
 		return new GlobalConstantDeclaration(getLocation(modifiers.start ?? start, end),
+			modifiers.metadata,
 			modifiers.accessibility,
 			constants);
 	}
@@ -758,6 +839,7 @@ public inheritable Parser
 		var body = parseBlockOrExtern(ref i);
 
 		return new GlobalFunctionDeclaration(getLocation(modifiers.start ?? start, body),
+			modifiers.metadata,
 			modifiers.accessibility,
 			name,
 			parameters,
@@ -867,16 +949,10 @@ public inheritable Parser
 				member = parseMethodDeclaration(ref i, modifiers);
 			else if token.match(TokenType._const):
 				member = parseClassConstantDeclaration(ref i, modifiers);
-			else if token.match(TokenType._iter)
-			{
-				modifiers.verifyForIterator(this);
-				member = parseIteratorDeclaration(ref i);
-			}
-			else if token.match(TokenType._operator)
-			{
-				modifiers.verifyForOperator(this);
-				member = parseOperatorDeclaration(ref i);
-			}
+			else if token.match(TokenType._iter):
+				member = parseIteratorDeclaration(ref i, modifiers);
+			else if token.match(TokenType._operator):
+				member = parseOperatorDeclaration(ref i, modifiers);
 			else
 			{
 				// Method declaration without 'function',
@@ -928,8 +1004,10 @@ public inheritable Parser
 
 		if modifiers._static:
 			return new StaticConstructorDeclaration(getLocation(start, end),
+				modifiers.metadata,
 				body);
 		return new ConstructorDeclaration(getLocation(start, end),
+			modifiers.metadata,
 			modifiers.accessibility,
 			parameters,
 			body);
@@ -992,11 +1070,11 @@ public inheritable Parser
 				/*endToken=*/ TokenType.squareClose,
 				/*allowEmpty=*/ false);
 			if indexerParams.hasOptionalParameters:
-				error(indexerParams.first(@.isOptional), ErrorCode.err_IndexerCannotHaveOptionalParameters);
+				recoverableError(indexerParams.first(@.isOptional), ErrorCode.err_IndexerCannotHaveOptionalParameters);
 			if indexerParams.variadicParameter != VariadicParameter.none:
-				error(indexerParams.first(@.isVariadic), ErrorCode.err_IndexerCannotHaveVariadicParameter);
+				recoverableError(indexerParams.first(@.isVariadic), ErrorCode.err_IndexerCannotHaveVariadicParameter);
 			if indexerParams.hasRefParameters:
-				error(indexerParams.first(@.isRef), ErrorCode.err_IndexerCannotHaveRefParameters);
+				recoverableError(indexerParams.first(@.isRef), ErrorCode.err_IndexerCannotHaveRefParameters);
 
 			expectr(ref i, TokenType.squareClose);
 		}
@@ -1010,13 +1088,13 @@ public inheritable Parser
 		if acceptr(ref i, TokenType.semicolon)
 		{
 			if not modifiers._abstract:
-				error(lex[i - 1], ErrorCode.err_NonAbstractPropertyCannotHaveEmptyBody);
+				recoverableError(lex[i - 1], ErrorCode.err_NonAbstractPropertyCannotHaveEmptyBody);
 			// otherwise, leave body null
 		}
 		else
 		{
 			if modifiers._abstract:
-				error(lex[i], ErrorCode.err_AbstractPropertyMustHaveEmptyBody);
+				recoverableError(lex[i], ErrorCode.err_AbstractPropertyMustHaveEmptyBody);
 
 			if not isSetter and acceptr(ref i, TokenType.assign)
 			{
@@ -1135,13 +1213,13 @@ public inheritable Parser
 		if acceptr(ref i, TokenType.semicolon)
 		{
 			if not modifiers._abstract:
-				error(lex[i - 1], ErrorCode.err_NonAbstractMethodCannotHaveEmptyBody);
+				recoverableError(lex[i - 1], ErrorCode.err_NonAbstractMethodCannotHaveEmptyBody);
 			// Otherwise, leave body null
 		}
 		else
 		{
 			if modifiers._abstract:
-				error(lex[i], ErrorCode.err_AbstractMethodMustHaveEmptyBody);
+				recoverableError(lex[i], ErrorCode.err_AbstractMethodMustHaveEmptyBody);
 			body = parseBlockOrExtern(ref i);
 		}
 
@@ -1190,10 +1268,10 @@ public inheritable Parser
 		var end = expectr(ref i, TokenType.semicolon);
 
 		return new ClassConstantDeclaration(getLocation(modifiers.start ?? start, end),
-			modifiers.accessibility, constants);
+			modifiers.metdata, modifiers.accessibility, constants);
 	}
 
-	public parseIteratorDeclaration(ref i)
+	public parseIteratorDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
 		 *   iterator-declaration:
@@ -1201,15 +1279,20 @@ public inheritable Parser
 		 * Additional notes:
 		 *   When extensions are enabled, the body can also be an `__extern` block.
 		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForIterator(this);
+
 		var start = expectr(ref i, TokenType._iter);
 
 		var body = parseBlockOrExtern(ref i);
 
 		return new IteratorDeclaration(getLocation(start, body),
+			modifiers.metadata,
 			body);
 	}
 
-	public parseOperatorDeclaration(ref i)
+	public parseOperatorDeclaration(ref i, modifiers)
 	{
 		/* Syntax:
 		 *   operator-declaration:
@@ -1235,6 +1318,10 @@ public inheritable Parser
 		 *   TokenType.overloadableBinaryOperator. Note that this category contains
 		 *   '+' and '-' as well, both of which are also unary operators.
 		 */
+		if modifiers is null:
+			modifiers = parseModifiers(ref i);
+		modifiers.verifyForOperator(this);
+
 		var start = expectr(ref i, TokenType._operator);
 
 		var opToken, op;
@@ -1256,11 +1343,11 @@ public inheritable Parser
 		expectr(ref i, TokenType.parenClose);
 
 		if parameters.hasOptionalParameters:
-			error(parameters.first(@.isOptional), ErrorCode.err_OperatorCannotHaveOptionalParameters);
+			recoverableError(parameters.first(@.isOptional), ErrorCode.err_OperatorCannotHaveOptionalParameters);
 		if parameters.variadicParameter != VariadicParameter.none:
-			error(parameters.first(@.isVariadic), ErrorCode.err_OperatorCannotHaveVariadicParameter);
+			recoverableError(parameters.first(@.isVariadic), ErrorCode.err_OperatorCannotHaveVariadicParameter);
 		if parameters.hasRefParameters:
-			error(parameters.first(@.isRef), ErrorCode.err_OperatorCannotHaveRefParameters);
+			recoverableError(parameters.first(@.isRef), ErrorCode.err_OperatorCannotHaveRefParameters);
 
 		// If op is UnaryOperator.bitwiseNot, we always expect exactly one parameter.
 		// If it's BinaryOperator.addition or BinaryOperator.subtraction, we expect one or two
@@ -1269,7 +1356,7 @@ public inheritable Parser
 		if op == UnaryOperator.bitwiseNot
 		{
 			if parameters.length != 1:
-				error(opToken, ErrorCode.err_WrongParameterCountForOperator,
+				recoverableError(opToken, ErrorCode.err_WrongParameterCountForOperator,
 					[1, parameters.length]);
 		}
 		else if op == BinaryOperator.addition or op == BinaryOperator.subtraction
@@ -1279,20 +1366,20 @@ public inheritable Parser
 					UnaryOperator.plus :
 					UnaryOperator.negation;
 			else if parameters.length != 2:
-				error(opToken, ErrorCode.err_WrongParameterCountForOperator,
+				recoverableError(opToken, ErrorCode.err_WrongParameterCountForOperator,
 					["1–2", parameters.length]);
 		}
 		else
 		{
 			if parameters.length != 2:
-				error(opToken, ErrorCode.err_WrongParameterCountForOperator,
+				recoverableError(opToken, ErrorCode.err_WrongParameterCountForOperator,
 					[2, parameters.length]);
 		}
 
 		var body = parseBlockOrExtern(ref i);
 
 		return new OperatorDeclaration(getLocation(start, body),
-			op, parameters, body);
+			modifiers.metadata, op, parameters, body);
 	}
 
 	public parseEnumDeclaration(ref i, modifiers = null)
@@ -1334,6 +1421,8 @@ public inheritable Parser
 		if not accept(i, TokenType.curlyClose):
 			do
 			{
+				var fieldMeta = parseMetadata(ref i);
+
 				var fieldName = expectr(ref i, TokenType.identifier);
 				var value;
 				if acceptr(ref i, TokenType.assign):
@@ -1341,7 +1430,7 @@ public inheritable Parser
 
 				members.add(
 					new EnumMember(getLocation(fieldName, value ?? fieldName),
-						fieldName, value)
+						fieldMeta, fieldName, value)
 				);
 			} while acceptr(ref i, TokenType.comma) and
 				not accept(i, TokenType.curlyClose);
@@ -1349,6 +1438,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.curlyClose);
 		return new EnumDeclaration(getLocation(modifiers.start ?? start, end),
+			modifiers.metadata,
 			modifiers.accessibility,
 			isSet,
 			typeName,
@@ -1387,7 +1477,7 @@ public inheritable Parser
 		 */
 		var start = lex[i];
 		if not acceptExtension(i, "__extern"):
-			error(start, ErrorCode.err_x_ExpectedExternKeyword);
+			fatalError(start, ErrorCode.err_x_ExpectedExternKeyword);
 		i += 1;
 
 		expectr(ref i, TokenType.parenOpen);
@@ -1406,7 +1496,7 @@ public inheritable Parser
 			else if paramName == "locals":
 				locals = value;
 			else:
-				error(param, ErrorCode.err_x_UnknownExternParameter, [paramName]);
+				fatalError(param, ErrorCode.err_x_UnknownExternParameter, [paramName]);
 		}
 
 		expectr(ref i, TokenType.parenClose);
@@ -1494,7 +1584,7 @@ public inheritable Parser
 
 			var value = parseExpression(ref i);
 
-			var end = expectr(ref i, TokenType.semicolon);
+			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 			return new ParallelLocalVariableDeclaration(getLocation(start, end),
 				names, value);
@@ -1520,7 +1610,7 @@ public inheritable Parser
 			} while acceptr(ref i, TokenType.comma);
 			variables = new NodeList(variables);
 
-			var end = expectr(ref i, TokenType.semicolon);
+			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 			return new SimpleLocalVariableDeclaration(getLocation(start, end),
 				variables);
@@ -1557,7 +1647,7 @@ public inheritable Parser
 		} while acceptr(ref i, TokenType.comma);
 		constants = new NodeList(constants);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new LocalConstantDeclaration(getLocation(start, end),
 			constants);
@@ -1626,7 +1716,7 @@ public inheritable Parser
 		// If there is a label and we didn't find an iteration statement, that's a paddlin'.
 		// I mean, that's an error.
 		if loopLabel:
-			error(loopLabel, ErrorCode.err_ExpectedLoopAfterLabel);
+			fatalError(loopLabel, ErrorCode.err_ExpectedLoopAfterLabel);
 
 		// Other statement kinds!
 		if token.match(TokenType._if):
@@ -1714,7 +1804,7 @@ public inheritable Parser
 		if acceptr(ref i, TokenType._while):
 			condition = parseExpression(ref i);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new DoWhileStatement(getLocation(start, end),
 			loopLabel,
@@ -1779,7 +1869,7 @@ public inheritable Parser
 			return parseBreakStatement(ref i);
 		if token.match(TokenType._throw):
 			return parseThrowStatement(ref i);
-		error(token, ErrorCode.err_ExpectedJumpStatement);
+		fatalError(token, ErrorCode.err_ExpectedJumpStatement);
 	}
 
 	public parseReturnStatement(ref i)
@@ -1805,7 +1895,7 @@ public inheritable Parser
 			values = new NodeList(values);
 		}
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new ReturnStatement(getLocation(start, end),
 			values);
@@ -1826,7 +1916,7 @@ public inheritable Parser
 		} while acceptr(ref i, TokenType.comma);
 		values = new NodeList(values);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new YieldStatement(getLocation(start, end),
 			values);
@@ -1847,7 +1937,7 @@ public inheritable Parser
 			i += 1;
 		}
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new NextStatement(getLocation(start, end),
 			label);
@@ -1868,7 +1958,7 @@ public inheritable Parser
 			i += 1;
 		}
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new BreakStatement(getLocation(start, end),
 			label);
@@ -1886,7 +1976,7 @@ public inheritable Parser
 		if not accept(i, TokenType.semicolon):
 			expr = parseExpression(ref i);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new ThrowStatement(getLocation(start, end),
 			expr);
@@ -1906,7 +1996,7 @@ public inheritable Parser
 		var finallyClause = parseFinallyClause(ref i);
 
 		if catchClauses.length == 0 and finallyClause is null:
-			error(tryClause, ErrorCode.err_TryStatementMustHaveCatchOrFinally);
+			recoverableError(tryClause, ErrorCode.err_TryStatementMustHaveCatchOrFinally);
 
 		return new TryStatement(getLocation(tryClause, lex[i - 1]),
 			tryClause,
@@ -1980,7 +2070,7 @@ public inheritable Parser
 			if type
 			{
 				if haveGeneric:
-					error(type, ErrorCode.err_SpecificCatchClauseAfterGeneric);
+					recoverableError(type, ErrorCode.err_SpecificCatchClauseAfterGeneric);
 				catchClause = new SpecificCatchClause(getLocation(start, end),
 					type,
 					variable,
@@ -1989,7 +2079,7 @@ public inheritable Parser
 			else
 			{
 				if haveGeneric:
-					error(start, ErrorCode.err_MultipleGenericCatchClauses);
+					recoverableError(start, ErrorCode.err_MultipleGenericCatchClauses);
 				haveGeneric = true;
 				catchClause = new GenericCatchClause(getLocation(start, end),
 					statements);
@@ -2076,7 +2166,7 @@ public inheritable Parser
 		expectr(ref i, TokenType.parenOpen);
 		var arguments = parseArgumentList(ref i);
 		expectr(ref i, TokenType.parenClose);
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		if isBase:
 			return new BaseConstructorCall(getLocation(start, end),
@@ -2119,10 +2209,10 @@ public inheritable Parser
 			// parallel-assignment-statement
 			return parseParallelAssignment(ref i, expr);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		if not isStatementExpression(expr):
-			error(expr, ErrorCode.err_InvalidStatementExpression);
+			recoverableError(expr, ErrorCode.err_InvalidStatementExpression);
 
 		return new ExpressionStatement(getLocation(expr, end),
 			expr);
@@ -2144,7 +2234,7 @@ public inheritable Parser
 
 		var value = parseExpression(ref i);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new CompoundAssignment(getLocation(target, end),
 			target, op, value);
@@ -2180,7 +2270,7 @@ public inheritable Parser
 		} while acceptr(ref i, TokenType.comma);
 		values = new NodeList(values);
 
-		var end = expectr(ref i, TokenType.semicolon);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new ParallelAssignment(getLocation(firstTarget, end),
 			targets, values);
@@ -2212,7 +2302,7 @@ public inheritable Parser
 		{
 			// Note: don't skip the end token
 			if not allowEmpty:
-				error(lex[i], ErrorCode.err_ExpectedArgument);
+				recoverableError(lex[i], ErrorCode.err_ExpectedArgument);
 			return EmptyLists.argument;
 		}
 
@@ -2224,7 +2314,7 @@ public inheritable Parser
 			if accept(i, TokenType._ref)
 			{
 				if not allowRefArgs:
-					error(lex[i], ErrorCode.err_RefArgumentNotAllowed);
+					recoverableError(lex[i], ErrorCode.err_RefArgumentNotAllowed);
 
 				arg = parseRefExpression(ref i);
 				hasRefArguments = true;
@@ -2875,7 +2965,7 @@ public inheritable Parser
 				end);
 		}
 
-		error(start, ErrorCode.err_ExpectedPrimaryExpression, [start]);
+		fatalError(start, ErrorCode.err_ExpectedPrimaryExpression, [start]);
 	}
 
 	private parseNamedConstantExpression(ref i)
@@ -3444,7 +3534,7 @@ public inheritable Parser
 			if isVariadic
 			{
 				if not parameters.isEmpty:
-					error(lex[i - 1], ErrorCode.err_PreVariadicMustBeFirstParameter);
+					recoverableError(lex[i - 1], ErrorCode.err_PreVariadicMustBeFirstParameter);
 				variadic = VariadicParameter.first;
 			}
 
@@ -3458,16 +3548,16 @@ public inheritable Parser
 				optionalCount += 1;
 			}
 			else if optionalCount:
-				error(name, ErrorCode.err_RequiredParameterAfterOptional);
+				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
 
 			if acceptr(ref i, TokenType.splat)
 			{
 				if isVariadic:
-					error(lex[i - 1], ErrorCode.err_MultipleVariadicSpecifiers);
+					recoverableError(lex[i - 1], ErrorCode.err_MultipleVariadicSpecifiers);
 				if accept(i, TokenType.comma):
-					error(lex[i], ErrorCode.err_PostVariadicMustBeLastParameter);
+					recoverableError(lex[i], ErrorCode.err_PostVariadicMustBeLastParameter);
 				if variadic:
-					error(name, ErrorCode.err_MultipleVariadicParameters);
+					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
 				isVariadic = true;
 				variadic = VariadicParameter.last;
 			}
@@ -3476,16 +3566,16 @@ public inheritable Parser
 			if isRef
 			{
 				if isVariadic:
-					error(name, ErrorCode.err_CannotPassVariadicByRef);
+					recoverableError(name, ErrorCode.err_CannotPassVariadicByRef);
 				if defaultValue:
-					error(name, ErrorCode.err_CannotPassOptionalByRef);
+					recoverableError(name, ErrorCode.err_CannotPassOptionalByRef);
 			}
 			// Variadic parameters cannot have a default value
 			if isVariadic and defaultValue:
-				error(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
+				recoverableError(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
 			// Cannot mix optional parameters and variadic parameters in the same parameter list
 			if optionalCount and variadic:
-				error(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
+				recoverableError(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
 
 			parameters.add(new Parameter(getLocation(start, lex[i - 1]),
 				name,
@@ -3538,7 +3628,7 @@ public inheritable Parser
 			if isVariadic
 			{
 				if not parameters.isEmpty:
-					error(lex[i - 1], ErrorCode.err_PreVariadicMustBeFirstParameter);
+					recoverableError(lex[i - 1], ErrorCode.err_PreVariadicMustBeFirstParameter);
 				variadic = VariadicParameter.first;
 			}
 
@@ -3555,16 +3645,16 @@ public inheritable Parser
 				optionalCount += 1;
 			}
 			else if optionalCount:
-				error(name, ErrorCode.err_RequiredParameterAfterOptional);
+				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
 
 			if acceptr(ref i, TokenType.splat)
 			{
 				if isVariadic:
-					error(lex[i - 1], ErrorCode.err_MultipleVariadicSpecifiers);
+					recoverableError(lex[i - 1], ErrorCode.err_MultipleVariadicSpecifiers);
 				if accept(i, TokenType.comma):
-					error(lex[i], ErrorCode.err_PostVariadicMustBeLastParameter);
+					recoverableError(lex[i], ErrorCode.err_PostVariadicMustBeLastParameter);
 				if variadic:
-					error(name, ErrorCode.err_MultipleVariadicParameters);
+					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
 				isVariadic = true;
 				variadic = VariadicParameter.last;
 			}
@@ -3573,18 +3663,18 @@ public inheritable Parser
 			if isRef
 			{
 				if isVariadic:
-					error(name, ErrorCode.err_CannotPassVariadicByRef);
+					recoverableError(name, ErrorCode.err_CannotPassVariadicByRef);
 				if defaultValue:
-					error(name, ErrorCode.err_CannotPassOptionalByRef);
+					recoverableError(name, ErrorCode.err_CannotPassOptionalByRef);
 				if hasThisPrefix:
-					error(name, ErrorCode.err_CannotPassThisParameterByRef);
+					recoverableError(name, ErrorCode.err_CannotPassThisParameterByRef);
 			}
 			// Variadic parameters cannot have a default value
 			if isVariadic and defaultValue:
-				error(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
+				recoverableError(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
 			// Cannot mix optional parameters and variadic parameters in the same parameter list
 			if optionalCount and variadic:
-				error(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
+				recoverableError(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
 
 			var param;
 			if hasThisPrefix:
@@ -3632,6 +3722,8 @@ public inheritable Parser
 		else:
 			modifiers.clear();
 
+		modifiers.metadata = parseMetadata(ref i);
+
 		while accept(i, TokenType.memberModifier)
 		{
 			var modifier = lex[i];
@@ -3643,14 +3735,98 @@ public inheritable Parser
 		return modifiers;
 	}
 
+	public parseMetadata(ref i)
+	{
+		/* Syntax:
+		 *   metadata:
+		 *     metadatum
+		 *     metadata metadatum
+		 *   metadatum:
+		 *     '!' type meta-argument-list?
+		 *   meta-arguments-list:
+		 *     '(' meta-positional-arguments? ')'
+		 *     '(' meta-named-arguments ')'
+		 *     '(' meta-positional-arguments ',' meta-named-arguments ')'
+		 *   meta-positional-arguments:
+		 *     meta-argument
+		 *     meta-positional-arguments ',' meta-argument
+		 *   meta-named-arguments:
+		 *     meta-named-argument
+		 *     meta-named-arguments ',' meta-named-argument
+		 *   meta-named-argument:
+		 *     identifier ':' meta-argument
+		 *   meta-argument:
+		 *     expression
+		 * Additional restrictions:
+		 *   Each meta-argument must be a constant expression or a simple-list-expression
+		 *   containing only meta-arguments. This is verified elsewhere.
+		 */
+		if not accept(i, TokenType.exclam):
+			return EmptyLists.node;
+
+		var metadata = new List(1);
+		while accept(i, TokenType.exclam)
+		{
+			var start = lex[i];
+			i += 1;
+
+			var type = parseTypeName(ref i);
+
+			var positionalArguments = EmptyLists.argument;
+			var namedArguments = EmptyLists.node;
+
+			if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose)
+			{
+				positionalArguments = new List(1);
+				namedArguments = new List(1);
+
+				do
+				{
+					var memberName;
+					if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon)
+					{
+						memberName = lex[i];
+						i += 2; // skip name and colon
+					}
+
+					var argument = parseExpression(ref i);
+
+					if not memberName and not namedArguments.isEmpty:
+						recoverableError(argument, ErrorCode.err_PositionalMetaArgumentMustComeBeforeNamed);
+
+					if memberName:
+						namedArguments.add(
+							new MemberInitializer(getLocation(memberName, argument),
+								memberName, argument)
+						);
+					else:
+						positionalArguments.add(argument);
+				} while acceptr(ref i, TokenType.comma);
+
+				expectr(ref i, TokenType.parenClose);
+
+				positionalArguments = new ArgumentList(positionalArguments);
+				namedArguments = new NodeList(namedArguments);
+			}
+
+			metadata.add(
+				new Metadatum(getLocation(start, lex[i - 1]),
+					type, positionalArguments, namedArguments)
+			);
+		}
+		metadata = new NodeList(metadata);
+
+		return metadata;
+	}
+
 	// Functions that set modifiers as they are being parsed.
 	private static modifierFuncs = {
 		(TokenType._public): @(parser, modifiers, token)
 		{
 			if modifiers._public:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["public"]);
-			if modifiers.hasAccessibility:
-				parser.error(token, ErrorCode.err_MultipleAccessibilityModifiers);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["public"]);
+			else if modifiers.hasAccessibility:
+				parser.recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
 
 			modifiers._public = token;
 			if modifiers.start is null:
@@ -3659,9 +3835,9 @@ public inheritable Parser
 		(TokenType._protected): @(parser, modifiers, token)
 		{
 			if modifiers._protected:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["protected"]);
-			if modifiers.hasAccessibility:
-				parser.error(token, ErrorCode.err_MultipleAccessibilityModifiers);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["protected"]);
+			else if modifiers.hasAccessibility:
+				parser.recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
 
 			modifiers._protected = token;
 			if modifiers.start is null:
@@ -3670,9 +3846,9 @@ public inheritable Parser
 		(TokenType._private): @(parser, modifiers, token)
 		{
 			if modifiers._private:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["private"]);
-			if modifiers.hasAccessibility:
-				parser.error(token, ErrorCode.err_MultipleAccessibilityModifiers);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["private"]);
+			else if modifiers.hasAccessibility:
+				parser.recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
 
 			modifiers._private = token;
 			if modifiers.start is null:
@@ -3681,7 +3857,7 @@ public inheritable Parser
 		(TokenType._static): @(parser, modifiers, token)
 		{
 			if modifiers._static:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["static"]);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["static"]);
 
 			modifiers._static = token;
 			if modifiers.start is null:
@@ -3690,7 +3866,7 @@ public inheritable Parser
 		(TokenType._abstract): @(parser, modifiers, token)
 		{
 			if modifiers._abstract:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["abstract"]);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["abstract"]);
 
 			modifiers._abstract = token;
 			if modifiers.start is null:
@@ -3699,7 +3875,7 @@ public inheritable Parser
 		(TokenType._inheritable): @(parser, modifiers, token)
 		{
 			if modifiers._inheritable:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["inheritable"]);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["inheritable"]);
 
 			modifiers._inheritable = token;
 			if modifiers.start is null:
@@ -3708,7 +3884,7 @@ public inheritable Parser
 		(TokenType._overridable): @(parser, modifiers, token)
 		{
 			if modifiers._overridable:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["overridable"]);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["overridable"]);
 
 			modifiers._overridable = token;
 			if modifiers.start is null:
@@ -3717,7 +3893,7 @@ public inheritable Parser
 		(TokenType._override): @(parser, modifiers, token)
 		{
 			if modifiers._override:
-				parser.error(token, ErrorCode.err_DuplicateModifier, ["override"]);
+				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["override"]);
 
 			modifiers._override = token;
 			if modifiers.start is null:
@@ -3879,6 +4055,10 @@ public enum set ParseFlags
 ///          The {Parser.parseModifiers} method is used for parsing modifiers.
 public class Modifiers
 {
+	/// Summary: A {NodeList} containing the {Metadatum} instances associated
+	///          with the {Modifiers}.
+	public metadata = EmptyLists.node;
+
 	/// Summary: The first modifier {Token}, or null if this instance has no modifiers.
 	public start;
 
@@ -3899,7 +4079,8 @@ public class Modifiers
 	/// Summary: The `override` modifier {Token} if specified, otherwise null.
 	public _override;
 
-	/// Summary: Determines whether this {Modifiers} instance has no modifiers.
+	/// Summary: Determines whether this {Modifiers} instance has no modifiers
+	///          and no metadata.
 	public get isEmpty =
 		not (_public     or
 			_protected   or
@@ -3908,7 +4089,19 @@ public class Modifiers
 			_abstract    or
 			_inheritable or
 			_overridable or
-			_override);
+			_override) and
+		metadata.isEmpty;
+
+	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
+	public get hasModifiers =
+		_public      or
+		_protected   or
+		_private     or
+		_static      or
+		_abstract    or
+		_inheritable or
+		_overridable or
+		_override;
 
 	/// Summary: Determines whether this {Modifiers} instance has an accessibility modifier.
 	public get hasAccessibility = _public or _protected or _private;
@@ -3929,6 +4122,7 @@ public class Modifiers
 	/// Summary: Removes all modifiers from this instance.
 	public clear()
 	{
+		metadata     = EmptyLists.node;
 		start        = null;
 		_public      = null;
 		_protected   = null;
@@ -3947,7 +4141,7 @@ public class Modifiers
 			_abstract ?? _inheritable ??
 			_overridable ?? _override;
 		if invalidToken:
-			parser.error(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
 	}
 
 	public verifyForClass(parser)
@@ -3955,15 +4149,15 @@ public class Modifiers
 		var invalidToken = _protected ??
 			_overridable ?? _override;
 		if invalidToken:
-			parser.error(invalidToken, ErrorCode.err_InvalidModifierForClass);
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClass);
 
 		if _static
 		{
 			if _abstract or _inheritable:
-				parser.error(_abstract ?? _inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
+				parser.recoverableError(_abstract ?? _inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
 		}
 		else if _abstract and _inheritable:
-			parser.error(_abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
+			parser.recoverableError(_abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
 	}
 
 	public verifyForConstructor(parser)
@@ -3975,7 +4169,7 @@ public class Modifiers
 				_abstract ?? _inheritable ??
 				_overridable ?? _override;
 			if invalidToken:
-				parser.error(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
 		}
 		else
 		{
@@ -3983,7 +4177,7 @@ public class Modifiers
 				_abstract ?? _inheritable ??
 				_overridable ?? _override;
 			if invalidToken:
-				parser.error(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
 		}
 	}
 
@@ -3993,7 +4187,7 @@ public class Modifiers
 			_abstract ?? _inheritable ??
 			_overridable ?? _override;
 		if invalidToken:
-			parser.error(invalidToken, ErrorCode.err_InvalidModifierForField);
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForField);
 	}
 
 	public verifyForMethod(parser)
@@ -4004,22 +4198,22 @@ public class Modifiers
 				_abstract ?? _inheritable ??
 				_overridable ?? _override;
 			if invalidToken:
-				parser.error(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
 		}
 		else
 		{
 			if _inheritable:
-				parser.error(_inheritable, ErrorCode.err_MethodCannotBeInheritable);
+				parser.recoverableError(_inheritable, ErrorCode.err_MethodCannotBeInheritable);
 
 			if _abstract and _overridable:
-				parser.error(_overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
+				parser.recoverableError(_overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
 		}
 	}
 
 	public verifyForInvocator(parser)
 	{
 		if _static:
-			parser.error(_static, ErrorCode.err_InvocatorCannotBeStatic);
+			parser.recoverableError(_static, ErrorCode.err_InvocatorCannotBeStatic);
 		verifyForMethod(parser);
 	}
 
@@ -4031,22 +4225,22 @@ public class Modifiers
 				_abstract ?? _inheritable ??
 				_overridable ?? _override;
 			if invalidToken:
-				parser.error(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
 		}
 		else
 		{
 			if _inheritable:
-				parser.error(_inheritable, ErrorCode.err_PropertyCannotBeInheritable);
+				parser.recoverableError(_inheritable, ErrorCode.err_PropertyCannotBeInheritable);
 
 			if _abstract and _overridable:
-				parser.error(_overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
+				parser.recoverableError(_overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
 		}
 	}
 
 	public verifyForIndexer(parser)
 	{
 		if _static:
-			parser.error(_static, ErrorCode.err_IndexerCannotBeStatic);
+			parser.recoverableError(_static, ErrorCode.err_IndexerCannotBeStatic);
 		verifyForProperty(parser);
 	}
 
@@ -4057,19 +4251,19 @@ public class Modifiers
 			_abstract ?? _inheritable ??
 			_overridable ?? _override;
 		if invalidToken:
-			parser.error(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
 	}
 
 	public verifyForOperator(parser)
 	{
-		if not isEmpty:
-			parser.error(start, ErrorCode.err_InvalidModifierForOperator);
+		if hasModifiers:
+			parser.recoverableError(start, ErrorCode.err_InvalidModifierForOperator);
 	}
 
 	public verifyForIterator(parser)
 	{
-		if not isEmpty:
-			parser.error(start, ErrorCode.err_InvalidModifierForIterator);
+		if hasModifiers:
+			parser.recoverableError(start, ErrorCode.err_InvalidModifierForIterator);
 	}
 
 	public verifyForEnum(parser)
@@ -4079,12 +4273,12 @@ public class Modifiers
 			_abstract ?? _inheritable ??
 			_overridable ?? _override;
 		if invalidToken:
-			parser.error(invalidToken, ErrorCode.err_InvalidModifierForEnum);
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForEnum);
 	}
 
 	public verifyForNamespace(parser)
 	{
 		if not isEmpty:
-			parser.error(start, ErrorCode.err_InvalidNamespaceModifiers);
+			parser.recoverableError(start, ErrorCode.err_InvalidNamespaceModifiers);
 	}
 }

@@ -24,6 +24,9 @@ public inheritable class SyntaxList is Iterable
 	/// Summary: Gets the length of the list.
 	public get length = collection.length;
 
+	/// Summary: Determines whether the list is emtpy.
+	public get isEmpty = length == 0;
+
 	private static getItems(items)
 	{
 		// Wrap a single Syntax in a list
