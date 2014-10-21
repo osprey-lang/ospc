@@ -51,4 +51,14 @@ public class SourceLocation
 	{
 		return sourceFile.getLineNumber(startIndex, tabSize, ref column);
 	}
+
+	/// Summary: Determines whether the source location contains the specified source
+	///          index.
+	/// Param index: The source index to test against.
+	/// Returns: True if this source location contains the specified source index;
+	///          otherwise, false.
+	public contains(index)
+	{
+		return index >= _startIndex and index < _endIndex;
+	}
 }
