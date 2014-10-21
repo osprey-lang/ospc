@@ -15,6 +15,16 @@ use namespace osprey.compiler.syntax;
 
 namespace osprey.compiler.parser;
 
+/// Summary: Parses Osprey source code into a parse tree, by examining a stream of tokens
+///          produced by a {Lexer}. The parser can parse structures starting at any index
+///          in the token stream. Typically, the {parseDocument} method is used to parse
+///          an entire source file.
+///
+///          The parser can produce both fatal and recoverable parse errors. Fatal errors
+///          occur when grammatically invalid structures are encountered, such as missing
+///          the semicolon at the end of a statement, or having a stray closing bracket.
+///          Recoverable errors are caused by semantic problems, for instance duplicate
+///          accessibility modifiers, or required parameters after optional parameters.
 public inheritable Parser
 {
 	/// Summary: Creates a new {Parser} with the specified source file and default flags.
@@ -44,7 +54,9 @@ public inheritable Parser
 	///                     If this parameter is null, the parser creates its own error
 	///                     manager, which throws all errors.
 	/// Remarks: The {ErrorManager} only receives recoverable errors. Fatal parse errors,
-	///          such as invalid syntax, are always thrown.
+	///          such as invalid syntax, are always thrown. The {ErrorManager} is passed
+	///          on to the lexer that the parse creates if {source} is a {SourceFile}. If
+	///          {source} is already a {Lexer}, its error manager is used as-is.
 	/// Throws ArgumentError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	///
@@ -55,6 +67,12 @@ public inheritable Parser
 	{
 		if flags is not ParseFlags:
 			throw new ArgumentError("flags must be an osprey.compiler.parser.ParseFlags", "flags");
+
+		// Check this first so that we can initialize the lexer with a proper ErrorManager.
+		if errorManager is null:
+			errorManager = new ParserErrorManager();
+		else if errorManager is not ErrorManager:
+			throw new ArgumentError("errorManager must be an ErrorManager", "errorManager");
 
 		if source is Lexer
 		{
@@ -67,15 +85,11 @@ public inheritable Parser
 			this.lex = new Lexer(source,
 				flags.hasFlag(ParseFlags.normalizeIdentifiers) ? 
 					LexerFlags.normalizeIdentifiers :
-					LexerFlags.none);
+					LexerFlags.none,
+				errorManager);
 		}
 		else:
 			throw new ArgumentError("source must be a Lexer or SourceFile", "source");
-
-		if errorManager is null:
-			errorManager = new ParserErrorManager();
-		else if errorManager is not ErrorManager:
-			throw new ArgumentError("errorManager must be an ErrorManager", "errorManager");
 
 		this.flags = flags;
 		this.errors = errorManager;
@@ -85,6 +99,9 @@ public inheritable Parser
 	private flags;
 	private lex;
 	private errors; // ErrorManager
+
+	/// Summary: Gets the {ErrorManager} that the parser uses.
+	public get errorManager = errors;
 
 	/// Summary: Determines whether the parser recognises non-standard extension keywords.
 	public get useExtensions = flags.hasFlag(ParseFlags.useExtensions);
