@@ -515,12 +515,20 @@ public inheritable Parser
 	 * * what you are skipping. Something like "// skip xyz and ':'" is usually fine.
 	 * */
 
+	/// Summary: Parses an entire source file, starting at token index 0.
+	/// Returns: A {Document} instance representing a parse tree for the source file.
+	/// Remarks: This method parses the grammar of the 'compilation-unit' nonterminal.
 	public parseDocument()
 	{
 		var i = 0;
 		return parseDocument(ref i);
 	}
 
+	/// Summary: Parses an entire source file, starting at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Document} instance representing a parse tree for the source file.
+	/// Remarks: This method parses the grammar of the 'compilation-unit' nonterminal.
 	public parseDocument(ref i)
 	{
 		/* Syntax:
@@ -645,6 +653,11 @@ public inheritable Parser
 			statements);
 	}
 
+	/// Summary: Parses a version specifier at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {VersionSpecifier} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'version-specified' nonterminal.
 	public parseVersionSpecifier(ref i)
 	{
 		/* Syntax:
@@ -678,6 +691,11 @@ public inheritable Parser
 			major, minor, build, revision);
 	}
 
+	/// Summary: Parses a `use` directive at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {UseDirective} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'use-directive' nonterminal.
 	public parseUseDirective(ref i)
 	{
 		/* Syntax:
@@ -733,6 +751,11 @@ public inheritable Parser
 
 	//<region: Member declarations>
 
+	/// Summary: Parses a namespace declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {NamespaceDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'namespace-declaration' nonterminal.
 	public parseNamespaceDeclaration(ref i)
 	{
 		/* Syntax:
@@ -792,6 +815,15 @@ public inheritable Parser
 			members);
 	}
 
+	/// Summary: Parses a global constant declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the constant declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {GlobalConstantDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'global-constant-declaration' nonterminal.
 	public parseGlobalConstantDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -834,6 +866,15 @@ public inheritable Parser
 			constants);
 	}
 
+	/// Summary: Parses a global function declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the function declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {GlobalFunctionDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'global-function-declaration' nonterminal.
 	public parseGlobalFunctionDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -863,6 +904,15 @@ public inheritable Parser
 			body);
 	}
 
+	/// Summary: Parses a class declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the class declaration, such as an accessibility modifier or
+	///          metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {ClassDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'class-declaration' nonterminal.
 	public parseClassDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -989,6 +1039,17 @@ public inheritable Parser
 		return members;
 	}
 
+	/// Summary: Parses a constructor declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the constructor declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {ConstructorDeclaration} or {StaticConstructorDeclaration} from the
+	///          tokens at the starting index.
+	/// Remarks: This method parses the grammar of both the 'constructor-declaration' and
+	///          the 'static-constructor-declaration' nonterminals.
 	public parseConstructorDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -997,6 +1058,8 @@ public inheritable Parser
 		 *   constructor-body:
 		 *     block
 		 *     ';'
+		 *   static-constructor-declaration:
+		 *     metadata? 'static' 'new' '(' ')' block
 		 */
 		if modifiers is null:
 			modifiers = parseModifiers(ref i);
@@ -1030,6 +1093,16 @@ public inheritable Parser
 			body);
 	}
 
+	/// Summary: Parses a property or indexer declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the property declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {PropertyDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of both the 'property-accessor-declaration'
+	///          and the 'indexer-declaration' nonterminals.
 	public parsePropertyOrIndexerDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1132,6 +1205,15 @@ public inheritable Parser
 			modifiers, isSetter, name, body);
 	}
 
+	/// Summary: Parses a field declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the field declaration, such as an accessibility modifier or
+	///          metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {FieldDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'field-declaration' nonterminal.
 	public parseFieldDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1181,6 +1263,15 @@ public inheritable Parser
 			fields);
 	}
 
+	/// Summary: Parses a method or invocator declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the method declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {MethodDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'method-declaration' nonterminal.
 	public parseMethodDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1248,6 +1339,15 @@ public inheritable Parser
 			modifiers, name, parameters, body);
 	}
 
+	/// Summary: Parses a class constant declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the constant declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: A {ClassConstantDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'class-constant-declaration' nonterminal.
 	public parseClassConstantDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1288,6 +1388,15 @@ public inheritable Parser
 			modifiers.metdata, modifiers.accessibility, constants);
 	}
 
+	/// Summary: Parses an iterator declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the iterator declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: An {IteratorDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'iterator-declaration' nonterminal.
 	public parseIteratorDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1309,6 +1418,15 @@ public inheritable Parser
 			body);
 	}
 
+	/// Summary: Parses an operator declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the operator declaration, such as an accessibility modifier
+	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: An {OperatorDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'operator-declaration' nonterminal.
 	public parseOperatorDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1399,6 +1517,15 @@ public inheritable Parser
 			modifiers.metadata, op, parameters, body);
 	}
 
+	/// Summary: Parses an enum declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
+	///          modifiers of the enum declaration, such as an accessibility modifier or
+	///          metadata. If null, this method will parse modifiers at {i} by calling
+	///          {parseModifiers}.
+	/// Returns: An {EnumDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'enum-declaration' nonterminal.
 	public parseEnumDeclaration(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -1466,6 +1593,14 @@ public inheritable Parser
 
 	//<region: Statements>
 
+	/// Summary: Parses a block or `__extern` body at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Block} or {ExternBody} from the tokens at the starting index.
+	/// Remarks: `__extern` bodies are a compiler extension, and will not be parsed unless
+	///          extensions are enabled. This method is intended to be used by constructs
+	///          that take a block or `__extern` as its body, e.g. a method or iterator.
+	///          Do not use it for blocks in general.
 	public parseBlockOrExtern(ref i)
 	{
 		/* Syntax:
@@ -1478,6 +1613,10 @@ public inheritable Parser
 		return parseBlock(ref i);
 	}
 
+	/// Summary: Parses an `__extern` body at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {ExternBody} from the tokens at the starting index.
 	public parseExternBody(ref i)
 	{
 		/* Syntax:
@@ -1525,6 +1664,11 @@ public inheritable Parser
 			locals);
 	}
 
+	/// Summary: Parses a block at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Block} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'block' nonterminal.
 	public parseBlock(ref i)
 	{
 		/* Syntax:
@@ -1547,6 +1691,11 @@ public inheritable Parser
 			statements);
 	}
 
+	/// Summary: Parses a statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Statement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'statement' nonterminal.
 	public parseStatement(ref i)
 	{
 		/* Syntax:
@@ -1568,6 +1717,11 @@ public inheritable Parser
 		return parseEmbeddedStatement(ref i);
 	}
 
+	/// Summary: Parses a local variable declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {LocalDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'local-variable-declaration' nonterminal.
 	public parseLocalVariableDeclaration(ref i)
 	{
 		/* Syntax:
@@ -1634,6 +1788,11 @@ public inheritable Parser
 		}
 	}
 
+	/// Summary: Parses a local constant declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {LocalConstantDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'local-constant-declaration' nonterminal.
 	public parseLocalConstantDeclaration(ref i)
 	{
 		/* Syntax:
@@ -1670,6 +1829,11 @@ public inheritable Parser
 			constants);
 	}
 
+	/// Summary: Parses a local function declaration at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {LocalFunctionDeclaration} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'local-function-declaration' nonterminal.
 	public parseLocalFunctionDeclaration(ref i)
 	{
 		/* Syntax:
@@ -1692,6 +1856,11 @@ public inheritable Parser
 			name, parameters, body);
 	}
 
+	/// Summary: Parses an embedded statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Statement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'embedded-statement' nonterminal.
 	public parseEmbeddedStatement(ref i)
 	{
 		/* Syntax:
@@ -1755,6 +1924,13 @@ public inheritable Parser
 		return parseExpressionStatement(ref i);
 	}
 
+	/// Summary: Parses a `for` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param loopLabel: (optional) If specified, contains the loop label attached to the
+	///          iteration statement. This method does not otherwise parse loop labels.
+	/// Returns: A {ForStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'for-statement' nonterminal.
 	public parseForStatement(ref i, loopLabel = null)
 	{
 		/* Syntax:
@@ -1788,6 +1964,13 @@ public inheritable Parser
 			elseClause);
 	}
 
+	/// Summary: Parses a `while` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param loopLabel: (optional) If specified, contains the loop label attached to the
+	///          iteration statement. This method does not otherwise parse loop labels.
+	/// Returns: A {WhileStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'while-statement' nonterminal.
 	public parseWhileStatement(ref i, loopLabel = null)
 	{
 		/* Syntax:
@@ -1806,6 +1989,13 @@ public inheritable Parser
 			body);
 	}
 
+	/// Summary: Parses a `do-while` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param loopLabel: (optional) If specified, contains the loop label attached to the
+	///          iteration statement. This method does not otherwise parse loop labels.
+	/// Returns: A {DoWhileStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'do-while-statement' nonterminal.
 	public parseDoWhileStatement(ref i, loopLabel = null)
 	{
 		/* Syntax:
@@ -1829,6 +2019,11 @@ public inheritable Parser
 			condition);
 	}
 
+	/// Summary: Parses an `if` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {IfStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'if-statement' nonterminal.
 	public parseIfStatement(ref i)
 	{
 		/* Syntax:
@@ -1849,6 +2044,11 @@ public inheritable Parser
 			alternative);
 	}
 
+	/// Summary: Parses an `else` clause at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Statement} that represents the body of the else clause.
+	/// Remarks: This method parses the grammar of the 'else-clause' nonterminal.
 	public parseElseClause(ref i)
 	{
 		/* Syntax:
@@ -1865,6 +2065,12 @@ public inheritable Parser
 		return parseEmbeddedStatement(ref i);
 	}
 
+	/// Summary: Parses a jump statement (`return`, `yield`, `next`, `break` or `throw`)
+	///          at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Statement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'jump-statement' nonterminal.
 	public parseJumpStatement(ref i)
 	{
 		/* Syntax:
@@ -1889,6 +2095,11 @@ public inheritable Parser
 		fatalError(token, ErrorCode.err_ExpectedJumpStatement);
 	}
 
+	/// Summary: Parses a `return` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {ReturnStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'return-statement' nonterminal.
 	public parseReturnStatement(ref i)
 	{
 		/* Syntax:
@@ -1918,6 +2129,11 @@ public inheritable Parser
 			values);
 	}
 
+	/// Summary: Parses a `yield` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {YieldStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'yield-statement' nonterminal.
 	public parseYieldStatement(ref i)
 	{
 		/* Syntax:
@@ -1939,6 +2155,11 @@ public inheritable Parser
 			values);
 	}
 
+	/// Summary: Parses a `next` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {NextStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'next-statement' nonterminal.
 	public parseNextStatement(ref i)
 	{
 		/* Syntax:
@@ -1960,6 +2181,11 @@ public inheritable Parser
 			label);
 	}
 
+	/// Summary: Parses a `break` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {BreakStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'break-statement' nonterminal.
 	public parseBreakStatement(ref i)
 	{
 		/* Syntax:
@@ -1981,6 +2207,11 @@ public inheritable Parser
 			label);
 	}
 
+	/// Summary: Parses a `throw` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {ThrowStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'throw-statement' nonterminal.
 	public parseThrowStatement(ref i)
 	{
 		/* Syntax:
@@ -1999,6 +2230,11 @@ public inheritable Parser
 			expr);
 	}
 
+	/// Summary: Parses a `try` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {TryStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'try-statement' nonterminal.
 	public parseTryStatement(ref i)
 	{
 		/* Syntax:
@@ -2132,6 +2368,11 @@ public inheritable Parser
 		return null;
 	}
 
+	/// Summary: Parses a `with` statement at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {WithStatement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'with-statement' nonterminal.
 	public parseWithStatement(ref i)
 	{
 		/* Syntax:
@@ -2152,6 +2393,13 @@ public inheritable Parser
 			body);
 	}
 
+	/// Summary: Parses a control statement at the specified token index. A control
+	///          statement is the body of another statement, and consists of either
+	///          a block, or a colon followed by an embedded statement.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Statement} that represents the control statement.
+	/// Remarks: This method parses the grammar of the 'control-statement' nonterminal.
 	public parseControlStatement(ref i)
 	{
 		/* Syntax:
@@ -2164,6 +2412,12 @@ public inheritable Parser
 		return parseBlock(ref i);
 	}
 
+	/// Summary: Parses a constructor call at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {BaseConstructorCall} or {ThisConstructorCall} from the tokens at the
+	///          starting index.
+	/// Remarks: This method parses the grammar of the 'constructor-call' nonterminal.
 	public parseConstructorCall(ref i)
 	{
 		/* Syntax:
@@ -2192,6 +2446,13 @@ public inheritable Parser
 			arguments);
 	}
 
+	/// Summary: Parses an expression statement or assignment statement at the specified
+	///          token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {Statement} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of both the 'expression-statement' and
+	///          the 'assignment-statement' nonterminals.
 	public parseExpressionStatement(ref i)
 	{
 		/* Syntax:
@@ -2297,6 +2558,18 @@ public inheritable Parser
 
 	//<region: Expressions>
 
+	/// Summary: Parses an argument list at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param endToken: (optional) A {TokenType} that marks the end of the argument list.
+	///          This is necessary because argument lists can have trailing commas. The
+	///          default is {TokenType.parenClose}.
+	/// Param allowEmpty: (optional) True if an empty argument list is permitted. The
+	///          default is true.
+	/// Param allowRefArgs: (optional) True if `ref` arguments are permitted. The default
+	///          is true.
+	/// Returns: An {ArgumentList} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'argument-list' nonterminal.
 	public parseArgumentList(ref i, endToken = TokenType.parenClose,
 		allowEmpty = true, allowRefArgs = true)
 	{
@@ -2347,6 +2620,11 @@ public inheritable Parser
 		return new ArgumentList(arguments, hasRefArguments);
 	}
 
+	/// Summary: Parses a `ref` expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {RefExpression} from the tokens at the starting index.
+	/// Remarks: This method parses part of the 'argument' nonterminal.
 	public parseRefExpression(ref i)
 	{
 		/* Syntax:
@@ -2360,6 +2638,11 @@ public inheritable Parser
 		return new RefExpression(getLocation(start, inner), inner);
 	}
 
+	/// Summary: Parses an expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'expression' nonterminal.
 	public parseExpression(ref i)
 	{
 		/* Syntax:
@@ -2389,6 +2672,12 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a conditional (ternary operator) expression at the specified
+	///          token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'conditional-expression' nonterminal.
 	public parseConditionalExpression(ref i)
 	{
 		/* Syntax:
@@ -2411,6 +2700,12 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a null-coalescing expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'null-coalescing-expression'
+	///          nonterminal.
 	public parseNullCoalescingExpression(ref i)
 	{
 		/* Syntax:
@@ -2430,6 +2725,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a null-or expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'null-or-expression' nonterminal.
 	public parseNullOrExpression(ref i)
 	{
 		/* Syntax:
@@ -2449,6 +2749,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a conditional OR expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'conditional-or-expression' nonterminal.
 	public parseConditionalOrExpression(ref i)
 	{
 		/* Syntax:
@@ -2468,6 +2773,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a conditional XOR expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'conditional-xor-expression' nonterminal.
 	public parseConditionalXorExpression(ref i)
 	{
 		/* Syntax:
@@ -2487,6 +2797,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a conditional AND expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'conditional-and-expression' nonterminal.
 	public parseConditionalAndExpression(ref i)
 	{
 		/* Syntax:
@@ -2506,6 +2821,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses an equality expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'equality-expression' nonterminal.
 	public parseEqualityExpression(ref i)
 	{
 		/* Syntax:
@@ -2556,6 +2876,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a relational expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'relational-expression' nonterminal.
 	public parseRelationalExpression(ref i)
 	{
 		/* Syntax:
@@ -2583,6 +2908,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses an unreserved expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'unreserved-expression' nonterminal.
 	public parseUnreservedExpression(ref i)
 	{
 		/* Syntax:
@@ -2607,6 +2937,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a shift expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'shift-expression' nonterminal.
 	public parseShiftExpression(ref i)
 	{
 		/* Syntax:
@@ -2631,6 +2966,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses an additive expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'additive-expression' nonterminal.
 	public parseAdditiveExpression(ref i)
 	{
 		/* Syntax:
@@ -2656,6 +2996,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a bitwise XOR expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'xor-expression' nonterminal.
 	public parseXorExpression(ref i)
 	{
 		/* Syntax:
@@ -2675,6 +3020,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a multiplicative expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'multiplicative-expression' nonterminal.
 	public parseMultiplicativeExpression(ref i)
 	{
 		/* Syntax:
@@ -2701,6 +3051,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a concatenation expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'concatenation-expression' nonterminal.
 	public parseConcatenationExpression(ref i)
 	{
 		/* Syntax:
@@ -2720,6 +3075,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a unary expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'unary-expression' nonterminal.
 	public parseUnaryExpression(ref i)
 	{
 		/* Syntax:
@@ -2744,6 +3104,11 @@ public inheritable Parser
 		return parseExponentialExpression(ref i);
 	}
 
+	/// Summary: Parses an exponential expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'exponential-expression' nonterminal.
 	public parseExponentialExpression(ref i)
 	{
 		/* Syntax:
@@ -2763,6 +3128,12 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a function application expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'function-application-expression'
+	///          nonterminal.
 	public parseFunctionApplicationExpression(ref i)
 	{
 		/* Syntax:
@@ -2782,6 +3153,11 @@ public inheritable Parser
 		return left;
 	}
 
+	/// Summary: Parses a primary expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {Expression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'primary-expression' nonterminal.
 	public parsePrimaryExpression(ref i)
 	{
 		/* Syntax:
@@ -3008,6 +3384,12 @@ public inheritable Parser
 			type, value);
 	}
 
+	/// Summary: Parses an object creation expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {ObjectCreationExpression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'object-creation-expression'
+	///          nonterminal.
 	public parseObjectCreationExpression(ref i)
 	{
 		/* Syntax:
@@ -3073,6 +3455,12 @@ public inheritable Parser
 			type, arguments, initializer);
 	}
 
+	/// Summary: Parses a list creation expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {ListCreationExpression}, {RangeExpression} or {ListComprehensionExpression}
+	///          from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'list-creation-expression' nonterminal.
 	public parseListCreationExpression(ref i)
 	{
 		/* Syntax:
@@ -3189,6 +3577,11 @@ public inheritable Parser
 			variables, expression);
 	}
 
+	/// Summary: Parses a hash creation expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {HashCreationExpression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'hash-creation-expression' nonterminal.
 	public parseHashCreationExpression(ref i)
 	{
 		/* Syntax:
@@ -3264,6 +3657,11 @@ public inheritable Parser
 			key, value);
 	}
 
+	/// Summary: Parses a lambda expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: An {LambdaExpression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'lambda-expression' nonterminal.
 	public parseLambdaExpression(ref i)
 	{
 		/* Syntax:
@@ -3429,6 +3827,11 @@ public inheritable Parser
 		return new NodeList(links);
 	}
 
+	/// Summary: Parses a `use-in` expression at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {UseInExpression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'use-in-expression' nonterminal.
 	public parseUseInExpression(ref i)
 	{
 		/* Syntax:
@@ -3465,6 +3868,12 @@ public inheritable Parser
 
 	//</region>
 
+	/// Summary: Parses a qualified name at the specified token index. A qualified name is
+	///          a series of identifiers separated by dots.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {QualifiedName} containing one or more identifiers.
+	/// Remarks: This method parses the grammar of the 'qualified-name' nonterminal.
 	public parseQualifiedName(ref i)
 	{
 		/* Syntax:
@@ -3482,6 +3891,11 @@ public inheritable Parser
 		return new QualifiedName(names);
 	}
 
+	/// Summary: Parses a type name at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {TypeName} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'type' nonterminal.
 	public parseTypeName(ref i)
 	{
 		/* Syntax:
@@ -3505,6 +3919,20 @@ public inheritable Parser
 			name);
 	}
 
+	/// Summary: Parses a parameter list at the specified token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Param endToken: (optional) A {TokenType} that marks the end of the argument list.
+	///          This is used only for performance reasons: if the starting token matches
+	///          {endToken}, then a static, empty instance of {ParameterList} is returned.
+	///          The default is {TokenType.parenClose}.
+	/// Param allowEmpty: (optional) True if the parameter list is allowed to be empty.
+	///          The default is true.
+	/// Returns: A {ParameterList} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'parameter-list' nonterminal. It is
+	///          also suitable in other situations that call for parameter lists, even if
+	///          the grammar does not say 'parameter-list', such as the parameters of an
+	///          indexer accessor or operator overload.
 	public parseParameterList(ref i, endToken = TokenType.parenClose, allowEmpty = true)
 	{
 		/* Syntax:
@@ -3534,12 +3962,17 @@ public inheritable Parser
 		 * Additional notes:
 		 *   The parameter allowEmpty can be used to disallow empty parameter lists.
 		 *   This is relevant for some constructs, such as indexers.
-		 *   Since `[]` and `{}` are valid expressions and constant-expression is
-		 *   defined as expression, we use parseExpression to parse optional-parameter-value,
-		 *   and verify the value later.
+		 *
+		 *   Since `[]` and `{}` are valid expressions and constant-expression is defined
+		 *   as expression, we use parseExpression to parse optional-parameter-value, and
+		 *   verify the value later.
 		 */
-		if accept(i, endToken):
+		if accept(i, endToken)
+		{
+			if not allowEmpty:
+				recoverableError(lex[i], ErrorCode.err_ExpectedParameter);
 			return EmptyLists.parameter;
+		}
 
 		var variadic, optionalCount = 0;
 
@@ -3607,6 +4040,15 @@ public inheritable Parser
 			null);
 	}
 
+	/// Summary: Parses a constructor paremter list at the specified token index. This
+	///          method should not be used to parse a general parameter list; see
+	///          {parseParameterList} for that purpose.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {ParameterList} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'ctor-parameter-list' nonterminal.
+	///          A constructor parameter list differs from a regular parameter list in that
+	///          required, non-ref parameters can be prefixed with `this.`.
 	public parseConstructorParameterList(ref i)
 	{
 		/* Syntax:
@@ -3715,14 +4157,13 @@ public inheritable Parser
 	}
 
 	/// Summary: Parses zero or more member modifiers at the specified index.
-	/// Param i: (ref) The starting token index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers:
 	///          (optional) A {Modifiers} instance that is updated with the parsed
 	///          modifiers, or null to construct a new instance.
 	/// Returns: A {Modifiers} instance that contains the parsed modifiers. If {modifiers}
 	///          is not null, the return value is the same instance as {modifiers}.
-	/// Throws ParseError:
-	///          A member modifier occurs more than once.
 	public parseModifiers(ref i, modifiers = null)
 	{
 		/* Syntax:
@@ -3752,6 +4193,16 @@ public inheritable Parser
 		return modifiers;
 	}
 
+	/// Summary: Parses zero or more metadata at the specified index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {NodeList} of {Metadatum} instances from the tokens at the starting
+	///          index.
+	/// Remarks: In general, call {parseModifiers} instead of {parseMetadata} if you want
+	///          to parse member modifiers, and then use one of the `verify*` methods on
+	///          the returned {Metadata}. Calling this method directly can be useful when
+	///          the member accepts no other modifiers than metadata – this is done, for
+	///          instance, with enum fields.
 	public parseMetadata(ref i)
 	{
 		/* Syntax:
@@ -4124,7 +4575,8 @@ public class Modifiers
 	public get hasAccessibility = _public or _protected or _private;
 
 	/// Summary: Gets an {Accessibility} value representing the declared accessibility
-	///          of the member.
+	///          of the member. If no accessibility modifier is present, the return
+	///          value is always {Accessibility.none}.
 	public get accessibility
 	{
 		if _public:
@@ -4151,6 +4603,10 @@ public class Modifiers
 		_override    = null;
 	}
 
+	/// Summary: Verifies the modifiers for a global function or constant declaration.
+	///          If any modifiers are invalid, a recoverable error is triggered on the
+	///          specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForGlobalFunctionOrConstant(parser)
 	{
 		var invalidToken = _protected ??
@@ -4161,6 +4617,9 @@ public class Modifiers
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
 	}
 
+	/// Summary: Verifies the modifiers for a class declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForClass(parser)
 	{
 		var invalidToken = _protected ??
@@ -4177,6 +4636,9 @@ public class Modifiers
 			parser.recoverableError(_abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
 	}
 
+	/// Summary: Verifies the modifiers for a constructor declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForConstructor(parser)
 	{
 		if _static
@@ -4198,6 +4660,9 @@ public class Modifiers
 		}
 	}
 
+	/// Summary: Verifies the modifiers for a field declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForField(parser)
 	{
 		var invalidToken =
@@ -4207,6 +4672,9 @@ public class Modifiers
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForField);
 	}
 
+	/// Summary: Verifies the modifiers for a method declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForMethod(parser)
 	{
 		if _static
@@ -4227,6 +4695,9 @@ public class Modifiers
 		}
 	}
 
+	/// Summary: Verifies the modifiers for an invocator declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForInvocator(parser)
 	{
 		if _static:
@@ -4234,6 +4705,9 @@ public class Modifiers
 		verifyForMethod(parser);
 	}
 
+	/// Summary: Verifies the modifiers for a property declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForProperty(parser)
 	{
 		if _static
@@ -4254,6 +4728,9 @@ public class Modifiers
 		}
 	}
 
+	/// Summary: Verifies the modifiers for an indexer declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForIndexer(parser)
 	{
 		if _static:
@@ -4261,6 +4738,9 @@ public class Modifiers
 		verifyForProperty(parser);
 	}
 
+	/// Summary: Verifies the modifiers for a class constant declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForClassConstant(parser)
 	{
 		var invalidToken =
@@ -4271,18 +4751,27 @@ public class Modifiers
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
 	}
 
+	/// Summary: Verifies the modifiers for an operator declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForOperator(parser)
 	{
 		if hasModifiers:
 			parser.recoverableError(start, ErrorCode.err_InvalidModifierForOperator);
 	}
 
+	/// Summary: Verifies the modifiers for an iterator declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForIterator(parser)
 	{
 		if hasModifiers:
 			parser.recoverableError(start, ErrorCode.err_InvalidModifierForIterator);
 	}
 
+	/// Summary: Verifies the modifiers for an enum declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForEnum(parser)
 	{
 		var invalidToken = _protected ??
@@ -4293,6 +4782,9 @@ public class Modifiers
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForEnum);
 	}
 
+	/// Summary: Verifies the modifiers for a namespace declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForNamespace(parser)
 	{
 		if not isEmpty:

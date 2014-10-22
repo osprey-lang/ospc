@@ -93,7 +93,7 @@ public class Lexer
 
 	private errors; // ErrorManager
 
-	/// Summary: Gets the {ErrorManager} that the parser uses.
+	/// Summary: Gets the {ErrorManager} that the lexer uses.
 	public get errorManager = errors;
 
 	/// Summary: Gets the source file that is being lexed.
@@ -1388,6 +1388,8 @@ private class LexerIterator is Iterator
 			index += 1;
 			return true;
 		}
+
+		_current = null;
 		return false;
 	}
 }

@@ -99,6 +99,7 @@
 1708:err_CannotPassOptionalByRef = "A pass-by-reference parameter cannot be optional.";
 1709:err_MultipleVariadicParameters = "A parameter list can contain at most one variadic parameter.";
 1710:err_CannotPassThisParameterByRef = "A 'this' parameter cannot be passed by reference.";
+1711:err_ExpectedParameter = "Expected a parameter declaration. An empty parameter list is not permitted in this context.";
 
 // Argument list errors
 1721:err_ExpectedArgument = "Expected an argument. An empty argument list is not permitted in this context.";
