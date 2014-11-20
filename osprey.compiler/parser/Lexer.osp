@@ -1189,14 +1189,8 @@ public class Lexer
 		'\\': '\u005C', // Backslash
 		'_':  '\u00A0', // No-break space
 		'-':  '\u00AD', // Soft hyphen
-		'u': @(lexer, ref i)
-		{
-			return lexer.scanUnicodeEscape(4, ref i);
-		},
-		'U': @(lexer, ref i)
-		{
-			return lexer.scanUnicodeEscape(8, ref i);
-		},
+		'u': @(lexer, ref i) = lexer.scanUnicodeEscape(4, ref i),
+		'U': @(lexer, ref i) = lexer.scanUnicodeEscape(8, ref i),
 	};
 
 	/* Syntax:

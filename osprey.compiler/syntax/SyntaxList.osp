@@ -3,10 +3,11 @@ use namespace aves;
 namespace osprey.compiler.syntax;
 
 /// Summary: Implements an immutable collection of {Syntax} elements. This class inherits
-///          from {Iterable}, and therefore supports all the methods exposed by that class.
+///          from {CollectionIterable}, and therefore supports all the methods exposed by
+///          that class.
 ///
 ///          A {SyntaxList} does not contain null references.
-public inheritable class SyntaxList is Iterable
+public inheritable class SyntaxList is CollectionIterable
 {
 	public new()
 	{
