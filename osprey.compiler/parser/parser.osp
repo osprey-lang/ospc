@@ -3,6 +3,7 @@
  ************************************************************/
 
 use "Lexer.osp";
+use "LexerFlags.osp";
 use "ParserErrorManager.osp";
 use "Token.osp";
 use "TokenType.osp";
@@ -83,7 +84,7 @@ public inheritable Parser
 		{
 			this.file = source;
 			this.lex = new Lexer(source,
-				flags.hasFlag(ParseFlags.normalizeIdentifiers) ? 
+				flags.hasFlag(ParseFlags.normalizeIdentifiers) ?
 					LexerFlags.normalizeIdentifiers :
 					LexerFlags.none,
 				errorManager);
@@ -462,7 +463,7 @@ public inheritable Parser
 			expression is AssignmentExpression;
 	}
 
-	/* * 
+	/* *
 	 * * In all the parse methods below, every single method that doesn't just directly
 	 * * call another method should have a description of the grammar it parses. This is
 	 * * partly for your reference as you write the method, partly for the benefit of
@@ -1771,7 +1772,7 @@ public inheritable Parser
 				if acceptr(ref i, TokenType.assign):
 					value = parseExpression(ref i);
 
-				var location = value ? 
+				var location = value ?
 					getLocation(name, value) :
 					name.location;
 				variables.add(
