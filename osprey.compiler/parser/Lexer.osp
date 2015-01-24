@@ -88,7 +88,7 @@ public class Lexer
 	private tokens = [];
 
 	private eof; // EOF token if EOF seen, otherwise null
-    
+
 	private lastDocComment; // The last seen documentation comment
 
 	private errors; // ErrorManager
@@ -295,7 +295,7 @@ public class Lexer
 						break;
 					// If we fall through here, then k + 2 is not past the end and
 					// there is a substring "///" at k.
-					i = k;
+					i = k + 3;
 				}
 			} while isDocComment;
 		}
@@ -492,8 +492,8 @@ public class Lexer
 		 *     hex-digit
 		 *     hex-digits hex-digit
 		 *   hex-digit: one of
-		 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7' 
-		 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F' 
+		 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7'
+		 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F'
 		 *     'a'  'b'  'c'  'd'  'e'  'f'
 		 *   hex-digit-sections:
 		 *     hex-digit-section
@@ -728,7 +728,7 @@ public class Lexer
 			else if ch == '\'':
 				fatalError(ErrorCode.err_EmptyCharLiteral, i, 1);
 			else:
-				i += 1; // Skip character
+				i += ch.length; // Skip character
 		}
 		if isEOF(i):
 			fatalError(ErrorCode.err_CharLiteralNotTerminated, i, 1);
@@ -978,7 +978,7 @@ public class Lexer
 	{
 		return new SourceLocation(file, startIndex, endIndex);
 	}
-    
+
     private isEOF(i)
     {
         return i >= length;
@@ -1048,11 +1048,11 @@ public class Lexer
 	}
 
 	//</region>
-    
-    iter
-    {
-        return new LexerIterator(this);
-    }
+
+	iter
+	{
+		return new LexerIterator(this);
+	}
 
 	//<region: Static members>
 
@@ -1127,7 +1127,7 @@ public class Lexer
 		"xor":         TokenType._xor,
 		"yield":       TokenType._yield,
 	};
-	// Mapping from TokenType to keyword string.
+	// Mapping from TokenType to keyword string. Assigned to by static constructor.
 	private static typeToKeyword;
 
 	// Mapping from literal keyword type to corresponding literal value.
@@ -1137,13 +1137,13 @@ public class Lexer
 		(TokenType._null):  null,
 	};
 
-	// Assigned to by static constructor. Receives the length of the longest keyword.
+	// Receives the length of the longest keyword. Assigned to by static constructor.
 	private static longestKeywordLength;
 
 	/* Syntax:
 	 *   hex-digit: one of
-	 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7' 
-	 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F' 
+	 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7'
+	 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F'
 	 *     'a'  'b'  'c'  'd'  'e'  'f'
 	 * Mapping from hex-digit to corresponding value (as a UInt).
 	 */
@@ -1331,7 +1331,7 @@ public class Lexer
 // may have a base TokenType, and may have zero or more characters that can
 // follow the token to create other tokens.
 // Examples:
-//   * '<' has TokenType.less, can be folowed by '<' to make TokenType.shiftLeft,
+//   * '<' has TokenType.less, can be followed by '<' to make TokenType.shiftLeft,
 //     or by '=' to make TokenType.lessEqual, which in turn can be followed by '>'
 ///    to make TokenType.compare.
 //   * '.' has TokenType.dot, can be followed by '.' which has no base token type, which
@@ -1386,20 +1386,4 @@ private class LexerIterator is Iterator
 		_current = null;
 		return false;
 	}
-}
-
-public enum set LexerFlags
-{
-	/// Summary: Specifies no lexer flags.
-	none = 0,
-	/// Summary: Specifies that comments should be included in
-	///          the generated token stream.
-	includeComments = 1,
-	/// Summary: Specifies that identifiers should be normalized. See Remarks.
-	/// Remarks: Normalization consists of performing the following steps:
-	///
-	///          * The keyword escape prefix, if any, is stripped. \
-	///          * The string is normalized to Normalization Form C. \
-	///          * Formatting characters (of Unicode character class Cf) are stripped.
-	normalizeIdentifiers = 2,
 }
