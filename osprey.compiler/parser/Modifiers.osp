@@ -1,0 +1,280 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Represents zero or more member modifiers that were consumed during parsing.
+///          Instances of this class are intended to be reused if modifiers need to be
+///          parsed multiple times, to avoid repeated memory allocations.
+///
+///          The {Parser.parseModifiers} method is used for parsing modifiers.
+public class Modifiers
+{
+	/// Summary: A {NodeList} containing the {Metadatum} instances associated
+	///          with the {Modifiers}.
+	public metadata = EmptyLists.node;
+
+	/// Summary: The first modifier {Token}, or null if this instance has no modifiers.
+	public start;
+
+	/// Summary: The `public` modifier {Token} if specified, otherwise null.
+	public _public;
+	/// Summary: The `protected` modifier {Token} if specified, otherwise null.
+	public _protected;
+	/// Summary: The `private` modifier {Token} if specified, otherwise null.
+	public _private;
+	/// Summary: The `static` modifier {Token} if specified, otherwise null.
+	public _static;
+	/// Summary: The `abstract` modifier {Token} if specified, otherwise null.
+	public _abstract;
+	/// Summary: The `inheritable` modifier {Token} if specified, otherwise null.
+	public _inheritable;
+	/// Summary: The `overridable` modifier {Token} if specified, otherwise null.
+	public _overridable;
+	/// Summary: The `override` modifier {Token} if specified, otherwise null.
+	public _override;
+
+	/// Summary: Determines whether this {Modifiers} instance has no modifiers
+	///          and no metadata.
+	public get isEmpty =
+		not (_public     or
+			_protected   or
+			_private     or
+			_static      or
+			_abstract    or
+			_inheritable or
+			_overridable or
+			_override) and
+		metadata.isEmpty;
+
+	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
+	public get hasModifiers =
+		_public      or
+		_protected   or
+		_private     or
+		_static      or
+		_abstract    or
+		_inheritable or
+		_overridable or
+		_override;
+
+	/// Summary: Determines whether this {Modifiers} instance has an accessibility modifier.
+	public get hasAccessibility = _public or _protected or _private;
+
+	/// Summary: Gets an {Accessibility} value representing the declared accessibility
+	///          of the member. If no accessibility modifier is present, the return
+	///          value is always {Accessibility.none}.
+	public get accessibility
+	{
+		if _public:
+			return Accessibility._public;
+		if _protected:
+			return Accessibility._protected;
+		if _private:
+			return Accessibility._private;
+		return Accessibility.none;
+	}
+
+	/// Summary: Removes all modifiers from this instance.
+	public clear()
+	{
+		metadata     = EmptyLists.node;
+		start        = null;
+		_public      = null;
+		_protected   = null;
+		_private     = null;
+		_static      = null;
+		_abstract    = null;
+		_inheritable = null;
+		_overridable = null;
+		_override    = null;
+	}
+
+	/// Summary: Verifies the modifiers for a global function or constant declaration.
+	///          If any modifiers are invalid, a recoverable error is triggered on the
+	///          specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForGlobalFunctionOrConstant(parser)
+	{
+		var invalidToken = _protected ??
+			_static ??
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
+	}
+
+	/// Summary: Verifies the modifiers for a class declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForClass(parser)
+	{
+		var invalidToken = _protected ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClass);
+
+		if _static
+		{
+			if _abstract or _inheritable:
+				parser.recoverableError(_abstract ?? _inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
+		}
+		else if _abstract and _inheritable:
+			parser.recoverableError(_abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
+	}
+
+	/// Summary: Verifies the modifiers for a constructor declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForConstructor(parser)
+	{
+		if _static
+		{
+			var invalidToken =
+				_public ?? _protected ?? _private ??
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
+		}
+		else
+		{
+			var invalidToken =
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
+		}
+	}
+
+	/// Summary: Verifies the modifiers for a field declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForField(parser)
+	{
+		var invalidToken =
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForField);
+	}
+
+	/// Summary: Verifies the modifiers for a method declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForMethod(parser)
+	{
+		if _static
+		{
+			var invalidToken =
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
+		}
+		else
+		{
+			if _inheritable:
+				parser.recoverableError(_inheritable, ErrorCode.err_MethodCannotBeInheritable);
+
+			if _abstract and _overridable:
+				parser.recoverableError(_overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
+		}
+	}
+
+	/// Summary: Verifies the modifiers for an invocator declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForInvocator(parser)
+	{
+		if _static:
+			parser.recoverableError(_static, ErrorCode.err_InvocatorCannotBeStatic);
+		verifyForMethod(parser);
+	}
+
+	/// Summary: Verifies the modifiers for a property declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForProperty(parser)
+	{
+		if _static
+		{
+			var invalidToken =
+				_abstract ?? _inheritable ??
+				_overridable ?? _override;
+			if invalidToken:
+				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
+		}
+		else
+		{
+			if _inheritable:
+				parser.recoverableError(_inheritable, ErrorCode.err_PropertyCannotBeInheritable);
+
+			if _abstract and _overridable:
+				parser.recoverableError(_overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
+		}
+	}
+
+	/// Summary: Verifies the modifiers for an indexer declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForIndexer(parser)
+	{
+		if _static:
+			parser.recoverableError(_static, ErrorCode.err_IndexerCannotBeStatic);
+		verifyForProperty(parser);
+	}
+
+	/// Summary: Verifies the modifiers for a class constant declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForClassConstant(parser)
+	{
+		var invalidToken =
+			_static ??
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
+	}
+
+	/// Summary: Verifies the modifiers for an operator declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForOperator(parser)
+	{
+		if hasModifiers:
+			parser.recoverableError(start, ErrorCode.err_InvalidModifierForOperator);
+	}
+
+	/// Summary: Verifies the modifiers for an iterator declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForIterator(parser)
+	{
+		if hasModifiers:
+			parser.recoverableError(start, ErrorCode.err_InvalidModifierForIterator);
+	}
+
+	/// Summary: Verifies the modifiers for an enum declaration. If any modifiers are
+	///          invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForEnum(parser)
+	{
+		var invalidToken = _protected ??
+			_static ??
+			_abstract ?? _inheritable ??
+			_overridable ?? _override;
+		if invalidToken:
+			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForEnum);
+	}
+
+	/// Summary: Verifies the modifiers for a namespace declaration. If any modifiers
+	///          are invalid, a recoverable error is triggered on the specified parser.
+	/// Param parser: The {Parser} that receives modifier errors.
+	public verifyForNamespace(parser)
+	{
+		if not isEmpty:
+			parser.recoverableError(start, ErrorCode.err_InvalidNamespaceModifiers);
+	}
+}
