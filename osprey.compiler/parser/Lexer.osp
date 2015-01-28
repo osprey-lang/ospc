@@ -979,10 +979,10 @@ public class Lexer
 		return new SourceLocation(file, startIndex, endIndex);
 	}
 
-    private isEOF(i)
-    {
-        return i >= length;
-    }
+	private isEOF(i)
+	{
+		return i >= length;
+	}
 
 	private isChar(i, char)
 	{
