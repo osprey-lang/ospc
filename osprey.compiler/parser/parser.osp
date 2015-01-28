@@ -618,16 +618,26 @@ public inheritable Parser
 			else if token.match(TokenType._class) or
 				// Class declaration permits 'class' keyword to be omitted
 				// if 'inheritable' is the last modifier
-				modifiers._inheritable and modifiers._inheritable refeq lex[i - 1]:
+				modifiers._inheritable and modifiers._inheritable refeq lex[i - 1]
+			{
 				construct = parseClassDeclaration(ref i, modifiers);
-			else if token.match(TokenType._enum):
+			}
+			else if token.match(TokenType._enum)
+			{
 				construct = parseEnumDeclaration(ref i, modifiers);
-			else if token.match(TokenType._const):
+			}
+			else if token.match(TokenType._const)
+			{
 				construct = parseGlobalConstantDeclaration(ref i, modifiers);
-			else if token.match(TokenType._function):
+			}
+			else if token.match(TokenType._function)
+			{
 				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
-			else if not modifiers.isEmpty:
+			}
+			else if not modifiers.isEmpty
+			{
 				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
+			}
 			else
 			{
 				if token.match(TokenType._var)
@@ -660,7 +670,7 @@ public inheritable Parser
 	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Returns: A {VersionSpecifier} from the tokens at the starting index.
-	/// Remarks: This method parses the grammar of the 'version-specified' nonterminal.
+	/// Remarks: This method parses the grammar of the 'version-specifier' nonterminal.
 	public parseVersionSpecifier(ref i)
 	{
 		/* Syntax:
