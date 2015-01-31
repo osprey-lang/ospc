@@ -20,9 +20,9 @@ public inheritable ParameterList is NodeList
 	{
 		new base(items);
 
-		this._optionalParameterCount = optionalParameterCount;
-		this._variadicParameter      = variadicParameter;
-		this._refParameterCount      = refParameterCount;
+		_optionalParameterCount = bool(optionalParameterCount);
+		_variadicParameter      = bool(variadicParameter);
+		_refParameterCount      = bool(refParameterCount);
 	}
 
 	private _optionalParameterCount;
