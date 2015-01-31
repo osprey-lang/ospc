@@ -20,45 +20,27 @@ public class CompilerErrorManager is ErrorManager
 
 	override get hasWarnings = not (warnings?.isEmpty ?? true);
 
-	private printError(error)
+	private printMessage(kind, message)
 	{
-		var code = error.errorCode.toString("D4");
-		if error.source
+		var code = message.errorCode.toString("D4");
+		if message.source
 		{
-			var loc = error.source.location;
+			var loc = message.source.location;
 			var col;
 			var line = loc.getLineNumber(1, ref col);
-			print(errorFormat.format([
+			print(messageFormat.format([
+				kind,
 				loc.sourceFile.fileName,
-				line, col,
+				line,
+				col,
 				loc.endIndex - loc.startIndex,
-				code, error.message
+				code,
+				message.message
 			]));
 		}
 		else
 		{
-			print(errorFormatWithoutSource.format([code, error.message]));
-		}
-	}
-
-	private printWarning(warning)
-	{
-		var code = warning.errorCode.toString("D4");
-		if warning.source
-		{
-			var loc = warning.source.location;
-			var col;
-			var line = loc.getLineNumber(1, ref col);
-			print(warningFormat.format([
-				loc.sourceFile.fileName,
-				line, col,
-				loc.endIndex - loc.startIndex,
-				code, warning.message
-			]));
-		}
-		else
-		{
-			print(warningFormatWithoutSource.format([code, warning.message]));
+			print(messageFormatWithoutSource.format([code, message.message]));
 		}
 	}
 
@@ -68,7 +50,7 @@ public class CompilerErrorManager is ErrorManager
 			errors = [];
 		errors.add(error);
 		if printErrors:
-			printError(error);
+			printMessage("error", error);
 	}
 
 	override getAllErrors()
@@ -87,7 +69,7 @@ public class CompilerErrorManager is ErrorManager
 			warnings = [];
 		warnings.add(warning);
 		if printWarnings:
-			printWarning(warning);
+			printMessage("warn", warning);
 	}
 
 	override getAllWarnings()
@@ -100,8 +82,6 @@ public class CompilerErrorManager is ErrorManager
 		warnings = null;
 	}
 
-	private const errorFormat = "[error \"{0}\":{1}:{2}+{3}] OSP{4}: {5}";
-	private const errorFormatWithoutSource = "[error] OSP{0}: {1}";
-	private const warningFormat = "[warn \"{0}\":{1}:{2}+{3}] OSP{4}: {5}";
-	private const warningFormatWithoutSource = "[warn] OSP{0}: {1}";
+	private const messageFormat = "[{0} \"{1}\":{2}:{3}+{4}] OSP{5}: {6}";
+	private const messageFormatWithoutSource = "[{0}] OSP{1}: {2}";
 }
