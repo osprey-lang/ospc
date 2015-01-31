@@ -4,9 +4,8 @@ namespace osprey.compiler.syntax;
 
 /// Summary: Implements an immutable list of {Expression} instances, which represent
 ///          arguments to a function member (such as a method, indexer or constructor).
-///          This collection is more specialised than {NodeList}, in that it has a
-///          {hasRefArguments} property, which determines whether any argument in the
-///          list is passed by reference.
+///          This collection is a specialised kind of {NodeList}, containing members
+///          that simplify handling of argument lists.
 public inheritable ArgumentList is NodeList
 {
 	public new()

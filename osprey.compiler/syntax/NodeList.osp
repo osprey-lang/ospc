@@ -3,8 +3,8 @@ use namespace aves;
 namespace osprey.compiler.syntax;
 
 /// Summary: Implements an immutable collection of {ParseNode} instances. This collection
-///          is more specialised than {SyntaxList}, and includes methods for manipulating
-///          parse nodes. It does derive from {SyntaxList}, though.
+///          is a more specialised kind of {SyntaxList}, and has methods for manipulating
+///          parse nodes.
 public inheritable NodeList is SyntaxList
 {
 	public new()
