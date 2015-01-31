@@ -5,7 +5,7 @@ namespace osprey.compiler.syntax;
 /// Summary: Implements an immutable list of {Parameter} declarations, which represent
 ///          parameters of a function member (such as a method, indexer or constructor).
 ///          This collection is more specialised than {NodeList}, containing members
-///          that enable easy manipulation of parameter lists.
+///          that simplify the manipulation of parameter lists.
 public inheritable ParameterList is NodeList
 {
 	public new()
