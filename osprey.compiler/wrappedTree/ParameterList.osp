@@ -1,12 +1,12 @@
 use namespace aves;
 
-namespace osprey.compiler.syntax;
+namespace osprey.compiler.syntax.wrapped;
 
-/// Summary: Implements an immutable list of {Parameter} declarations, which represent
-///          parameters of a function member (such as a method, indexer or constructor).
-///          This collection is more specialised than {NodeList}, containing members
-///          that simplify the manipulation of parameter lists.
-public inheritable ParameterList is NodeList
+/// Summary: Implements an immutable list of {WrappedParameter} declarations, which
+///          represent parameters of a function member (such as a method, indexer or
+///          constructor). This collection is more specialised than {NodeList},
+///          containing members that simplify the manipulation of parameter lists.
+public inheritable WrappedParameterList is NodeList
 {
 	public new()
 	{
@@ -68,4 +68,10 @@ public inheritable ParameterList is NodeList
 
 	/// Summary: Determines whether the parameter list has any ref parameters.
 	public get hasRefParameters = refParameterCount > 0;
+
+	private static _emptyList = new WrappedParameterList();
+
+	/// Summary: Gets an empty {WrappedParameterList}.
+	/// Returns: A {WrappedParameterList} with a length of 0.
+	public static get emptyList = _emptyList;
 }
