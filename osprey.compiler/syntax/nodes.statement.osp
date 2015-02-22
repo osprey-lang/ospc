@@ -13,7 +13,6 @@ public inheritable Block is Statement
 	{
 		new base(location);
 
-		this._statements = claimAll(statements);
 		this._statements = claimAll(statements ?? EmptyLists.node);
 	}
 

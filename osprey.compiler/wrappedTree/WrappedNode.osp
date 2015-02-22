@@ -1,19 +1,44 @@
 use namespace aves;
 
-namespace osprey.compiler.syntax;
+namespace osprey.compiler.syntax.wrapped;
 
-/// Summary: Represents a parse node from the syntactic grammar. This differs from {Syntax}
-///          in that it has a {parent} property, which allows parse nodes to walk up the
-///          document structure. The {claim} method can be used to set the {parent} property
-///          of a node, which should only be done in the constructor.
+/// Summary: Represents a wrapper around a parse node from the syntactic grammar.
+///          This is conceptually the same as a {ParseNode}, but with one important
+///          difference: derived classes are mutable. This matters to the compiler,
+///          which uses this quality to store state information inside the wrapped
+///          node instance. The wrapped node is still immutable.
+///
+/// Remarks: Wrapped nodes should generally expose the same interface as their
+///          non-wrapped siblings. If the regular node has a `condition` property,
+///          so should the wrapped node. Members that contain tokens or primitive
+///          values (numbers, enums, that sort of thing), or collections of such,
+///          are always read from the wrapped node. Note that this includes all
+///          {QualifiedName}s, because they are {SyntaxList}s containing identifier
+///          tokens only. Members that contain {ParseNode}s are always stored as
+///          fields in the wrapped node, and contain {WrappedNode}s.
+///
+///          Wrapped nodes invariably get their {SourceLocation} from the wrapped
+///          {ParseNode}.
+///
+///          {WrappedNode} deliberately does not derive from {ParseNode}, despite
+///          being essentially identical in implementation: by making wrapped and
+///          regular trees completely disjoint, the {claim} method of each cannot
+///          claim instances of the other class. This means it is not possible to
+///          accidentally claim a regular node in a wrapped node or vice versa.
 ///
 ///          This class is abstract.
-public abstract class ParseNode is Syntax
+public abstract class WrappedNode is Syntax
 {
-	public new(location)
+	public new(wrappedNode)
 	{
-		new base(location);
+		new base(wrappedNode.location);
+
+		this._wrappedNode = wrappedNode;
 	}
+
+	private _wrappedNode;
+	/// Summary: Gets the {ParseNode} that this node wraps around.
+	public get wrappedNode = _wrappedNode;
 
 	private _parent = null;
 	/// Summary: Gets the parent of this node, or null if it has none.
@@ -21,9 +46,9 @@ public abstract class ParseNode is Syntax
 
 	/// Summary: Claims the specified node, updating its {parent} property to
 	///          the current node.
-	/// Param node: A {ParseNode} instance to claim.
+	/// Param node: A {WrappedNode} instance to claim.
 	/// Returns: The claimed node.
-	/// Remarks: This method does not ensure that {node} is a {ParseNode}, nor
+	/// Remarks: This method does not ensure that {node} is a {WrappedNode}, nor
 	///          that it is unclaimed. It is safe to pass null into {node}, so
 	///          that the method can be called with optional parameters.
 	protected claim(node)
@@ -35,10 +60,10 @@ public abstract class ParseNode is Syntax
 
 	/// Summary: Claims all of the nodes in the specified collection, updating
 	///          their {parent} property to the current node.
-	/// Param nodes: An iterable collection of {ParseNode} instances to claim.
+	/// Param nodes: An iterable collection of {WrappedNode} instances to claim.
 	/// Returns: The {nodes} collection.
 	/// Remarks: This method does not ensure that the values in {nodes} are
-	///          instances of {ParseNode}, nor that they are unclaimed. It is
+	///          instances of {WrappedNode}, nor that they are unclaimed. It is
 	///          not safe for {nodes} to contain null references; they must be
 	///          removed from the collection first.
 	protected claimAll(nodes)
