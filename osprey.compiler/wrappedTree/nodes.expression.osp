@@ -290,10 +290,7 @@ public abstract class WrappedLiteralExpression is WrappedExpression
 	/// Summary: Gets the value represented by the literal expression.
 	public get literalValue = wrappedNode.literalValue;
 
-	overridable override accept(visitor, arg)
-	{
-		return visitor.visitLiteralExpression(this, arg);
-	}
+	abstract override accept(visitor, arg);
 }
 
 public class WrappedNullLiteralExpression is WrappedLiteralExpression
@@ -302,6 +299,11 @@ public class WrappedNullLiteralExpression is WrappedLiteralExpression
 	{
 		new base(wrappedNode);
 	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNullLiteral(this, arg);
+	}
 }
 
 public class WrappedBooleanLiteralExpression is WrappedLiteralExpression
@@ -309,6 +311,11 @@ public class WrappedBooleanLiteralExpression is WrappedLiteralExpression
 	public new(wrappedNode)
 	{
 		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitBooleanLiteral(this, arg);
 	}
 }
 
@@ -321,6 +328,11 @@ public class WrappedIntegerLiteralExpression is WrappedLiteralExpression
 
 	/// Summary: Determines whether the expression represents an unsigned integer.
 	public get isUnsigned = wrappedNode.isUnsigned;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIntegerLiteral(this, arg);
+	}
 }
 
 public class WrappedRealLiteralExpression is WrappedLiteralExpression
@@ -328,6 +340,11 @@ public class WrappedRealLiteralExpression is WrappedLiteralExpression
 	public new(wrappedNode)
 	{
 		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitRealLiteral(this, arg);
 	}
 }
 
@@ -337,6 +354,11 @@ public class WrappedStringLiteralExpression is WrappedLiteralExpression
 	{
 		new base(wrappedNode);
 	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitStringLiteral(this, arg);
+	}
 }
 
 public class WrappedCharLiteralExpression is WrappedLiteralExpression
@@ -344,6 +366,11 @@ public class WrappedCharLiteralExpression is WrappedLiteralExpression
 	public new(wrappedNode)
 	{
 		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitCharLiteral(this, arg);
 	}
 }
 
@@ -565,7 +592,7 @@ public class WrappedSafeIteratorAccess is WrappedSafeAccessNode
 
 public class WrappedGlobalAccessExpression is WrappedExpression
 {
-	public new(wrappedNode, member)
+	public new(wrappedNode)
 	{
 		new base(wrappedNode);
 	}

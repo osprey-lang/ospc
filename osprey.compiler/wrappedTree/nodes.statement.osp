@@ -298,7 +298,7 @@ public inheritable WrappedGenericCatchClause is WrappedBlock
 
 	overridable override accept(visitor, arg)
 	{
-		return visitor.visitCatchClause(this, arg);
+		return visitor.visitGenericCatchClause(this, arg);
 	}
 }
 
@@ -317,6 +317,11 @@ public class WrappedSpecificCatchClause is WrappedGenericCatchClause
 	/// Summary: Gets an {Identifier} token containing the name of the catch variable,
 	///          or null if the catch clause specifies no variable name.
 	public get variable = wrappedNode.variable;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSpecificCatchClause(this, arg);
+	}
 }
 
 public class WrappedFinallyClause is WrappedBlock

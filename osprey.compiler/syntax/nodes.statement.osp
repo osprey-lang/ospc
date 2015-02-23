@@ -328,7 +328,7 @@ public inheritable GenericCatchClause is Block
 
 	overridable override accept(visitor, arg)
 	{
-		return visitor.visitCatchClause(this, arg);
+		return visitor.visitGenericCatchClause(this, arg);
 	}
 }
 
@@ -350,6 +350,11 @@ public class SpecificCatchClause is GenericCatchClause
 	/// Summary: Gets an {Identifier} token containing the name of the catch variable,
 	///          or null if the catch clause specifies no variable name.
 	public get variable = _variable;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSpecificCatchClause(this, arg);
+	}
 }
 
 public class FinallyClause is Block

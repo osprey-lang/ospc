@@ -1,4 +1,5 @@
 use namespace aves;
+use namespace osprey.compiler.parser;
 
 namespace osprey.compiler.syntax;
 
@@ -317,8 +318,7 @@ public abstract class ParseTreeVisitor
 	public overridable visitTryStatement(stmt, arg)
 	{
 		visitTryClause(stmt.tryClause, arg);
-		for catchClause in stmt.catchClauses:
-			visitCatchClause(catchClause, arg);
+		stmt.catchClauses.acceptAll(this, arg);
 		if stmt.finallyClause is not null:
 			visitFinallyClause(stmt.finallyClause, arg);
 		return null;
@@ -330,9 +330,16 @@ public abstract class ParseTreeVisitor
 		return null;
 	}
 
-	public overridable visitCatchClause(clause, arg)
+	public overridable visitGenericCatchClause(clause, arg)
 	{
 		visitBlock(clause, arg);
+		return null;
+	}
+
+	public overridable visitSpecificCatchClause(clause, arg)
+	{
+		visitTypeName(clause.caughtType, arg);
+		visitGenericCatchClause(clause, arg);
 		return null;
 	}
 
@@ -388,6 +395,36 @@ public abstract class ParseTreeVisitor
 		return null;
 	}
 
+	public overridable visitNullLiteral(expr, arg)
+	{
+		return visitLiteralExpression(expr, arg);
+	}
+
+	public overridable visitBooleanLiteral(expr, arg)
+	{
+		return visitLiteralExpression(expr, arg);
+	}
+
+	public overridable visitIntegerLiteral(expr, arg)
+	{
+		return visitLiteralExpression(expr, arg);
+	}
+
+	public overridable visitRealLiteral(expr, arg)
+	{
+		return visitLiteralExpression(expr, arg);
+	}
+
+	public overridable visitStringLiteral(expr, arg)
+	{
+		return visitLiteralExpression(expr, arg);
+	}
+
+	public overridable visitCharLiteral(expr, arg)
+	{
+		return visitLiteralExpression(expr, arg);
+	}
+
 	public overridable visitConditionalAndExpression(expr, arg)
 	{
 		visitBinaryExpression(expr, arg);
@@ -432,6 +469,8 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitHashMember(member, arg)
 	{
+		if member.key is not Identifier:
+			member.key.accept(this, arg);
 		member.value.accept(this, arg);
 		return null;
 	}
@@ -476,7 +515,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitListComprehensionCondition(node, arg)
 	{
-		node.conditon.accept(this, arg);
+		node.condition.accept(this, arg);
 		return null;
 	}
 
@@ -610,8 +649,8 @@ public abstract class ParseTreeVisitor
 	public overridable visitTypeTestExpression(expr, arg)
 	{
 		expr.expression.accept(this, arg);
-		if expr.typeName is not null:
-			visitTypeName(expr.typeName, arg);
+		if expr.type is not null:
+			visitTypeName(expr.type, arg);
 		return null;
 	}
 

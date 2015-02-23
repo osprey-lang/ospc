@@ -1398,7 +1398,7 @@ public inheritable Parser
 		var end = expectr(ref i, TokenType.semicolon);
 
 		return new ClassConstantDeclaration(getLocation(modifiers.start ?? start, end),
-			modifiers.metdata, modifiers.accessibility, constants);
+			modifiers.metadata, modifiers.accessibility, constants);
 	}
 
 	/// Summary: Parses an iterator declaration at the specified token index.
