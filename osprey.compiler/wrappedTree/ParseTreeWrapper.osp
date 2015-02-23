@@ -1,0 +1,704 @@
+use namespace aves;
+use namespace osprey.compiler.parser;
+
+namespace osprey.compiler.syntax.wrapped;
+
+public class ParseTreeWrapper is ParseTreeVisitor
+{
+	public new()
+	{
+		wrapListItem = @.accept(this, null);
+	}
+
+	private wrapListItem;
+
+	public wrapNodeList(list)
+	{
+		if list.length == 0:
+			return EmptyLists.node;
+		return new NodeList(list.map(wrapListItem));
+	}
+
+	public wrapArgumentList(list)
+	{
+		if list.length == 0:
+			return WrappedArgumentList.emptyList;
+		return new WrappedArgumentList(list.map(wrapListItem));
+	}
+
+	public wrapParameterList(list)
+	{
+		if list.length == 0:
+			return WrappedParameterList.emptyList;
+		return new WrappedParameterList(list.map(wrapListItem));
+	}
+
+	// Document
+
+	override visitDocument(document, arg)
+	{
+		print(document.members.length);
+		var useDirectives = wrapNodeList(document.useDirectives);
+		var members = wrapNodeList(document.members);
+		var statements = wrapNodeList(document.statements);
+		return new WrappedDocument(document, useDirectives, members, statements);
+	}
+
+	override visitUseAliasDirective(directive, arg)
+	{
+		return new WrappedUseAliasDirective(directive);
+	}
+
+	override visitUseFileDirective(directive, arg)
+	{
+		return new WrappedUseFileDirective(directive);
+	}
+
+	override visitUseModuleDirective(directive, arg)
+	{
+		return new WrappedUseModuleDirective(directive);
+	}
+
+	override visitUseNamespaceDirective(directive, arg)
+	{
+		return new WrappedUseNamespaceDirective(directive);
+	}
+
+	// Declarations
+
+	override visitClassConstantDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var constants = wrapNodeList(decl.constants);
+		return new WrappedClassConstantDeclaration(decl, metadata, constants);
+	}
+
+	override visitClassDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var baseType = decl.baseType;
+		if baseType is TypeName:
+			baseType = visitTypeName(baseType, arg);
+		var members = wrapNodeList(decl.members);
+		return new WrappedClassDeclaration(decl, metadata, baseType, members);
+	}
+
+	override visitConstructorDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body?.accept(this, null);
+		return new WrappedConstructorDeclaration(decl, metadata, parameters, body);
+	}
+
+	override visitThisParameter(param, arg)
+	{
+		var defaultValue = param.defaultValue.accept(this, null);
+		return new WrappedThisParameter(param, defaultValue);
+	}
+
+	override visitEnumDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var members = wrapNodeList(decl.members);
+		return new WrappedEnumDeclaration(decl, metadata, members);
+	}
+
+	override visitEnumMember(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var value = decl.value?.accept(this, null);
+		return new WrappedEnumMember(decl, metadata, value);
+	}
+
+	override visitExternBody(node, arg)
+	{
+		var maxStack = node.maxStack?.accept(this, null);
+		var locals = node.locals?.accept(this, null);
+		return new WrappedExternBody(node, maxStack, locals);
+	}
+
+	override visitFieldDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var fields = wrapNodeList(decl.fields);
+		return new WrappedFieldDeclaration(decl, metadata, fields);
+	}
+
+	override visitGlobalConstantDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var constants = wrapNodeList(decl.constants);
+		return new WrappedGlobalConstantDeclaration(decl, metadata, constants);
+	}
+
+	override visitGlobalFunctionDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body.accept(this, null);
+		return new WrappedGlobalFunctionDeclaration(decl, metadata, parameters, body);
+	}
+
+	override visitGlobalVariableDeclaration(decl, arg)
+	{
+		var declaration = decl.declaration.accept(this, null);
+		return new WrappedGlobalVariableDeclaration(decl, declaration);
+	}
+
+	override visitPropertyDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var body = decl.body?.accept(this, null);
+		return new WrappedPropertyDeclaration(decl, metadata, body);
+	}
+
+	override visitIndexerDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body?.accept(this, null);
+		return new WrappedIndexerDeclaration(decl, metadata, parameters, body);
+	}
+
+	override visitMetadatum(meta, arg)
+	{
+		var type = visitTypeName(meta.type, arg);
+		var positionalArguments = wrapArgumentList(meta.positionalArguments);
+		var namedArguments = wrapNodeList(meta.namedArguments);
+		return new WrappedMetadatum(meta, type, positionalArguments, namedArguments);
+	}
+
+	override visitMethodDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body?.accept(this, null);
+		return new WrappedMethodDeclaration(decl, metadata, parameters, body);
+	}
+
+	override visitParameter(param, arg)
+	{
+		var defaultValue = param.defaultValue?.accept(this, null);
+		return new WrappedParameter(param, defaultValue);
+	}
+
+	override visitInvocatorDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body?.accept(this, null);
+		return new WrappedInvocatorDeclaration(decl, metadata, parameters, body);
+	}
+
+	override visitIteratorDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var body = decl.body.accept(this, null);
+		return new WrappedIteratorDeclaration(decl, metadata, body);
+	}
+
+	override visitNamespaceDeclaration(decl, arg)
+	{
+		var members = wrapNodeList(decl.members);
+		return new WrappedNamespaceDeclaration(decl, members);
+	}
+
+	override visitOperatorDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body.accept(this, null);
+		return new WrappedOperatorDeclaration(decl, metadata, parameters, body);
+	}
+
+	override visitStaticConstructorDeclaration(decl, arg)
+	{
+		var metadata = wrapNodeList(decl.metadata);
+		var body = decl.body.accept(this, null);
+		return new WrappedStaticConstructorDeclaration(decl, metadata, body);
+	}
+
+	override visitVariableDeclarator(decl, arg)
+	{
+		var initializer = decl.initializer?.accept(this, null);
+		return new WrappedVariableDeclarator(decl, initializer);
+	}
+
+	// Statements
+
+	override visitBlock(block, arg)
+	{
+		var statements = wrapNodeList(block.statements);
+		return new WrappedBlock(block, statements);
+	}
+
+	override visitBaseConstructorCall(stmt, arg)
+	{
+		var arguments = wrapArgumentList(stmt.arguments);
+		return new WrappedBaseConstructorCall(stmt, arguments);
+	}
+
+	override visitBreakStatement(stmt, arg)
+	{
+		return new WrappedBreakStatement(stmt);
+	}
+
+	override visitCompoundAssignment(stmt, arg)
+	{
+		var left = stmt.left.accept(this, null);
+		var right = stmt.right.accept(this, null);
+		return new WrappedCompoundAssignment(stmt, left, right);
+	}
+
+	override visitDoWhileStatement(stmt, arg)
+	{
+		var body = stmt.body.accept(this, null);
+		var condition = stmt.condition?.accept(this, null);
+		return new WrappedDoWhileStatement(stmt, body, condition);
+	}
+
+	override visitEmptyStatement(stmt, arg)
+	{
+		return new WrappedEmptyStatement(stmt);
+	}
+
+	override visitExpressionStatement(stmt, arg)
+	{
+		var expression = stmt.expression.accept(this, null);
+		return new WrappedExpressionStatement(stmt, expression);
+	}
+
+	override visitForStatement(stmt, arg)
+	{
+		var expression = stmt.expression.accept(this, null);
+		var body = stmt.body.accept(this, null);
+		var elseClause = stmt.elseClause?.accept(this, null);
+		return new WrappedForStatement(stmt, expression, body, elseClause);
+	}
+
+	override visitIfStatement(stmt, arg)
+	{
+		var condition = stmt.condition.accept(this, null);
+		var consequence = stmt.consequence.accept(this, null);
+		var alternative = stmt.alternative?.accept(this, null);
+		return new WrappedIfStatement(stmt, condition, consequence, alternative);
+	}
+
+	override visitLocalConstantDeclaration(decl, arg)
+	{
+		var constants = wrapNodeList(decl.constants);
+		return new WrappedLocalConstantDeclaration(decl, constants);
+	}
+
+	override visitLocalFunctionDeclaration(decl, arg)
+	{
+		var parameters = wrapParameterList(decl.parameters);
+		var body = decl.body.accept(this, null);
+		return new WrappedLocalFunctionDeclaration(decl, parameters, body);
+	}
+
+	override visitLocalVariableDeclaration(decl, arg)
+	{
+		var variables = wrapNodeList(decl.variables);
+		return new WrappedSimpleLocalVariableDeclaration(decl, variables);
+	}
+
+	override visitNextStatement(stmt, arg)
+	{
+		return new WrappedNextStatement(stmt);
+	}
+
+	override visitParallelAssignment(stmt, arg)
+	{
+		var targets = wrapNodeList(stmt.targets.acceptAll);
+		var values = wrapNodeList(stmt.values.acceptAll);
+		return new WrappedParallelAssignment(stmt, targets, values);
+	}
+
+	override visitParallelLocalVariableDeclaration(decl, arg)
+	{
+		var value = decl.value.accept(this, null);
+		return new WrappedParallelLocalVariableDeclaration(decl, value);
+	}
+
+	override visitReturnStatement(stmt, arg)
+	{
+		var returnValues = wrapNodeList(stmt.returnValues);
+		return new WrappedReturnStatement(stmt, returnValues);
+	}
+
+	override visitThisConstructorCall(stmt, arg)
+	{
+		var arguments = wrapArgumentList(stmt.arguments);
+		return new WrappedThisConstructorCall(stmt, arguments);
+	}
+
+	override visitThrowStatement(stmt, arg)
+	{
+		var expression = stmt.expression?.accept(this, null);
+		return new WrappedThrowStatement(stmt, expression);
+	}
+
+	override visitTryStatement(stmt, arg)
+	{
+		var tryClause = visitTryClause(stmt.tryClause, arg);
+		var catchClauses = wrapNodeList(stmt.catchClauses);
+		var finallyClause = stmt.finallyClause;
+		if finallyClause is not null:
+			finallyClause = visitFinallyClause(finallyClause, arg);
+		return new WrappedTryStatement(stmt, tryClause, catchClauses, finallyClause);
+	}
+
+	override visitTryClause(clause, arg)
+	{
+		var statements = wrapNodeList(clause.statements);
+		return new WrappedTryClause(clause, statements);
+	}
+
+	override visitGenericCatchClause(clause, arg)
+	{
+		var statements = wrapNodeList(clause.statements);
+		return new WrappedGenericCatchClause(clause, statements);
+	}
+
+	override visitSpecificCatchClause(clause, arg)
+	{
+		var caughtType = visitTypeName(clause.caughtType, arg);
+		var statements = wrapNodeList(clause.statements);
+		return new WrappedSpecificCatchClause(clause, caughtType, statements);
+	}
+
+	override visitFinallyClause(clause, arg)
+	{
+		var statements = wrapNodeList(clause.statements);
+		return new WrappedFinallyClause(clause, statements);
+	}
+
+	override visitWhileStatement(stmt, arg)
+	{
+		var condition = stmt.condition.accept(this, null);
+		var body = stmt.body.accept(this, null);
+		return new WrappedWhileStatement(stmt, condition, body);
+	}
+
+	override visitWithStatement(stmt, arg)
+	{
+		var expression = stmt.expression.accept(this, null);
+		var body = stmt.body.accept(this, null);
+		return new WrappedWithStatement(stmt, expression, body);
+	}
+
+	override visitYieldStatement(stmt, arg)
+	{
+		var returnValues = wrapNodeList(stmt.returnValues);
+		return new WrappedYieldStatement(stmt, returnValues);
+	}
+
+	// Expressions
+
+	override visitAssignmentExpression(expr, arg)
+	{
+		var target = expr.target.accept(this, null);
+		var value = expr.value.accept(this, null);
+		return new WrappedAssignmentExpression(expr, target, value);
+	}
+
+	override visitBaseAccess(expr, arg)
+	{
+		return new WrappedBaseAccessExpression(expr);
+	}
+
+	override visitBinaryExpression(expr, arg)
+	{
+		var left = expr.left.accept(this, null);
+		var right = expr.right.accept(this, null);
+		return new WrappedBinaryExpression(expr, left, right);
+	}
+
+	override visitNullLiteral(expr, arg)
+	{
+		return new WrappedNullLiteralExpression(expr);
+	}
+
+	override visitBooleanLiteral(expr, arg)
+	{
+		return new WrappedBooleanLiteralExpression(expr);
+	}
+
+	override visitIntegerLiteral(expr, arg)
+	{
+		return new WrappedIntegerLiteralExpression(expr);
+	}
+
+	override visitRealLiteral(expr, arg)
+	{
+		return new WrappedRealLiteralExpression(expr);
+	}
+
+	override visitStringLiteral(expr, arg)
+	{
+		return new WrappedStringLiteralExpression(expr);
+	}
+
+	override visitCharLiteral(expr, arg)
+	{
+		return new WrappedCharLiteralExpression(expr);
+	}
+
+	override visitConditionalAndExpression(expr, arg)
+	{
+		var left = expr.left.accept(this, null);
+		var right = expr.right.accept(this, null);
+		return new WrappedConditionalAndExpression(expr, left, right);
+	}
+
+	override visitConditionalExpression(expr, arg)
+	{
+		var condition = expr.condition.accept(this, null);
+		var truePart = expr.truePart.accept(this, null);
+		var falsePart = expr.falsePart.accept(this, null);
+		return new WrappedConditionalExpression(expr, condition, truePart, falsePart);
+	}
+
+	override visitConditionalOrExpression(expr, arg)
+	{
+		var left = expr.left.accept(this, null);
+		var right = expr.right.accept(this, null);
+		return new WrappedConditionalOrExpression(expr, left, right);
+	}
+
+	override visitConditionalXorExpression(expr, arg)
+	{
+		var left = expr.left.accept(this, null);
+		var right = expr.right.accept(this, null);
+		return new WrappedConditionalXorExpression(expr, left, right);
+	}
+
+	override visitGetArgumentCountExpression(expr, arg)
+	{
+		return new WrappedGetArgumentCountExpression(expr);
+	}
+
+	override visitGlobalAccess(expr, arg)
+	{
+		return new WrappedGlobalAccessExpression(expr);
+	}
+
+	override visitHashCreationExpression(expr, arg)
+	{
+		var members = wrapNodeList(expr.members);
+		return new WrappedHashCreationExpression(expr, members);
+	}
+
+	override visitHashMember(member, arg)
+	{
+		var key = member.key;
+		if key is not Identifier:
+			key = key.accept(this, null);
+		var value = member.value.accept(this, null);
+		return new WrappedHashMember(member, key, value);
+	}
+
+	override visitIndexerAccess(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		var arguments = wrapArgumentList(expr.arguments);
+		return new WrappedIndexerAccessExpression(expr, inner, arguments);
+	}
+
+	override visitInvocationExpression(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		var arguments = wrapArgumentList(expr.arguments);
+		return new WrappedInvocationExpression(expr, inner, arguments);
+	}
+
+	override visitIteratorAccess(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		return new WrappedIteratorAccessExpression(expr, inner);
+	}
+
+	override visitLambdaMemberExpression(expr, arg)
+	{
+		var members = wrapNodeList(expr.members);
+		return new WrappedLambdaMemberExpression(expr, members);
+	}
+
+	override visitLambdaOperatorExpression(expr, arg)
+	{
+		return new WrappedLambdaOperatorExpression(expr);
+	}
+
+	override visitListComprehension(expr, arg)
+	{
+		var comprehenders = wrapNodeList(expr.comprehenders);
+		var values = wrapNodeList(expr.values);
+		return new WrappedListComprehensionExpression(expr, values, comprehenders);
+	}
+
+	override visitListComprehensionCondition(node, arg)
+	{
+		var condition = node.condition.accept(this, null);
+		return new WrappedListComprehensionCondition(node, condition);
+	}
+
+	override visitListComprehensionIterator(node, arg)
+	{
+		var expression = node.expression.accept(this, null);
+		return new WrappedListComprehensionIterator(node, expression);
+	}
+
+	override visitListCreationExpression(expr, arg)
+	{
+		var values = wrapNodeList(expr.values);
+		return new WrappedListCreationExpression(expr, values);
+	}
+
+	override visitMemberAccess(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		return new WrappedMemberAccessExpression(expr, inner);
+	}
+
+	override visitNamedConstantExpression(expr, arg)
+	{
+		return new WrappedNamedConstantExpression(expr);
+	}
+
+	override visitNullCoalescingExpression(expr, arg)
+	{
+		var left = expr.left.accept(this, null);
+		var right = expr.right.accept(this, null);
+		return new WrappedNullCoalescingExpression(expr, left, right);
+	}
+
+	override visitNullOrExpression(expr, arg)
+	{
+		var left = expr.left.accept(this, null);
+		var right = expr.right.accept(this, null);
+		return new WrappedNullOrExpression(expr, left, right);
+	}
+
+	override visitObjectCreationExpression(expr, arg)
+	{
+		var type = visitTypeName(expr.type, arg);
+		var arguments = wrapArgumentList(expr.arguments);
+		var initializer = expr.initializer?.accept(this, null);
+		return new WrappedObjectCreationExpression(expr, type, arguments, initializer);
+	}
+
+	override visitObjectInitializer(initializer, arg)
+	{
+		var members = wrapNodeList(initializer.members);
+		return new WrappedObjectInitializer(initializer, members);
+	}
+
+	override visitMemberInitializer(initializer, arg)
+	{
+		var expression = initializer.expression.accept(this, null);
+		return new WrappedMemberInitializer(initializer, expression);
+	}
+
+	override visitParenthesizedExpression(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		return new WrappedParenthesizedExpression(expr, inner);
+	}
+
+	override visitRangeExpression(expr, arg)
+	{
+		var low = expr.low.accept(this, null);
+		var high = expr.high.accept(this, null);
+		var step = expr.step?.accept(this, null);
+		return new WrappedRangeExpression(expr, low, high, step);
+	}
+
+	override visitRefExpression(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		return new WrappedRefExpression(expr, inner);
+	}
+
+	override visitSafeAccess(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		var chain = wrapNodeList(expr.chain);
+		return new WrappedSafeAccessExpression(expr, inner, chain);
+	}
+
+	override visitSafeIndexerAccess(node, arg)
+	{
+		var arguments = wrapArgumentList(node.arguments);
+		return new WrappedSafeIndexerAccess(node, arguments);
+	}
+
+	override visitSafeInvocation(node, arg)
+	{
+		var arguments = wrapArgumentList(node.arguments);
+		return new WrappedSafeInvocation(node, arguments);
+	}
+
+	override visitSafeIteratorAccess(node, arg)
+	{
+		return new WrappedSafeIteratorAccess(node);
+	}
+
+	override visitSafeMemberAccess(node, arg)
+	{
+		return new WrappedSafeMemberAccess(node);
+	}
+
+	override visitSimpleLambdaExpression(expr, arg)
+	{
+		var parameters = wrapParameterList(expr.parameters);
+		var body = expr.body.accept(this, null);
+		return new WrappedSimpleLambdaExpression(expr, parameters, body);
+	}
+
+	override visitSimpleName(expr, arg)
+	{
+		return new WrappedSimpleNameExpression(expr);
+	}
+
+	override visitThisAccess(expr, arg)
+	{
+		return new WrappedThisAccessExpression(expr);
+	}
+
+	override visitTypeOfExpression(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		return new WrappedTypeOfExpression(expr, inner);
+	}
+
+	override visitTypeTestExpression(expr, arg)
+	{
+		var expression = expr.expression.accept(this, null);
+		var type = expr.type;
+		if type is not null:
+			type = visitTypeName(type, arg);
+		return new WrappedTypeTestExpression(expr, expression, type);
+	}
+
+	override visitUnaryExpression(expr, arg)
+	{
+		var inner = expr.inner.accept(this, null);
+		return new WrappedUnaryExpression(expr, inner);
+	}
+
+	override visitUseInExpression(expr, arg)
+	{
+		var variables = wrapNodeList(expr.variables);
+		var expression = expr.expression.accept(this, null);
+		return new WrappedUseInExpression(expr, variables, expression);
+	}
+
+	// Type names
+
+	override visitTypeName(typeName, arg)
+	{
+		return new WrappedTypeName(typeName);
+	}
+}

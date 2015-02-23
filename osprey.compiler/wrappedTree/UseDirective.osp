@@ -48,7 +48,7 @@ public class WrappedUseModuleDirective is WrappedUseDirective
 
 public class WrappedUseNamespaceDirective is WrappedUseDirective
 {
-	public new(wrappedNode, name)
+	public new(wrappedNode)
 	{
 		new base(wrappedNode);
 	}
@@ -65,7 +65,7 @@ public class WrappedUseNamespaceDirective is WrappedUseDirective
 
 public class WrappedUseAliasDirective is WrappedUseDirective
 {
-	public new(wrappedNode, alias, fullName)
+	public new(wrappedNode)
 	{
 		new base(wrappedNode);
 	}

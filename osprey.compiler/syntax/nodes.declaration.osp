@@ -24,7 +24,7 @@ public inheritable NamespaceDeclaration is ParseNode
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitNamespaceDeclaration(visitor, arg);
+		return visitor.visitNamespaceDeclaration(this, arg);
 	}
 }
 

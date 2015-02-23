@@ -2,6 +2,7 @@ use namespace aves;
 use namespace aves.reflection;
 use namespace osprey.compiler.parser;
 use namespace osprey.compiler.syntax;
+use namespace osprey.compiler.syntax.wrapped;
 
 namespace osprey.compiler;
 
@@ -57,6 +58,7 @@ private function mainLoop(parsers, labels)
 
 	var mode = ParseMode.expression;
 	var modeLabel = labels[mode];
+	var wrapNodes = false;
 
 	Console.write(modeLabel);
 	var line;
@@ -83,6 +85,11 @@ private function mainLoop(parsers, labels)
 			mode = ParseMode.document;
 			modeLabel = labels[mode];
 		}
+		else if line == "!wrap"
+		{
+			wrapNodes = not wrapNodes;
+			print("Wrapping nodes: " :: (wrapNodes ? "yes" : "no"));
+		}
 		else
 		{
 			line = line.trim();
@@ -106,8 +113,15 @@ private function mainLoop(parsers, labels)
 					node = null;
 				}
 
-				if node and not err.hasErrors:
+				if node and not err.hasErrors
+				{
+					if wrapNodes
+					{
+						var wrapper = new ParseTreeWrapper();
+						node = node.accept(wrapper, null);
+					}
 					SyntaxPrinter.print(node);
+				}
 			}
 		}
 
@@ -117,7 +131,7 @@ private function mainLoop(parsers, labels)
 
 private static class SyntaxPrinter
 {
-	private static ignoreProperties = Set.fromCollection(["location", "parent"]);
+	private static ignoreMembers = Set.fromCollection(["location", "parent", "wrappedNode"]);
 
 	private static printColors = [ConsoleColor.gray,       ConsoleColor.black];
 	private static fieldColors = [ConsoleColor.green,      ConsoleColor.black];
@@ -146,18 +160,28 @@ private static class SyntaxPrinter
 		writeTypeName(type);
 		Console.writeLine();
 
-		for property in type.getProperties(MemberSearchFlags.isPublic | MemberSearchFlags.isInstance)
+		const publicInstance = MemberSearchFlags.isPublic	| MemberSearchFlags.isInstance;
+		var members = type.getProperties(publicInstance) :: type.getFields(publicInstance);
+		members.sort(@(a, b) = a.name <=> b.name);
+
+		for member in members
 		{
-			var propName = property.name;
-			if ignoreProperties.contains(propName) or
-				not property.canRead or property.canWrite:
+			var memberName = member.name;
+			if ignoreMembers.contains(memberName):
+				next;
+			if member.kind == MemberKind.property and
+				(not member.canRead or member.canWrite):
 				next;
 
 			Console.write(indent);
-			writeFieldName(propName);
+			writeFieldName(memberName);
 			Console.write(": ");
 
-			var value = property.getterMethod.invoke(syntax, null);
+			var value;
+			if member.kind == MemberKind.property:
+				value = member.getterMethod.invoke(syntax, null);
+			else:
+				value = member.getValue(syntax);
 			printFieldValue(value, indent);
 		}
 	}

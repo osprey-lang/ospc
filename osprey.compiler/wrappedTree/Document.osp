@@ -8,9 +8,9 @@ public class WrappedDocument is WrappedNode
 	{
 		new base(wrappedNode);
 
-		useDirectives     = claimAll(useDirectives ?? EmptyLists.node);
-		members           = claimAll(members ?? EmptyLists.node);
-		statements        = claimAll(statements ?? EmptyLists.node);
+		this.useDirectives = claimAll(useDirectives);
+		this.members       = claimAll(members);
+		this.statements    = claimAll(statements);
 	}
 
 	/// Summary: Gets the {VersionSpecifier} of this compilation unit,

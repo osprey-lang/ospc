@@ -21,7 +21,7 @@ public class WrappedNamespaceDeclaration is WrappedNode
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitNamespaceDeclaration(visitor, arg);
+		return visitor.visitNamespaceDeclaration(this, arg);
 	}
 }
 
@@ -216,7 +216,7 @@ public class WrappedStaticConstructorDeclaration is WrappedClassMember
 
 public class WrappedFieldDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata)
+	public new(wrappedNode, metadata, fields)
 	{
 		new base(wrappedNode, metadata);
 
