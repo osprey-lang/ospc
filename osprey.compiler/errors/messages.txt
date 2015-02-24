@@ -12,7 +12,7 @@
 // Numeric literal errors (1200-1299)
 1201:err_UnderscoreWithoutDigits = "Underscore ('_') must be followed by one or more digits.";
 1202:err_MultipleDecimalPoints = "A floating-point literal may only have one decimal point.";
-1203:err_ExponentialPartBeforeDecimalPoint = "An exponential part is not allowed without a preceding decimal point. In other words, a number like 10e9 is not allowed; used 10.0e9 instead.";
+1203:err_ExponentialPartBeforeDecimalPoint = "An exponential part is not allowed without a preceding decimal point. In other words, a number like 10e9 is not allowed; use 10.0e9 instead.";
 1204:err_MultipleExponentialParts = "More than one exponential part in numeric literal";
 1205:err_InvalidExponentialPart = "Invalid exponential part. An e or E in a numeric literal is followed by an optional sign (+ or -) and one or more digits.";
 1206:err_UnderscoreAfterDecimalPoint = "Underscore ('_') is not allowed after the decimal point.";
