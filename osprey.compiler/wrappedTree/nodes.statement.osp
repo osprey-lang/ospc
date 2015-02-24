@@ -424,7 +424,7 @@ public class WrappedBaseConstructorCall is WrappedStatement
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitBaseConstructorCall(visitor, arg);
+		return visitor.visitBaseConstructorCall(this, arg);
 	}
 }
 
@@ -442,7 +442,7 @@ public class WrappedThisConstructorCall is WrappedStatement
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitThisConstructorCall(visitor, arg);
+		return visitor.visitThisConstructorCall(this, arg);
 	}
 }
 

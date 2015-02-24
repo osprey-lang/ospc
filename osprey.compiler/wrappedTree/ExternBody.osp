@@ -8,8 +8,8 @@ public class WrappedExternBody is WrappedNode
 	{
 		new base(wrappedNode);
 
-		maxStack = claim(maxStack);
-		locals   = claim(locals);
+		this.maxStack = claim(maxStack);
+		this.locals   = claim(locals);
 	}
 
 	/// Summary: Gets a string {LiteralToken} containing the name of the extern method.

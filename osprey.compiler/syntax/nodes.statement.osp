@@ -468,7 +468,7 @@ public class BaseConstructorCall is Statement
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitBaseConstructorCall(visitor, arg);
+		return visitor.visitBaseConstructorCall(this, arg);
 	}
 }
 
@@ -487,7 +487,7 @@ public class ThisConstructorCall is Statement
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitThisConstructorCall(visitor, arg);
+		return visitor.visitThisConstructorCall(this, arg);
 	}
 }
 

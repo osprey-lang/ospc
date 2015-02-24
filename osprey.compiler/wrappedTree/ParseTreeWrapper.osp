@@ -37,7 +37,6 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitDocument(document, arg)
 	{
-		print(document.members.length);
 		var useDirectives = wrapNodeList(document.useDirectives);
 		var members = wrapNodeList(document.members);
 		var statements = wrapNodeList(document.statements);
@@ -311,8 +310,8 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitParallelAssignment(stmt, arg)
 	{
-		var targets = wrapNodeList(stmt.targets.acceptAll);
-		var values = wrapNodeList(stmt.values.acceptAll);
+		var targets = wrapNodeList(stmt.targets);
+		var values = wrapNodeList(stmt.values);
 		return new WrappedParallelAssignment(stmt, targets, values);
 	}
 
