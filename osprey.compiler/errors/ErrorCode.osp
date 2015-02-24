@@ -89,7 +89,8 @@ public static class ErrorCode
 	public const err_MultipleGenericCatchClauses = 1804;
 	public const err_TryStatementMustHaveCatchOrFinally = 1805;
 	public const err_ExpectedParallelAssignment = 1806;
-	public const err_ExpectedStatementTerminator = 1807;
+	public const err_ParallelAssignmentWrongValueCount = 1807;
+	public const err_ExpectedStatementTerminator = 1808;
 	public const err_ExpectedPrimaryExpression = 1851;
 	public const err_InvalidStatementExpression = 1852;
 	public const err_ExpressionMustBeAssignable = 1853;

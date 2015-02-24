@@ -2563,6 +2563,9 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
+		if values.length != 1 and values.length != targets.length:
+			recoverableError(end, ErrorCode.err_ParallelAssignmentWrongValueCount, [targets.length, values.length]);
+
 		return new ParallelAssignment(getLocation(firstTarget, end),
 			targets, values);
 	}

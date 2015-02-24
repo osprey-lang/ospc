@@ -113,7 +113,8 @@
 1804:err_MultipleGenericCatchClauses = "A 'try' statement can only have one generic 'catch' clause.";
 1805:err_TryStatementMustHaveCatchOrFinally = "A 'try' statement must have at least one 'catch' clause or a 'finally' clause.";
 1806:err_ExpectedParallelAssignment = "Expected a parallel assignment. Use ';' if the intent was to separate statements.";
-1807:err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
+1807:err_ParallelAssignmentWrongValueCount = "A parallel assignment must have one value or as many values as there are targets (expected {0}, got {1}).";
+1808:err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
 
 // Expression errors
 1851:err_ExpectedPrimaryExpression = "Expected an expression; got {0}.";
