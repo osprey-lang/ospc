@@ -16,7 +16,7 @@ public class ParseTreeWrapper is ParseTreeVisitor
 	{
 		if list.length == 0:
 			return EmptyLists.node;
-		return new NodeList(list.map(wrapListItem));
+		return new WrappedNodeList(list.map(wrapListItem));
 	}
 
 	public wrapArgumentList(list)
