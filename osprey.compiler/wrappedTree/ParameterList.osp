@@ -4,9 +4,9 @@ namespace osprey.compiler.syntax.wrapped;
 
 /// Summary: Implements an immutable list of {WrappedParameter} declarations, which
 ///          represent parameters of a function member (such as a method, indexer or
-///          constructor). This collection is more specialised than {NodeList},
+///          constructor). This collection is more specialised than {WrappedNodeList},
 ///          containing members that simplify the manipulation of parameter lists.
-public inheritable WrappedParameterList is NodeList
+public inheritable WrappedParameterList is WrappedNodeList
 {
 	public new()
 	{

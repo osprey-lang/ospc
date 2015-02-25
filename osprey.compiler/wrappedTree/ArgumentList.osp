@@ -4,9 +4,9 @@ namespace osprey.compiler.syntax.wrapped;
 
 /// Summary: Implements an immutable list of {WrappedExpression} instances, which
 ///          represent arguments to a function member (such as a method, indexer
-///          or constructor). This collection is a specialised kind of {NodeList},
+///          or constructor). This collection is a specialised kind of {WrappedNodeList},
 ///          containing members that simplify handling of argument lists.
-public inheritable WrappedArgumentList is NodeList
+public inheritable WrappedArgumentList is WrappedNodeList
 {
 	public new()
 	{
