@@ -7,7 +7,7 @@
  *                                                          *
  * The file names in this directory should NOT be prefixed  *
  * with Wrapped, because it adds unnecessary noise. Instead *
- * we use prefer same file names as the regular parse tree. *
+ * we use the same file names as the regular parse tree.    *
  * However, the class names have Wrapped in front of them,  *
  * so there is no ambiguity when using the class names, for *
  * the compiler or the programmer.                          *
