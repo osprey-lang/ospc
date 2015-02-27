@@ -31,6 +31,7 @@ use "Statement.osp";
 use "TypeName.osp";
 use "UseDirective.osp";
 use "WrappedNode.osp";
+use "WrappedTreeVisitor.osp";
 use "nodes.declaration.osp";
 use "nodes.expression.osp";
 use "nodes.statement.osp";
