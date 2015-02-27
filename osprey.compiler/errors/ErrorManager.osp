@@ -40,7 +40,7 @@ public abstract class ErrorManager
 			error = new CompileTimeError(null, ErrorCode.err_Unspecified, error);
 		else:
 			source = error.source;
-		
+
 		addErrorInner(source, error);
 	}
 
@@ -122,8 +122,8 @@ public abstract class ErrorManager
 	/// Param warning: The {Warning} that was reported.
 	protected abstract addWarningInner(warning);
 
-	/// Summary: Gets a collection of all the warnings that have been repoted so far.
-	///          Each item in the collection 
+	/// Summary: Gets a collection of all the warnings that have been reported so far.
+	///          Each item in the collection is a {Warning} instance.
 	public abstract getAllWarnings();
 
 	/// Summary: Removes all warnings from the error manager.
