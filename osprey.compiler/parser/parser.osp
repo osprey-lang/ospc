@@ -306,7 +306,7 @@ public inheritable Parser
 				errorCode = ErrorCode.err_UnexpectedToken;
 			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(errorCode, tok, type,
-				ErrorCode.getMessage(errorCode));
+				errors.getMessage(errorCode));
 		}
 		return tok;
 	}
@@ -327,7 +327,7 @@ public inheritable Parser
 				errorCode = ErrorCode.err_UnexpectedToken;
 			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(errorCode, tok, type,
-				ErrorCode.getMessage(errorCode));
+				errors.getMessage(errorCode));
 		}
 		i += 1;
 		return tok;
@@ -372,7 +372,7 @@ public inheritable Parser
 	{
 		throw new ParseError(source,
 			errorCode,
-			ErrorCode.getMessage(errorCode));
+			errors.getMessage(errorCode));
 	}
 	/// Summary: Throws an irrecoverable {ParseError}. This indicates a syntax error
 	///          that the parser cannot recover from.
@@ -385,7 +385,7 @@ public inheritable Parser
 	{
 		throw new ParseError(source,
 			errorCode,
-			ErrorCode.getMessage(errorCode, formatArg));
+			errors.getMessage(errorCode, formatArg));
 	}
 
 	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
@@ -399,7 +399,7 @@ public inheritable Parser
 	{
 		var error = new ParseError(source,
 			errorCode,
-			ErrorCode.getMessage(errorCode));
+			errors.getMessage(errorCode));
 		errors.addError(error);
 	}
 	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
@@ -415,7 +415,7 @@ public inheritable Parser
 	{
 		var error = new ParseError(source,
 			errorCode,
-			ErrorCode.getMessage(errorCode, formatArg));
+			errors.getMessage(errorCode, formatArg));
 		errors.addError(error);
 	}
 

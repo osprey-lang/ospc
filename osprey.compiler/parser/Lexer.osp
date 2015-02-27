@@ -943,27 +943,27 @@ public class Lexer
 	{
 		throw new ParseError(getErrorToken(index, length),
 			errorCode,
-			ErrorCode.getMessage(errorCode));
+			errors.getMessage(errorCode));
 	}
 	private fatalError(errorCode, formatArg, index, length)
 	{
 		throw new ParseError(getErrorToken(index, length),
 			errorCode,
-			ErrorCode.getMessage(errorCode, formatArg));
+			errors.getMessage(errorCode, formatArg));
 	}
 
 	private recoverableError(errorCode, index, length)
 	{
 		var error = new ParseError(getErrorToken(index, length),
 			errorCode,
-			ErrorCode.getMessage(errorCode));
+			errors.getMessage(errorCode));
 		errors.addError(error);
 	}
 	private recoverableError(errorCode, formatArg, index, length)
 	{
 		var error = new ParseError(getErrorToken(index, length),
 			errorCode,
-			ErrorCode.getMessage(errorCode, formatArg));
+			errors.getMessage(errorCode, formatArg));
 		errors.addError(error);
 	}
 

@@ -30,6 +30,39 @@ public abstract class ErrorManager
 	/// Summary: Determines whether the error manager currently has any warnings.
 	public abstract get hasWarnings;
 
+	/// Summary: Gets an error or warning message from the specified error
+	///          or warning code.
+	/// Param errorCode:
+	///          An error or warning code. This is usually one of the constants
+	////         defined in {ErrorCode}.
+	/// Returns: A string containing the error or warning message.
+	/// Remarks: The default implementation calls {ErrorCode.getMessage}.
+	///          Derived classes should usually only override this method
+	///          if it has custom messages, and should delegate to the base
+	///          class implementation otherwise.
+	public overridable getMessage(errorCode)
+	{
+		return ErrorCode.getMessage(errorCode);
+	}
+
+	/// Summary: Gets an error or warning message from the specified error
+	///          or warning code, and formats it with the specified value.
+	/// Param errorCode:
+	///          An error or warning code. This is usually one of the constants
+	////         defined in {ErrorCode}.
+	/// Param formatArg:
+	///          A List or Hash that is passed directly as the first argument
+	///          to {String.format} to format the message.
+	/// Returns: A formatted string containing the error or warning message.
+	/// Remarks: This method is not overridable, and internally calls the
+	///          one-argument overload. To ensure compatibility with this
+	///          method in derived classes, always return a string if you
+	///          override {getMessage(errorCode)}.
+	public getMessage(errorCode, formatArg)
+	{
+		return getMessage(errorCode).format(formatArg);
+	}
+
 	/// Summary: Signals that an error has occurred.
 	/// Param error: A {CompileTimeError} that encapsulates the error, or an error message.
 	public overridable addError(error)
