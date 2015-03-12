@@ -723,12 +723,18 @@ public class Lexer
 				i += 1; // Skip \
 				ch = scanEscapeSequence(ref i);
 			}
-			else if isNewline(ch):
+			else if isNewline(ch)
+			{
 				fatalError(ErrorCode.err_NewlineInCharLiteral, i, 1);
-			else if ch == '\'':
+			}
+			else if ch == '\''
+			{
 				fatalError(ErrorCode.err_EmptyCharLiteral, i, 1);
-			else:
+			}
+			else
+			{
 				i += ch.length; // Skip character
+			}
 		}
 		if isEOF(i):
 			fatalError(ErrorCode.err_CharLiteralNotTerminated, i, 1);
