@@ -4261,19 +4261,6 @@ public inheritable Parser
 		 *     '(' meta-positional-arguments? ')'
 		 *     '(' meta-named-arguments ')'
 		 *     '(' meta-positional-arguments ',' meta-named-arguments ')'
-		 *   meta-positional-arguments:
-		 *     meta-argument
-		 *     meta-positional-arguments ',' meta-argument
-		 *   meta-named-arguments:
-		 *     meta-named-argument
-		 *     meta-named-arguments ',' meta-named-argument
-		 *   meta-named-argument:
-		 *     identifier ':' meta-argument
-		 *   meta-argument:
-		 *     expression
-		 * Additional restrictions:
-		 *   Each meta-argument must be a constant expression or a simple-list-expression
-		 *   containing only meta-arguments. This is verified elsewhere.
 		 */
 		if not accept(i, TokenType.exclam):
 			return EmptyLists.node;
@@ -4289,39 +4276,8 @@ public inheritable Parser
 			var positionalArguments = EmptyLists.argument;
 			var namedArguments = EmptyLists.node;
 
-			if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose)
-			{
-				positionalArguments = new List(1);
-				namedArguments = new List(1);
-
-				do
-				{
-					var memberName;
-					if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon)
-					{
-						memberName = lex[i];
-						i += 2; // skip name and colon
-					}
-
-					var argument = parseExpression(ref i);
-
-					if not memberName and not namedArguments.isEmpty:
-						recoverableError(argument, ErrorCode.err_PositionalMetaArgumentMustComeBeforeNamed);
-
-					if memberName:
-						namedArguments.add(
-							new MemberInitializer(getLocation(memberName, argument),
-								memberName, argument)
-						);
-					else:
-						positionalArguments.add(argument);
-				} while acceptr(ref i, TokenType.comma);
-
-				expectr(ref i, TokenType.parenClose);
-
-				positionalArguments = new ArgumentList(positionalArguments);
-				namedArguments = new NodeList(namedArguments);
-			}
+			if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose):
+				parseMetadataArguments(ref i, ref positionalArguments, ref namedArguments);
 
 			metadata.add(
 				new Metadatum(getLocation(start, lex[i - 1]),
@@ -4331,6 +4287,56 @@ public inheritable Parser
 		metadata = new NodeList(metadata);
 
 		return metadata;
+	}
+
+	private parseMetadataArguments(ref i, ref positionalArguments, ref namedArguments)
+	{
+		/* Syntax:
+		 *   meta-positional-arguments:
+		 *     meta-argument
+		 *     meta-positional-arguments ',' meta-argument
+		 *   meta-named-arguments:
+		 *     meta-named-argument
+		 *     meta-named-arguments ',' meta-named-argument
+		 *   meta-named-argument:
+		 *     identifier ':' meta-argument
+		 *   meta-argument:
+		 *     expression
+		 * Additional restrictions:
+		 *   Each meta-argument must be a constant expression or a simple-list-expression
+		 *   containing only meta-arguments. This is verified elsewhere.
+		 */
+
+		var _positionalArguments = new List(1);
+		var _namedArguments = new List(1);
+
+		do
+		{
+			var memberName;
+			if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon)
+			{
+				memberName = lex[i];
+				i += 2; // skip name and colon
+			}
+
+			var argument = parseExpression(ref i);
+
+			if not memberName and not _namedArguments.isEmpty:
+				recoverableError(argument, ErrorCode.err_PositionalMetaArgumentMustComeBeforeNamed);
+
+			if memberName:
+				_namedArguments.add(
+					new MemberInitializer(getLocation(memberName, argument),
+						memberName, argument)
+				);
+			else:
+				_positionalArguments.add(argument);
+		} while acceptr(ref i, TokenType.comma);
+
+		expectr(ref i, TokenType.parenClose);
+
+		positionalArguments = new ArgumentList(_positionalArguments);
+		namedArguments = new NodeList(_namedArguments);
 	}
 
 	// Functions that set modifiers as they are being parsed.
