@@ -519,7 +519,7 @@ public inheritable Parser
 	 * * why aren't you passing the start token as the first argument to `getLocation`?
 	 * *
 	 * * If you skip more than one token, or if you do some work in between reading a
-	 * * token and and skipping it, consider adding a brief comment that explains what you
+	 * * token and skipping it, consider adding a brief comment that explains what you
 	 * * are skipping. Something like "// skip xyz and ':'" is usually fine.
 	 * *
 	 * * The Osprey grammar is context-free. Therefore, your parse methods should not
