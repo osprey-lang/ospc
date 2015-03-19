@@ -37,14 +37,16 @@ public class Modifiers
 	/// Summary: Determines whether this {Modifiers} instance has no modifiers
 	///          and no metadata.
 	public get isEmpty =
-		not (_public     or
+		not (
+			_public      or
 			_protected   or
 			_private     or
 			_static      or
 			_abstract    or
 			_inheritable or
 			_overridable or
-			_override) and
+			_override
+		) and
 		metadata.isEmpty;
 
 	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
