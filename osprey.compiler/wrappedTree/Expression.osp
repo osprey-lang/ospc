@@ -1,0 +1,17 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax.wrapped;
+
+/// Summary: Represents a single expression in an Osprey program. Expressions often contain
+///          nested expressions.
+///
+///          This class is abstract.
+public abstract class WrappedExpression is WrappedNode
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	abstract override accept(visitor, arg);
+}

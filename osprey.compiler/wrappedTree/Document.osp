@@ -1,0 +1,44 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax.wrapped;
+
+public class WrappedDocument is WrappedNode
+{
+	public new(wrappedNode, useDirectives, members, statements)
+	{
+		new base(wrappedNode);
+
+		this.useDirectives = claimAll(useDirectives);
+		this.members       = claimAll(members);
+		this.statements    = claimAll(statements);
+	}
+
+	/// Summary: Gets the {VersionSpecifier} of this compilation unit,
+	///          or null if there is none.
+	/// Remarks: Note: this is not a {WrappedNode}, because version
+	///          specifiers contain no {ParseNode}s and do not need any
+	///          state during compilation.
+	public get version = wrappedNode.version;
+
+	/// Summary: A {NodeList} containing the {WrappedUseDirective}s in
+	///          this compilation unit.
+	public useDirectives;
+
+	/// Summary: Gets a {QualifiedName} containing the file namespace
+	///          name of this compilation unit.
+	public get fileNamespaceName = wrappedNode.fileNamespaceName;
+
+	/// Summary: A {NodeList} containing the members declared in
+	///          the compilation unit, not including global variables.
+	public members;
+
+	/// Summary: A {NodeList} containing the global {WrappedStatement}s
+	///          of this compilation unit, including global variable
+	///          declarations.
+	public statements;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitDocument(this, arg);
+	}
+}

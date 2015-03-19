@@ -1,0 +1,16 @@
+use namespace aves;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Configuration options passed to {Parser}.
+public enum set ParseFlags
+{
+	/// Summary: Specifies no additional parser flags.
+	none = 0,
+	/// Summary: Specifies that the parser should use non-standard extension keywords.
+	useExtensions = 1,
+	/// Summary: Specifies that identifiers should be normalized.
+	///          See {LexerFlags.normalizeIdentifiers} for more information on what this
+	///          flag does.
+	normalizeIdentifiers = 2,
+}

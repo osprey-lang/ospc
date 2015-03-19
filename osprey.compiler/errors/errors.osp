@@ -1,0 +1,7 @@
+// Error management
+use "ErrorCode.osp";
+use "ErrorManager.osp";
+// Error types
+use "CompileTimeError.osp";
+use "NameError.osp";
+use "ParseError.osp";

@@ -1,0 +1,110 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax.wrapped;
+
+/// Summary: Represents a wrapper around a parse node from the syntactic grammar.
+///          This is conceptually the same as a {ParseNode}, but with one important
+///          difference: derived classes are mutable. This matters to the compiler,
+///          which uses this quality to store state information inside the wrapped
+///          node instance. The wrapped node is still immutable.
+///
+/// Remarks: Wrapped nodes should generally expose the same interface as their
+///          non-wrapped siblings. If the regular node has a `condition` property,
+///          so should the wrapped node. Members that contain tokens or primitive
+///          values (numbers, enums, that sort of thing), or collections of such,
+///          are always read from the wrapped node. Note that this includes all
+///          {QualifiedName}s, because they are {SyntaxList}s containing identifier
+///          tokens only. Members that contain {ParseNode}s are always stored as
+///          fields in the wrapped node, and contain {WrappedNode}s.
+///
+///          Wrapped nodes invariably get their {SourceLocation} from the wrapped
+///          {ParseNode}.
+///
+///          {WrappedNode} deliberately does not derive from {ParseNode}, despite
+///          being essentially identical in implementation: by making wrapped and
+///          regular trees completely disjoint, the {claim} method of each cannot
+///          claim instances of the other class. This means it is not possible to
+///          accidentally claim a regular node in a wrapped node or vice versa.
+///
+///          This class is abstract.
+public abstract class WrappedNode is Syntax
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode.location);
+
+		this._wrappedNode = wrappedNode;
+	}
+
+	private _wrappedNode;
+	/// Summary: Gets the {ParseNode} that this node wraps around.
+	public get wrappedNode = _wrappedNode;
+
+	private _parent = null;
+	/// Summary: Gets the parent of this node, or null if it has none.
+	public get parent = _parent;
+
+	/// Summary: Claims the specified node, updating its {parent} property to
+	///          the current node.
+	/// Param node: A {WrappedNode} instance to claim.
+	/// Returns: The claimed node.
+	/// Remarks: This method does not ensure that {node} is a {WrappedNode}, nor
+	///          that it is unclaimed. It is safe to pass null into {node}, so
+	///          that the method can be called with optional parameters.
+	protected claim(node)
+	{
+		if node is not null:
+			node._parent = this;
+		return node;
+	}
+
+	/// Summary: Claims all of the nodes in the specified collection, updating
+	///          their {parent} property to the current node.
+	/// Param nodes: An iterable collection of {WrappedNode} instances to claim.
+	/// Returns: The {nodes} collection.
+	/// Remarks: This method does not ensure that the values in {nodes} are
+	///          instances of {WrappedNode}, nor that they are unclaimed. It is
+	///          not safe for {nodes} to contain null references; they must be
+	///          removed from the collection first.
+	protected claimAll(nodes)
+	{
+		for node in nodes:
+			node._parent = this;
+		return nodes;
+	}
+
+	/// Summary: Finds the nearest ancestor of the specified type, by walking
+	///          up the {parent} chain and returning the first ancestor that
+	///          is of the specified type.
+	/// Param type: An instance of {aves.reflection.Type} that represents the
+	///             sought-after type.
+	/// Returns: The nearest ancestor of type {type}, or null if none could
+	///          be found.
+	public findAncestor(type)
+	{
+		var ancestor = _parent;
+		while ancestor is not null
+		{
+			if type.isInstance(ancestor):
+				return ancestor;
+			ancestor = ancestor._parent;
+		}
+		return null;
+	}
+
+	/// Summary: Visits the current node. The node implementation determines
+	///          which method to call on {visitor}.
+	/// Param visitor: An object with a visit method for the current node. The node
+	///                type determines which method to call. This parameter should
+	///                generally derive from {ParseTreeVisitor}.
+	/// Param arg:     An argument that is passed to the visit method on {visitor}.
+	/// Returns: The return value of the call to the visit method.
+	/// Remarks: This method calls exactly one visit method on {visitor}. Children
+	///          of this node are therefore not visited; the {visitor} must take
+	///          care of calling {accept} (or similar) on the child nodes it is
+	///          interested in. For this reason, it is recommended that {visitor}
+	///          be derived from {ParseTreeVisitor}, which provides methods for all
+	///          parse node types, with default implementations that simply walk
+	///          the entire tree.
+	public abstract accept(visitor, arg);
+}

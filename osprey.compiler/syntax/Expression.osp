@@ -1,0 +1,17 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Represents a single expression in an Osprey program. Expressions often contain
+///          nested expressions.
+///
+///          This class is abstract.
+public abstract class Expression is ParseNode
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	abstract override accept(visitor, arg);
+}

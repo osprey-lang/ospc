@@ -1,0 +1,32 @@
+/***********************************************************
+ * This directory contains the compiler implementation.    *
+ * The compiler part of the compiler (as it were) is res-  *
+ * ponsible for name resolution, flow analysis, bytecode   *
+ * generation and all the fun things that eventually lead  *
+ * to an output module.                                    *
+ *                                                         *
+ * To accomplish this task, the compiler has a parse tree  *
+ * implementation (see WrappedNode) that wraps the regular *
+ * parse tree. The wrapped tree is *not* immutable, unlike *
+ * the regular tree, which enables the compiler to store   *
+ * stateful information inside the wrapped tree.           *
+ ***********************************************************/
+
+use "CompilerErrorManager.osp";
+
+// We can't put osprey.compiler.Compiler in its own file, because of Windows.
+
+use namespace aves;
+
+namespace osprey.compiler;
+
+public class Compiler
+{
+	public new(/* TODO */)
+	{
+	}
+
+	private err;
+	/// Summary: Gets the {ErrorManager} associated with this compiler.
+	public get errorManager = err;
+}

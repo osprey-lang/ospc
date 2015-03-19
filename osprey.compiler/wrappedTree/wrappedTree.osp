@@ -1,0 +1,37 @@
+/************************************************************
+ * This directory contains the wrapped tree implementation. *
+ * The wrapped tree is entirely separate from the ParseNode *
+ * tree, because wrapped trees are mutable and stateful.    *
+ *                                                          *
+ * See also the Remarks of WrappedNode.                     *
+ *                                                          *
+ * The file names in this directory should NOT be prefixed  *
+ * with Wrapped, because it adds unnecessary noise. Instead *
+ * we use the same file names as the regular parse tree.    *
+ * However, the class names have Wrapped in front of them,  *
+ * so there is no ambiguity when using the class names, for *
+ * the compiler or the programmer.                          *
+ *                                                          *
+ * The code in this folder may be restructured at any time, *
+ * to make it easier to navigate.                           *
+ *                                                          *
+ * Note that there are also plans to make the various node  *
+ * classes auto-generated, to reduce both extraneous typing *
+ * as well as the likelihood for error.                     *
+ ************************************************************/
+
+use "ArgumentList.osp";
+use "Document.osp";
+use "Expression.osp";
+use "ExternBody.osp";
+use "NodeList.osp";
+use "ParameterList.osp";
+use "ParseTreeWrapper.osp";
+use "Statement.osp";
+use "TypeName.osp";
+use "UseDirective.osp";
+use "WrappedNode.osp";
+use "WrappedTreeVisitor.osp";
+use "nodes.declaration.osp";
+use "nodes.expression.osp";
+use "nodes.statement.osp";

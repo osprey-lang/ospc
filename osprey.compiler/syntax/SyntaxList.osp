@@ -1,0 +1,47 @@
+use namespace aves;
+
+namespace osprey.compiler.syntax;
+
+/// Summary: Implements an immutable collection of {Syntax} elements. This class inherits
+///          from {CollectionIterable}, and therefore supports all the methods exposed by
+///          that class.
+///
+///          A {SyntaxList} does not contain null references.
+public inheritable class SyntaxList is CollectionIterable
+{
+	public new()
+	{
+		new base([]);
+	}
+	public new(items)
+	{
+		new base(getItems(items));
+	}
+
+	/// Summary: Gets the {Syntax} element at the specified index.
+	/// Param index: The index of the item to get.
+	public get this[index] = collection[index];
+
+	/// Summary: Gets the length of the list.
+	public get length = collection.length;
+
+	/// Summary: Determines whether the list is emtpy.
+	public get isEmpty = length == 0;
+
+	private static getItems(items)
+	{
+		// Wrap a single Syntax in a list
+		if items is Syntax:
+			items = [items];
+		// Otherwise, copy the items to a List, if necessary.
+		else if typeof(items) != typeof(List):
+			items = items.iter.toList();
+
+		return items;
+	}
+
+	iter
+	{
+		return collection.iter;
+	}
+}

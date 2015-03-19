@@ -1,0 +1,87 @@
+use namespace aves;
+
+namespace osprey.compiler;
+
+public class CompilerErrorManager is ErrorManager
+{
+	public new(printErrors, printWarnings)
+	{
+		this.printErrors = bool(printErrors);
+		this.printWarnings = bool(printWarnings);
+	}
+
+	private printErrors = true;
+	private printWarnings = true;
+
+	private errors = null;
+	private warnings = null;
+
+	override get hasErrors = not (errors?.isEmpty ?? true);
+
+	override get hasWarnings = not (warnings?.isEmpty ?? true);
+
+	private printMessage(kind, message)
+	{
+		var code = message.errorCode.toString("D4");
+		if message.source
+		{
+			var loc = message.source.location;
+			var col;
+			var line = loc.getLineNumber(1, ref col);
+			print(messageFormat.format([
+				kind,
+				loc.sourceFile.fileName,
+				line,
+				col,
+				loc.endIndex - loc.startIndex,
+				code,
+				message.message
+			]));
+		}
+		else
+		{
+			print(messageFormatWithoutSource.format([code, message.message]));
+		}
+	}
+
+	override addErrorInner(source, error)
+	{
+		if errors is null:
+			errors = [];
+		errors.add(error);
+		if printErrors:
+			printMessage("error", error);
+	}
+
+	override getAllErrors()
+	{
+		return errors?.slice(0);
+	}
+
+	override clearErrors()
+	{
+		errors = null;
+	}
+
+	override addWarningInner(warning)
+	{
+		if warnings is null:
+			warnings = [];
+		warnings.add(warning);
+		if printWarnings:
+			printMessage("warn", warning);
+	}
+
+	override getAllWarnings()
+	{
+		return warnings?.slice(0);
+	}
+
+	override clearWarnings()
+	{
+		warnings = null;
+	}
+
+	private const messageFormat = "[{0} \"{1}\":{2}:{3}+{4}] OSP{5}: {6}";
+	private const messageFormatWithoutSource = "[{0}] OSP{1}: {2}";
+}

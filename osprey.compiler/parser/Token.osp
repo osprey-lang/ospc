@@ -1,0 +1,146 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Represents a single token in a source file.
+public inheritable Token is Syntax
+{
+	public new(location, type)
+	{
+		new this(location, type, null);
+	}
+	public new(location, type, value)
+	{
+		new base(location);
+
+		if type is not TokenType:
+			throw new TypeError();
+
+		_type = type;
+		_value = value;
+	}
+
+	private _type;
+	/// Summary: Gets the type of the token.
+	public get type = _type;
+
+	private _value;
+	/// Summary: Gets a string representation of the token.
+	public get value
+	{
+		if _value is null:
+			_value = location.getText();
+		return _value;
+	}
+
+	private _documentation;
+	/// Summary: Gets the documentation comment associated with this token, as a
+	///          {Token} with type {TokenType.comment}, or null if there is none.
+	public get documentation = _documentation;
+	/// Summary: Sets the documentation comment associated with this token, as a
+	///          {Token} with type {TokenType.comment}, or null if there is none.
+	public set documentation { _documentation = value; }
+
+	public match(type)
+	{
+		if type == TokenType.invalid:
+			return _type == TokenType.invalid;
+		else if type & TokenType.valueMask == TokenType.none:
+			return _type & type == type;
+		else:
+			return _type == type;
+	}
+
+	public match(t1, t2)
+	{
+		return match(t1) or match(t2);
+	}
+
+	public match(t1, t2, t3)
+	{
+		return match(t1) or match(t2) or match(t3);
+	}
+
+	public matchAny(types)
+	{
+		return types.any(match);
+	}
+
+	overridable override toString()
+	{
+		if type == TokenType.eof:
+			return "end of file";
+
+		if type & TokenType.keyword == TokenType.keyword:
+			return "keyword '{0}'".format([value]);
+
+		return "'{0}' ({1})".format([value, type]);
+	}
+}
+
+/// Summary: Represents a single literal value token, such as a string literal, numeric
+///          literal, or `true`, `false` or `null`.
+public inheritable LiteralToken is Token
+{
+	public new(location, type, literalValue)
+	{
+		new base(location, type, null);
+
+		this._literalValue = literalValue;
+	}
+
+	private _literalValue;
+	/// Summary: Gets the value represented by the literal token.
+	/// Remarks: This value may be set to the same reference reference as {invalidValue}
+	///          to specify that the literal value was invalid, for instance a numeric
+	///          literal that is out of range.
+	public get literalValue = _literalValue;
+
+	overridable override toString()
+	{
+		return "literal '{0}' ({1})".format([value, type]);
+	}
+
+	private static _invalidValue = new Object();
+	/// Summary: Gets a unique {Object} that represents an invalid literal value.
+	public static get invalidValue = _invalidValue;
+}
+
+public class Identifier is Token
+{
+	public new(location, identifier)
+	{
+		new base(location, TokenType.identifier, null);
+
+		this._identifier = identifier;
+	}
+	public new(location, identifier, isEscaped)
+	{
+		new base(location, TokenType.identifier, null);
+
+		this._identifier = identifier;
+		this._isEscaped  = isEscaped;
+	}
+
+	private _identifier;
+	/// Summary: Gets the identifier represented by the {Identifier}. This may differ
+	///          from the token’s {value} if the identifier has been normalized.
+	public get identifier = _identifier;
+
+	private _isEscaped;
+
+	/// Summary: Determines whether the identifier is escaped; that is, the source text
+	///          begins with a backslash (`\`).
+	public get isEscaped
+	{
+		if _isEscaped is null:
+			_isEscaped = value[0] == '\\';
+		return _isEscaped;
+	}
+
+	override toString()
+	{
+		return "identifier '{0}'".format([value]);
+	}
+}

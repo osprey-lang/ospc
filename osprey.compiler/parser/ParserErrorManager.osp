@@ -1,0 +1,52 @@
+use namespace aves;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Implements a default error manager for the parser and lexer. This error
+///          manager throws every error it gets, but does still keep track of them,
+///          so that {hasErrors} and {getAllErrors} can work correctly. Effectively,
+///          this class turns every error into a fatal error.
+private class ParserErrorManager is ErrorManager
+{
+	private errors = null;
+	private warnings = null;
+
+	override get hasErrors = not (errors?.isEmpty ?? true);
+
+	override get hasWarnings = not (warnings?.isEmpty ?? true);
+
+	override addErrorInner(source, error)
+	{
+		if errors is null:
+			errors = [];
+		errors.add(error);
+		throw error;
+	}
+
+	override getAllErrors()
+	{
+		return errors?.slice(0);
+	}
+
+	override clearErrors()
+	{
+		errors = null;
+	}
+
+	override addWarningInner(warning)
+	{
+		if warnings is null:
+			warnings = [];
+		warnings.add(warning);
+	}
+
+	override getAllWarnings()
+	{
+		return warnings?.slice(0);
+	}
+
+	override clearWarnings()
+	{
+		warnings = null;
+	}
+}

@@ -1,0 +1,272 @@
+use namespace aves;
+use namespace aves.reflection;
+use namespace osprey.compiler.parser;
+use namespace osprey.compiler.syntax;
+use namespace osprey.compiler.syntax.wrapped;
+
+namespace osprey.compiler;
+
+private enum ParseMode { expression, statement, document }
+
+/// Summary: The application entry point.
+/// Param args: Command-line arguments passed to the application.
+public function main(args)
+{
+	if not args.isEmpty
+	{
+		function parse(file)
+		{
+			var p = new Parser(SourceFile.open(file), ParseFlags.useExtensions);
+			return p.parseDocument();
+		}
+		args.each(parse >> SyntaxPrinter.print);
+		return 0;
+	}
+
+	var labels = {
+		(ParseMode.expression): "expr> ",
+		(ParseMode.statement): "stmt> ",
+		(ParseMode.document): "doc> ",
+	};
+	var parsers = {
+		(ParseMode.expression): @parser
+		{
+			var i = 0;
+			var expr = parser.parseExpression(ref i);
+			parser.expect(i, TokenType.eof);
+			return expr;
+		},
+		(ParseMode.statement): @parser
+		{
+			var i = 0;
+			var stmt = parser.parseStatement(ref i);
+			parser.expect(i, TokenType.eof);
+			return stmt;
+		},
+		(ParseMode.document): @parser
+		{
+			return parser.parseDocument();
+		}
+	};
+
+	mainLoop(parsers, labels);
+}
+
+private function mainLoop(parsers, labels)
+{
+	var err = new CompilerErrorManager(true, true);
+
+	var mode = ParseMode.expression;
+	var modeLabel = labels[mode];
+	var wrapNodes = false;
+
+	Console.write(modeLabel);
+	var line;
+	while line = Console.readLine()
+	{
+		err.clearAll();
+
+		if line == "!clear"
+		{
+			Console.clear();
+		}
+		else if line == "!expr"
+		{
+			mode = ParseMode.expression;
+			modeLabel = labels[mode];
+		}
+		else if line == "!stmt"
+		{
+			mode = ParseMode.statement;
+			modeLabel = labels[mode];
+		}
+		else if line == "!doc"
+		{
+			mode = ParseMode.document;
+			modeLabel = labels[mode];
+		}
+		else if line == "!wrap"
+		{
+			wrapNodes = not wrapNodes;
+			print("Wrapping nodes: " :: (wrapNodes ? "yes" : "no"));
+		}
+		else
+		{
+			line = line.trim();
+			if not line.isEmpty
+			{
+				var file = SourceFile.createAnon(line, "<stdin>");
+				var parser = new Parser(file, ParseFlags.useExtensions, err);
+				var node;
+				try
+				{
+					node = parsers[mode](parser);
+				}
+				catch CompileTimeError in e
+				{
+					err.addError(e);
+					node = null;
+				}
+				catch Error in e
+				{
+					print(e);
+					node = null;
+				}
+
+				if node and not err.hasErrors
+				{
+					if wrapNodes
+					{
+						var wrapper = new ParseTreeWrapper();
+						node = node.accept(wrapper, null);
+					}
+					SyntaxPrinter.print(node);
+				}
+			}
+		}
+
+		Console.write(modeLabel);
+	}
+}
+
+private static class SyntaxPrinter
+{
+	private static ignoreMembers = Set.fromCollection(["location", "parent", "wrappedNode"]);
+
+	private static printColors = [ConsoleColor.gray,       ConsoleColor.black];
+	private static fieldColors = [ConsoleColor.green,      ConsoleColor.black];
+	private static typeColors  = [ConsoleColor.darkCyan,   ConsoleColor.black];
+	private static tokenColors = [ConsoleColor.white,      ConsoleColor.black];
+	private static enumColors  = [ConsoleColor.darkYellow, ConsoleColor.black];
+	private static nullColors  = [ConsoleColor.darkGray,   ConsoleColor.black];
+
+	public static print(syntax)
+	{
+		try
+		{
+			Console.setColors -> printColors;
+			printInner(syntax, "  ");
+		}
+		finally
+		{
+			Console.resetColors();
+		}
+	}
+
+	private static printInner(syntax, indent)
+	{
+		var type = typeof(syntax);
+
+		writeTypeName(type);
+		Console.writeLine();
+
+		const publicInstance = MemberSearchFlags.isPublic	| MemberSearchFlags.isInstance;
+		var members = type.getProperties(publicInstance) :: type.getFields(publicInstance);
+		members.sort(@(a, b) = a.name <=> b.name);
+
+		for member in members
+		{
+			var memberName = member.name;
+			if ignoreMembers.contains(memberName):
+				next;
+			if member.kind == MemberKind.property and
+				(not member.canRead or member.canWrite):
+				next;
+
+			Console.write(indent);
+			writeFieldName(memberName);
+			Console.write(": ");
+
+			var value;
+			if member.kind == MemberKind.property:
+				value = member.getterMethod.invoke(syntax, null);
+			else:
+				value = member.getValue(syntax);
+			printFieldValue(value, indent);
+		}
+	}
+
+	private static printFieldValue(value, indent)
+	{
+		if value is Token
+		{
+			writeToken(value);
+			Console.writeLine();
+		}
+		else if value is Syntax
+		{
+			printInner(value, indent :: "  ");
+		}
+		else if value is SyntaxList
+		{
+			writeTypeName(typeof(value));
+			Console.writeLine("[{0}]", [value.length]);
+			indent ::= "  ";
+			for syn in value
+			{
+				Console.write(indent);
+				printFieldValue(syn, indent);
+			}
+		}
+		else if value is Enum
+		{
+			writeEnumValue(value);
+			Console.writeLine();
+		}
+		else if value is null
+		{
+			writeNull();
+			Console.writeLine();
+		}
+		else
+		{
+			Console.write(value);
+			Console.write(" (");
+			writeTypeName(typeof(value));
+			Console.writeLine(")");
+		}
+	}
+
+	private static writeFieldName(name)
+	{
+		Console.setColors -> fieldColors;
+		Console.write(name);
+		Console.setColors -> printColors;
+	}
+
+	private static writeTypeName(type)
+	{
+		Console.setColors -> typeColors;
+		Console.write(type.name);
+		Console.setColors -> printColors;
+	}
+
+	private static writeToken(token)
+	{
+		if token is Identifier
+		{
+			Console.setColors -> tokenColors;
+			Console.write(token.identifier);
+			Console.setColors -> printColors;
+		}
+		else
+		{
+			Console.write(token);
+		}
+	}
+
+	private static writeEnumValue(value)
+	{
+		var type = typeof(value);
+		Console.setColors -> enumColors;
+		Console.write(value is EnumSet ? "{0}({1})" : "{0}.{1}", [type.name, value]);
+		Console.setColors -> printColors;
+	}
+
+	private static writeNull()
+	{
+		Console.setColors -> nullColors;
+		Console.write("<null>");
+		Console.setColors -> printColors;
+	}
+}

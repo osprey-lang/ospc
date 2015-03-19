@@ -1,0 +1,89 @@
+use namespace aves;
+use namespace aves.reflection; // for Module
+use namespace io;
+use namespace osprey.compiler.parser;
+
+namespace osprey.compiler;
+
+public static class ErrorCode
+{
+	//<region: Generated code>
+
+{$errorCodes$}
+	//</region>
+
+	// Always loaded from the module's directory.
+	private const errorMessageFile = "messages.txt";
+	private static errorMessages;
+
+	private static loadMessages()
+	{
+		var module = Module.getCurrentModule();
+		var messageFile = Path.join(Path.getDirectory(module.fileName), errorMessageFile);
+		var parser = new Parser(SourceFile.open(messageFile, false), ParseFlags.none);
+
+		var messages = new Hash(100);
+		// messages.txt uses Osprey tokens, according to the following grammar:
+		//   message-file:
+		//     messages
+		//   messages:
+		//     message
+		//     messages  message
+		//   message:
+		//     integer-literal  ':'  identifier  '='  string-literal  ';'
+		// With the additional restriction that the integer literal must be of
+		// type aves.Int. Unsigned integers are not allowed.
+		// The identifier in the message definition is used to generate a list
+		// of error codes.
+
+		var i = 0;
+		while not parser.accept(i, TokenType.eof)
+		{
+			var code = parser.expectr(ref i, TokenType.int).literalValue;
+			parser.expectr(ref i, TokenType.colon);
+			parser.expectr(ref i, TokenType.identifier);
+
+			parser.expectr(ref i, TokenType.assign);
+
+			var message = parser.expectr(ref i, TokenType.string).literalValue;
+
+			parser.expectr(ref i, TokenType.semicolon);
+			messages.add(code, message);
+		}
+
+		errorMessages = messages;
+	}
+
+	/// Summary: Gets an error or warning message corresponding to the specified error
+	///          code. The error code is one of the {ErrorCode} constants.
+	/// Param errorCode:
+	///          An error or warning code. This code is one of the {ErrorCode} constants.
+	/// Returns: A string containing a message for the error code.
+	public static getMessage(errorCode)
+	{
+		if errorMessages is null:
+			loadMessages();
+
+		var message = fallbackMessage;
+		errorMessages.tryGet(errorCode, ref message);
+		return message;
+	}
+
+	/// Summary: Gets an error or warning message corresponding to the specified error
+	///          code, and formats it with the specified arguments. The error code is
+	///          one of the {ErrorCode} constants.
+	/// Param errorCode:
+	///          An error or warning code. This code is one of the {ErrorCode} constants.
+	/// Param formatArgs:
+	///          A List or Hash that is passed to {String.format} to format the message.
+	/// Returns: A formatted string containing a message for the error code.
+	/// Remarks: The message is formatted before being returned, according to
+	///          {String.format}. If it doesn’t contain any format placeholders,
+	///          the format arguments are ignored.
+	public static getMessage(errorCode, formatArgs)
+	{
+		return getMessage(errorCode).format(formatArgs);
+	}
+
+	private const fallbackMessage = "Unknown compile-time error.";
+}

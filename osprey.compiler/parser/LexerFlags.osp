@@ -1,0 +1,20 @@
+use namespace aves;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Specifies options for instances of {Lexer}.
+public enum set LexerFlags
+{
+	/// Summary: Specifies no lexer flags.
+	none = 0,
+	/// Summary: Specifies that comments should be included in
+	///          the generated token stream.
+	includeComments = 1,
+	/// Summary: Specifies that identifiers should be normalized. See Remarks.
+	/// Remarks: Normalization consists of performing the following steps:
+	///
+	///          * The keyword escape prefix, if any, is stripped. \
+	///          * The string is normalized to Normalization Form C. \
+	///          * Formatting characters (of Unicode character class Cf) are stripped.
+	normalizeIdentifiers = 2,
+}

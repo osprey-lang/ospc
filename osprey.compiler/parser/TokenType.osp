@@ -1,0 +1,279 @@
+use namespace aves;
+
+namespace osprey.compiler.parser;
+
+public enum set TokenType
+{
+	/// Summary: The token is invalid or unknown (synonymous with {none}).
+	invalid = 0,
+	/// Summary: The token is invalid or unknown (synonymous with {invalid}).
+	none = 0,
+	/// Summary: The end of the file.
+	eof = 1,
+
+	/// Summary: A mask for extracting the category of a {TokenType}.
+	categoryMask = 0x7fff0000,
+	/// Summary: A mask for extracting the value of a {TokenType}.
+	valueMask = 0x0000ffff,
+
+	/** Categories **/
+
+	/// Summary: The token is an identifier.
+	identifierCategory = 0x00010000,
+	/// Summary: The token is a keyword.
+	keyword = 0x00020000,
+	/// Summary: The token is a literal value.
+	literal = 0x00040000,
+	/// Summary: The token is a punctuation token.
+	punctuation = 0x00080000,
+	/// Summary: A comment.
+	comment = 0x00100000,
+	/// Summary: The token is a compound assignment operator.
+	compoundAssign = 0x00200000,
+	/// Summary: The token is a member modifier, such as public, protected, static, overridable, etc.
+	memberModifier = 0x00400000,
+	/// Summary: The token is an overloadable binary operator.
+	overloadableBinaryOperator = 0x00800000,
+	/// Summary: The token matches the lambda-operator production (it can immediately follow an `@`).
+	lambdaOperator = 0x01000000,
+
+	/// Summary: A single identifier.
+	identifier = identifierCategory | 1,
+
+	/** Keywords **/
+
+	/// Summary: abstract
+	_abstract = 1 | keyword | memberModifier,
+	/// Summary: and
+	_and = 2 | keyword | lambdaOperator,
+	/// Summary: async (unused)
+	_async = 3 | keyword,
+	/// Summary: base
+	_base = 4 | keyword,
+	/// Summary: break
+	_break = 5 | keyword,
+	/// Summary: catch
+	_catch = 6 | keyword,
+	/// Summary: class
+	_class = 7 | keyword,
+	/// Summary: const
+	_const = 8 | keyword,
+	/// Summary: do
+	_do = 9 | keyword,
+	/// Summary: else
+	_else = 10 | keyword,
+	/// Summary: enum
+	_enum = 11 | keyword,
+	/// Summary: false
+	_false = 12 | keyword | literal,
+	/// Summary: finally
+	_finally = 13 | keyword,
+	/// Summary: for
+	_for = 14 | keyword,
+	/// Summary: function
+	_function = 15 | keyword,
+	/// Summary: get
+	_get = 16 | keyword,
+	/// Summary: global
+	_global = 17 | keyword,
+	/// Summary: if
+	_if = 18 | keyword,
+	/// Summary: in
+	_in = 19 | keyword,
+	/// Summary: inheritable
+	_inheritable = 20 | keyword | memberModifier,
+	/// Summary: is
+	_is = 21 | keyword,
+	/// Summary: iter
+	_iter = 22 | keyword,
+	/// Summary: namespace
+	_namespace = 23 | keyword,
+	/// Summary: new
+	_new = 24 | keyword,
+	/// Summary: next
+	_next = 25 | keyword,
+	/// Summary: not
+	_not = 26 | keyword | lambdaOperator,
+	/// Summary: null
+	_null = 27 | keyword | literal,
+	/// Summary: operator
+	_operator = 28 | keyword,
+	/// Summary: or
+	_or = 29 | keyword | lambdaOperator,
+	/// Summary: overridable
+	_overridable = 30 | keyword | memberModifier,
+	/// Summary: override
+	_override = 31 | keyword | memberModifier,
+	/// Summary: private
+	_private = 32 | keyword | memberModifier,
+	/// Summary: protected
+	_protected = 33 | keyword | memberModifier,
+	/// Summary: public
+	_public = 34 | keyword | memberModifier,
+	/// Summary: ref
+	_ref = 35 | keyword,
+	/// Summary: refeq
+	_refeq = 36 | keyword,
+	/// Summary: return
+	_return = 37 | keyword,
+	/// Summary: set
+	_set = 38 | keyword,
+	/// Summary: static
+	_static = 39 | keyword | memberModifier,
+	/// Summary: this
+	_this = 40 | keyword,
+	/// Summary: throw
+	_throw = 41 | keyword,
+	/// Summary: true
+	_true = 42 | keyword | literal,
+	/// Summary: try
+	_try = 43 | keyword,
+	/// Summary: typeof
+	_typeof = 44 | keyword,
+	/// Summary: use
+	_use = 45 | keyword,
+	/// Summary: var
+	_var = 46 | keyword,
+	/// Summary: with
+	_with = 47 | keyword,
+	/// Summary: while
+	_while = 48 | keyword,
+	/// Summary: xor
+	_xor = 49 | keyword | lambdaOperator,
+	/// Summary: yield
+	_yield = 50 | keyword,
+
+	/** Literals **/
+
+	/// Summary: An integer literal (signed or unsigned).
+	/// Remarks: We make no distinction here between signed or unsigned literals,
+	///          because several parts of the grammar allow both kinds of integer
+	///          literals, so separating the two would increase the complexity in
+	///          places. When a distiction is needed, the `is` operator can be used
+	///          on the `literalValue` of the token. When conversion is needed,
+	///          the {int} and {uint} functions are employed.
+	int = 1 | literal,
+	/// Summary: A real (floating-point) literal.
+	real = 2 | literal,
+	/// Summary: A string literal.
+	string = 3 | literal,
+	/// Summary: A character literal.
+	char = 4 | literal,
+
+	/** Punctuation **/
+
+	/// Summary: {
+	curlyOpen = 1 | punctuation,
+	/// Summary: }
+	curlyClose = 2 | punctuation,
+	/// Summary: [
+	squareOpen = 3 | punctuation,
+	/// Summary: ]
+	squareClose = 4 | punctuation,
+	/// Summary: (
+	parenOpen = 5 | punctuation,
+	/// Summary: )
+	parenClose = 6 | punctuation,
+	/// Summary: .
+	dot = 7 | punctuation,
+	/// Summary: ,
+	comma = 8 | punctuation,
+	/// Summary: :
+	colon = 9 | punctuation,
+	/// Summary: ;
+	semicolon = 10 | punctuation,
+	/// Summary: ~
+	tilde = 11 | punctuation | lambdaOperator,
+	/// Summary: <
+	less = 12 | punctuation | lambdaOperator,
+	/// Summary: <=
+	lessEqual = 13 | punctuation | lambdaOperator,
+	/// Summary: >
+	greater = 14 | punctuation | lambdaOperator,
+	/// Summary: >=
+	greaterEqual = 15 | punctuation | lambdaOperator,
+	/// Summary: ==
+	doubleEqual = 16 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: !=
+	notEqual = 17 | punctuation | lambdaOperator,
+	/// Summary: ?
+	question = 18 | punctuation,
+	/// Summary: ??
+	nullCoalescing = 19 | punctuation,
+	/// Summary: ?!
+	nullOr = 20 | punctuation,
+	/// Summary: ->
+	funcApplication = 21 | punctuation | lambdaOperator,
+	/// Summary: +
+	plus = 22 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: -
+	minus = 23 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: |
+	pipe = 24 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: *
+	multiply = 25 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: /
+	divide = 26 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: %
+	modulo = 27 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: &
+	ampersand = 28 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: ^
+	caret = 29 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: ::
+	concatenate = 30 | punctuation | lambdaOperator,
+	/// Summary: <<
+	shiftLeft = 31 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: >>
+	shiftRight = 32 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: **
+	power = 33 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: #
+	hash = 34 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: $
+	dollar = 35 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: =
+	assign = 36 | punctuation,
+	/// Summary: +=
+	plusAssign = 37 | punctuation | compoundAssign,
+	/// Summary: -=
+	minusAssign = 38 | punctuation | compoundAssign,
+	/// Summary: |=
+	pipeAssign = 39 | punctuation | compoundAssign,
+	/// Summary: *=
+	mulAssign = 40 | punctuation | compoundAssign,
+	/// Summary: /=
+	divAssign = 41 | punctuation | compoundAssign,
+	/// Summary: %=
+	modAssign = 42 | punctuation | compoundAssign,
+	/// Summary: &=
+	ampAssign = 43 | punctuation | compoundAssign,
+	/// Summary: ^=
+	caretAssign = 44 | punctuation | compoundAssign,
+	/// Summary: ::=
+	concatAssign = 45 | punctuation | compoundAssign,
+	/// Summary: <<=
+	shiftLeftAssign = 46 | punctuation | compoundAssign,
+	/// Summary: >>=
+	shiftRightAssign = 47 | punctuation | compoundAssign,
+	/// Summary: **=
+	powerAssign = 48 | punctuation | compoundAssign,
+	/// Summary: #=
+	hashAssign = 49 | punctuation | compoundAssign,
+	/// Summary: $=
+	dollarAssign = 50 | punctuation | compoundAssign,
+	/// Summary: @
+	at = 51 | punctuation,
+	/// Summary: ...
+	splat = 52 | punctuation,
+	/// Summary: ?.
+	safeAccess = 53 | punctuation,
+	/// Summary: <=>
+	compare = 54 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	/// Summary: ?(
+	parenOpenSafe = 55 | punctuation,
+	/// Summary: ?[
+	squareOpenSafe = 56 | punctuation,
+	/// Summary: !
+	exclam = 57 | punctuation,
+}

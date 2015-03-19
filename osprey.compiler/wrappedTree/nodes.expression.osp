@@ -1,0 +1,932 @@
+use namespace aves;
+use namespace osprey.compiler.parser;
+
+namespace osprey.compiler.syntax.wrapped;
+
+public inheritable WrappedBinaryExpression is WrappedExpression
+{
+	public new(wrappedNode, left, right)
+	{
+		new base(wrappedNode);
+
+		this.left  = claim(left);
+		this.right = claim(right);
+	}
+
+	/// Summary: The left-hand side operand {WrappedExpression}.
+	public left;
+
+	/// Summary: Gets the {BinaryOperator} that combines the operands.
+	public get op = wrappedNode.op;
+
+	/// Summary: The right-hand side operand {WrappedExpression}.
+	public right;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitBinaryExpression(this, arg);
+	}
+}
+
+public inheritable WrappedUnaryExpression is WrappedExpression
+{
+	public new(wrappedNode, inner)
+	{
+		new base(wrappedNode);
+
+		this.inner = claim(inner);
+	}
+
+	/// Summary: Gets the {UnaryOperator} that is applied to the operand.
+	public get op = wrappedNode.op;
+
+	/// Summary: The operand {WrappedExpression}.
+	public inner;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitUnaryExpression(this, arg);
+	}
+}
+
+public class WrappedTypeTestExpression is WrappedExpression
+{
+	public new(wrappedNode, expression, type)
+	{
+		new base(wrappedNode);
+
+		this.expression = claim(expression);
+		this.type       = claim(type);
+	}
+
+	/// Summary: The {WrappedExpression} whose type is being tested.
+	public expression;
+
+	/// Summary: The {WrappedTypeName} of the type that is being tested for,
+	///          or null if the expression is being tested against null.
+	public type;
+
+	/// Summary: Determines whether the test is negated (“is not” rather than “is”).
+	public get negated = wrappedNode.negated;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTypeTestExpression(this, arg);
+	}
+}
+
+public class WrappedConditionalExpression is WrappedExpression
+{
+	public new(wrappedNode, condition, truePart, falsePart)
+	{
+		new base(wrappedNode);
+
+		this.condition = claim(condition);
+		this.truePart  = claim(truePart);
+		this.falsePart = claim(falsePart);
+	}
+
+	/// Summary: The condition (first operand).
+	public condition;
+
+	/// Summary: Gets the “if true” expression (second operand).
+	public truePart;
+
+	/// Summary: Gets the “if false” expression (third operand).
+	public falsePart;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalExpression(this, arg);
+	}
+}
+
+public class WrappedConditionalAndExpression is WrappedBinaryExpression
+{
+	public new(wrappedNode, left, right)
+	{
+		new base(wrappedNode, left, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalAndExpression(this, arg);
+	}
+}
+
+public class WrappedConditionalOrExpression is WrappedBinaryExpression
+{
+	public new(wrappedNode, left, right)
+	{
+		new base(wrappedNode, left, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalOrExpression(this, arg);
+	}
+}
+
+public class WrappedConditionalXorExpression is WrappedBinaryExpression
+{
+	public new(wrappedNode, left, right)
+	{
+		new base(wrappedNode, left, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConditionalXorExpression(this, arg);
+	}
+}
+
+public class WrappedNullOrExpression is WrappedBinaryExpression
+{
+	public new(wrappedNode, left, right)
+	{
+		new base(wrappedNode, left, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNullOrExpression(this, arg);
+	}
+}
+
+public class WrappedNullCoalescingExpression is WrappedBinaryExpression
+{
+	public new(wrappedNode, left, right)
+	{
+		new base(wrappedNode, left, right);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNullCoalescingExpression(this, arg);
+	}
+}
+
+public class WrappedAssignmentExpression is WrappedExpression
+{
+	public new(wrappedNode, target, value)
+	{
+		new base(wrappedNode);
+
+		this.target = claim(target);
+		this.value  = claim(value);
+	}
+
+	/// Summary: The target {WrappedExpression} of the assignment.
+	public target;
+
+	/// Summary: The value {WrappedExpression} of the assignment.
+	public value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitAssignmentExpression(this, arg);
+	}
+}
+
+public class WrappedUseInExpression is WrappedExpression
+{
+	public new(wrappedNode, variables, expression)
+	{
+		new base(wrappedNode);
+
+		this.variables  = claimAll(variables);
+		this.expression = claim(expression);
+	}
+
+	/// Summary: A {NodeList} with the {WrappedVariableDeclarator}s associated with
+	///          this use-in expression.
+	public variables;
+
+	/// Summary: The {WrappedExpression} that generates the value of this use-in expression.
+	public expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseInExpression(this, arg);
+	}
+}
+
+public abstract class WrappedLambdaExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class WrappedSimpleLambdaExpression is WrappedLambdaExpression
+{
+	public new(wrappedNode, parameters, body)
+	{
+		new base(wrappedNode);
+
+		this.parameters = claimAll(parameters);
+		this.body       = claim(body);
+	}
+
+	/// Summary: A {WrappedParameterList} containing the parameters of the lambda expression.
+	public parameters;
+
+	/// Summary: A {WrappedStatement} or {WrappedExpression} with the body of the lambda expression.
+	/// Remarks: When the body is a {WrappedStatement}, it corresponds to a lambda expression with
+	///          a `block` for its body, of the form `@x { ... }`. When it’s a {WrappedExpression},
+	///          the lambda expression is of the form `@x = ...`.
+	public body;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSimpleLambdaExpression(this, arg);
+	}
+}
+
+public class WrappedLambdaMemberExpression is WrappedLambdaExpression
+{
+	public new(wrappedNode, members)
+	{
+		new base(wrappedNode);
+
+		this.members = claimAll(members);
+	}
+
+	/// Summary: A {NodeList} containing the {WrappedSafeAccessNode}s of the lambda expression.
+	public members;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLambdaMemberExpression(this, arg);
+	}
+}
+
+public class WrappedLambdaOperatorExpression is WrappedLambdaExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Gets the {LambdaOperator} used in this lambda expression.
+	public get op = wrappedNode.op;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitLambdaOperatorExpression(this, arg);
+	}
+}
+
+public abstract class WrappedLiteralExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Gets the value represented by the literal expression.
+	public get literalValue = wrappedNode.literalValue;
+
+	abstract override accept(visitor, arg);
+}
+
+public class WrappedNullLiteralExpression is WrappedLiteralExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNullLiteral(this, arg);
+	}
+}
+
+public class WrappedBooleanLiteralExpression is WrappedLiteralExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitBooleanLiteral(this, arg);
+	}
+}
+
+public class WrappedIntegerLiteralExpression is WrappedLiteralExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Determines whether the expression represents an unsigned integer.
+	public get isUnsigned = wrappedNode.isUnsigned;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIntegerLiteral(this, arg);
+	}
+}
+
+public class WrappedRealLiteralExpression is WrappedLiteralExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitRealLiteral(this, arg);
+	}
+}
+
+public class WrappedStringLiteralExpression is WrappedLiteralExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitStringLiteral(this, arg);
+	}
+}
+
+public class WrappedCharLiteralExpression is WrappedLiteralExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitCharLiteral(this, arg);
+	}
+}
+
+public class WrappedSimpleNameExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Gets the {Identifier} associated with this expression.
+	public get name = wrappedNode.name;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSimpleName(this, arg);
+	}
+}
+
+public class WrappedParenthesizedExpression is WrappedExpression
+{
+	public new(wrappedNode, inner)
+	{
+		new base(wrappedNode);
+
+		this.inner = claim(inner);
+	}
+
+	/// Summary: The {WrappedExpression} that is wrapped in parentheses.
+	public inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitParenthesizedExpression(this, arg);
+	}
+}
+
+public class WrappedMemberAccessExpression is WrappedExpression
+{
+	public new(wrappedNode, inner)
+	{
+		new base(wrappedNode);
+
+		this.inner = claim(inner);
+	}
+
+	/// Summary: Gets the {WrappedExpression} whose member is accessed.
+	public inner;
+
+	/// Summary: Gets the {Identifier} corresponding to the member name.
+	public get member = wrappedNode.member;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitMemberAccess(this, arg);
+	}
+}
+
+public class WrappedInvocationExpression is WrappedExpression
+{
+	public new(wrappedNode, inner, arguments)
+	{
+		new base(wrappedNode);
+
+		this.inner     = claim(inner);
+		this.arguments = claimAll(arguments);
+	}
+
+	/// Summary: The {WrappedExpression} that is invoked.
+	public inner;
+
+	/// Summary: A {WrappedArgumentList} with the arguments to the invocation.
+	public arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitInvocationExpression(this, arg);
+	}
+}
+
+public class WrappedIndexerAccessExpression is WrappedExpression
+{
+	public new(wrappedNode, inner, arguments)
+	{
+		new base(wrappedNode);
+
+		this.inner     = claim(inner);
+		this.arguments = claimAll(arguments);
+	}
+
+	/// Summary: The {WrappedExpression} whose indexer is accessed.
+	public inner;
+
+	/// Summary: A {WrappedArgumentList} with the arguments to the indexer.
+	public arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIndexerAccess(this, arg);
+	}
+}
+
+public class WrappedIteratorAccessExpression is WrappedExpression
+{
+	public new(wrappedNode, inner)
+	{
+		new base(wrappedNode);
+
+		this.inner = inner;
+	}
+
+	/// Summary: The {WrappedExpression} whose iterator is accessed.
+	public inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitIteratorAccess(this, arg);
+	}
+}
+
+public class WrappedSafeAccessExpression is WrappedExpression
+{
+	public new(wrappedNode, inner, chain)
+	{
+		new base(wrappedNode);
+
+		this.inner = claim(inner);
+		this.chain = claimAll(chain);
+	}
+
+	/// Summary: The {WrappedExpression} on which the first member access occurs.
+	public inner;
+
+	/// Summary: A {NodeList} containing the {WrappedSafeAccessNode}s associated with
+	///          this expression’s safe access chain.
+	public chain;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeAccess(this, arg);
+	}
+}
+
+public abstract class WrappedSafeAccessNode is WrappedNode
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Determines whether the node is safe.
+	public get isSafe = wrappedNode.isSafe;
+}
+
+public class WrappedSafeMemberAccess is WrappedSafeAccessNode
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Gets the {Identifier} that corresponds to the member name.
+	public get member = wrappedNode.member;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeMemberAccess(this, arg);
+	}
+}
+
+public class WrappedSafeInvocation is WrappedSafeAccessNode
+{
+	public new(wrappedNode, arguments)
+	{
+		new base(wrappedNode);
+
+		this.arguments = claimAll(arguments);
+	}
+
+	/// Summary: A {WrappedArgumentList} with the arguments to the invocation.
+	public arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeInvocation(this, arg);
+	}
+}
+
+public class WrappedSafeIndexerAccess is WrappedSafeAccessNode
+{
+	public new(wrappedNode, arguments)
+	{
+		new base(wrappedNode);
+
+		this.arguments = claimAll(arguments);
+	}
+
+	/// Summary: A {WrappedArgumentList} with the arguments to the indexer.
+	public arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeIndexerAccess(this, arg);
+	}
+}
+
+public class WrappedSafeIteratorAccess is WrappedSafeAccessNode
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitSafeIteratorAccess(this, arg);
+	}
+}
+
+public class WrappedGlobalAccessExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Gets the {Identifier} corresponding to the name of the global member.
+	public get member = wrappedNode.member;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitGlobalAccess(this, arg);
+	}
+}
+
+public class WrappedThisAccessExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitThisAccess(this, arg);
+	}
+}
+
+public class WrappedBaseAccessExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitBaseAccess(this, arg);
+	}
+}
+
+public class WrappedObjectCreationExpression is WrappedExpression
+{
+	public new(wrappedNode, type, arguments, initializer)
+	{
+		new base(wrappedNode);
+
+		this.type        = claim(type);
+		this.arguments   = claimAll(arguments);
+		this.initializer = claim(initializer);
+	}
+
+	/// Summary: The {WrappedTypeName} that this expression constructs an instance of.
+	public type;
+
+	/// Summary: A {WrappedArgumentList} with the arguments to the constructor.
+	public arguments;
+
+	/// Summary: The {WrappedObjectInitializer} associated with the object creation
+	///          expression, or null if it has none.
+	public initializer;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitObjectCreationExpression(this, arg);
+	}
+}
+
+public class WrappedObjectInitializer is WrappedNode
+{
+	public new(wrappedNode, members)
+	{
+		new base(wrappedNode);
+
+		this.members = claimAll(members);
+	}
+
+	/// Summary: A {NodeList} with the {WrappedMemberInitializer}s of this object initializer.
+	public members;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitObjectInitializer(this, arg);
+	}
+}
+
+public class WrappedMemberInitializer is WrappedNode
+{
+	public new(wrappedNode, expression)
+	{
+		new base(wrappedNode);
+
+		this.expression = claim(expression);
+	}
+
+	/// Summary: Gets an {Identifier} corresponding to the name of the member
+	///          that is initialized.
+	public get member = wrappedNode.member;
+
+	/// Summary: The expression that the member is initialized to.
+	public expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitMemberInitializer(this, arg);
+	}
+}
+
+public class WrappedListCreationExpression is WrappedExpression
+{
+	public new(wrappedNode, values)
+	{
+		new base(wrappedNode);
+
+		this.values = claimAll(values);
+	}
+
+	/// Summary: A {NodeList} with the {WrappedExpression}s that make up the values in the list.
+	public values;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListCreationExpression(this, arg);
+	}
+}
+
+public class WrappedRangeExpression is WrappedExpression
+{
+	public new(wrappedNode, low, high, step)
+	{
+		new base(wrappedNode);
+
+		this.low  = claim(low);
+		this.high = claim(high);
+		this.step = claim(step);
+	}
+
+	/// Summary: The low (starting) value {WrappedExpression} of the range.
+	public low;
+
+	/// Summary: The high (end) value {WrappedExpression} of the range.
+	public high;
+
+	/// Summary: The step value {WrappedExpression} of the range, or null if absent.
+	public step;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitRangeExpression(this, arg);
+	}
+}
+
+public class WrappedListComprehensionExpression is WrappedExpression
+{
+	public new(wrappedNode, values, comprehenders)
+	{
+		new base(wrappedNode);
+
+		this.values        = claimAll(values);
+		this.comprehenders = claimAll(comprehenders);
+	}
+
+	/// Summary: A {NodeList} of {WrappedExpression}s that the comprehension generates.
+	public values;
+
+	/// Summary: A {NodeList} of {WrappedListComprehensionPart}s belonging to the list comprehension.
+	public comprehenders;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListComprehension(this, arg);
+	}
+}
+
+public abstract class WrappedListComprehensionPart is WrappedNode
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class WrappedListComprehensionIterator is WrappedListComprehensionPart
+{
+	public new(wrappedNode, expression)
+	{
+		new base(wrappedNode);
+
+		this.expression = claim(expression);
+	}
+
+	/// Summary: Gets a collection of the variable names declared by this list
+	///          comprehension iterator, as a {SyntaxList} of {Identifier} tokens.
+	public get variables = wrappedNode.variables;
+
+	/// Summary: The {WrappedExpression} that is evaluated to produce the collection
+	///          iterated over by the list comprehension iterator.
+	public expression;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListComprehensionIterator(this, arg);
+	}
+}
+
+public class WrappedListComprehensionCondition is WrappedListComprehensionPart
+{
+	public new(wrappedNode, condition)
+	{
+		new base(wrappedNode);
+
+		this.condition = claim(condition);
+	}
+
+	/// Summary: The condition {WrappedExpression} of this list comprehension condition.
+	public condition;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitListComprehensionCondition(this, arg);
+	}
+}
+
+public class WrappedHashCreationExpression is WrappedExpression
+{
+	public new(wrappedNode, members)
+	{
+		new base(wrappedNode);
+
+		this.members = claimAll(members);
+	}
+
+	/// Summary: A {NodeList} containing the {WrappedHashMember}s of this hash creation expression.
+	public members;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitHashCreationExpression(this, arg);
+	}
+}
+
+public class WrappedHashMember is WrappedNode
+{
+	public new(wrappedNode, key, value)
+	{
+		new base(wrappedNode);
+
+		if key is not Identifier:
+			claim(key);
+
+		this.key   = key;
+		this.value = claim(value);
+	}
+
+	/// Summary: The key {WrappedExpression} or {Identifier} of this hash member.
+	public key;
+
+	/// Summary: The value {WrappedExpression} of this hash member.
+	public value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitHashMember(this, arg);
+	}
+}
+
+public class WrappedTypeOfExpression is WrappedExpression
+{
+	public new(wrappedNode, inner)
+	{
+		new base(wrappedNode);
+
+		this.inner = claim(inner);
+	}
+
+	/// Summary: The {WrappedExpression} whose type is loaded.
+	public inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitTypeOfExpression(this, arg);
+	}
+}
+
+public class WrappedRefExpression is WrappedExpression
+{
+	public new(wrappedNode, inner)
+	{
+		new base(wrappedNode);
+
+		this.inner = claim(inner);
+	}
+
+	/// Summary: The {WrappedExpression} that is passed by reference.
+	public inner;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitRefExpression(this, arg);
+	}
+}
+
+/* ** Extension expressions ** */
+
+public class WrappedNamedConstantExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	/// Summary: Gets the first {Identifier} of the named constant, which specifies
+	///          the constant type.
+	public get type = wrappedNode.type;
+
+	/// Summary: Gets the second {Identifier} of the named constant, which specifies
+	///          the constant value together with {type}.
+	public get value = wrappedNode.value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitNamedConstantExpression(this, arg);
+	}
+}
+
+public class WrappedGetArgumentCountExpression is WrappedExpression
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitGetArgumentCountExpression(this, arg);
+	}
+}
