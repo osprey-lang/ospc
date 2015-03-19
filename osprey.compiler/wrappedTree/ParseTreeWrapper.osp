@@ -67,27 +67,27 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitClassConstantDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var constants = wrapNodeList(decl.constants);
-		return new WrappedClassConstantDeclaration(decl, metadata, constants);
+		return new WrappedClassConstantDeclaration(decl, annotations, constants);
 	}
 
 	override visitClassDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var baseType = decl.baseType;
 		if baseType is TypeName:
 			baseType = visitTypeName(baseType, arg);
 		var members = wrapNodeList(decl.members);
-		return new WrappedClassDeclaration(decl, metadata, baseType, members);
+		return new WrappedClassDeclaration(decl, annotations, baseType, members);
 	}
 
 	override visitConstructorDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var parameters = wrapParameterList(decl.parameters);
 		var body = decl.body?.accept(this, null);
-		return new WrappedConstructorDeclaration(decl, metadata, parameters, body);
+		return new WrappedConstructorDeclaration(decl, annotations, parameters, body);
 	}
 
 	override visitThisParameter(param, arg)
@@ -98,16 +98,16 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitEnumDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var members = wrapNodeList(decl.members);
-		return new WrappedEnumDeclaration(decl, metadata, members);
+		return new WrappedEnumDeclaration(decl, annotations, members);
 	}
 
 	override visitEnumMember(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var value = decl.value?.accept(this, null);
-		return new WrappedEnumMember(decl, metadata, value);
+		return new WrappedEnumMember(decl, annotations, value);
 	}
 
 	override visitExternBody(node, arg)
@@ -119,24 +119,24 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitFieldDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var fields = wrapNodeList(decl.fields);
-		return new WrappedFieldDeclaration(decl, metadata, fields);
+		return new WrappedFieldDeclaration(decl, annotations, fields);
 	}
 
 	override visitGlobalConstantDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var constants = wrapNodeList(decl.constants);
-		return new WrappedGlobalConstantDeclaration(decl, metadata, constants);
+		return new WrappedGlobalConstantDeclaration(decl, annotations, constants);
 	}
 
 	override visitGlobalFunctionDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var parameters = wrapParameterList(decl.parameters);
 		var body = decl.body.accept(this, null);
-		return new WrappedGlobalFunctionDeclaration(decl, metadata, parameters, body);
+		return new WrappedGlobalFunctionDeclaration(decl, annotations, parameters, body);
 	}
 
 	override visitGlobalVariableDeclaration(decl, arg)
@@ -147,33 +147,33 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitPropertyDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var body = decl.body?.accept(this, null);
-		return new WrappedPropertyDeclaration(decl, metadata, body);
+		return new WrappedPropertyDeclaration(decl, annotations, body);
 	}
 
 	override visitIndexerDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var parameters = wrapParameterList(decl.parameters);
 		var body = decl.body?.accept(this, null);
-		return new WrappedIndexerDeclaration(decl, metadata, parameters, body);
+		return new WrappedIndexerDeclaration(decl, annotations, parameters, body);
 	}
 
-	override visitMetadatum(meta, arg)
+	override visitAnnotation(annotation, arg)
 	{
-		var type = visitTypeName(meta.type, arg);
-		var positionalArguments = wrapArgumentList(meta.positionalArguments);
-		var namedArguments = wrapNodeList(meta.namedArguments);
-		return new WrappedMetadatum(meta, type, positionalArguments, namedArguments);
+		var type = visitTypeName(annotation.type, arg);
+		var positionalArguments = wrapArgumentList(annotation.positionalArguments);
+		var namedArguments = wrapNodeList(annotation.namedArguments);
+		return new WrappedAnnotation(annotation, type, positionalArguments, namedArguments);
 	}
 
 	override visitMethodDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var parameters = wrapParameterList(decl.parameters);
 		var body = decl.body?.accept(this, null);
-		return new WrappedMethodDeclaration(decl, metadata, parameters, body);
+		return new WrappedMethodDeclaration(decl, annotations, parameters, body);
 	}
 
 	override visitParameter(param, arg)
@@ -184,17 +184,17 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitInvocatorDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var parameters = wrapParameterList(decl.parameters);
 		var body = decl.body?.accept(this, null);
-		return new WrappedInvocatorDeclaration(decl, metadata, parameters, body);
+		return new WrappedInvocatorDeclaration(decl, annotations, parameters, body);
 	}
 
 	override visitIteratorDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var body = decl.body.accept(this, null);
-		return new WrappedIteratorDeclaration(decl, metadata, body);
+		return new WrappedIteratorDeclaration(decl, annotations, body);
 	}
 
 	override visitNamespaceDeclaration(decl, arg)
@@ -205,17 +205,17 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitOperatorDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var parameters = wrapParameterList(decl.parameters);
 		var body = decl.body.accept(this, null);
-		return new WrappedOperatorDeclaration(decl, metadata, parameters, body);
+		return new WrappedOperatorDeclaration(decl, annotations, parameters, body);
 	}
 
 	override visitStaticConstructorDeclaration(decl, arg)
 	{
-		var metadata = wrapNodeList(decl.metadata);
+		var annotations = wrapNodeList(decl.annotations);
 		var body = decl.body.accept(this, null);
-		return new WrappedStaticConstructorDeclaration(decl, metadata, body);
+		return new WrappedStaticConstructorDeclaration(decl, annotations, body);
 	}
 
 	override visitVariableDeclarator(decl, arg)

@@ -27,17 +27,17 @@ public class WrappedNamespaceDeclaration is WrappedNode
 
 public class WrappedGlobalConstantDeclaration is WrappedNode
 {
-	public new(wrappedNode, metadata, constants)
+	public new(wrappedNode, annotations, constants)
 	{
 		new base(wrappedNode);
 
-		this.metadata  = claimAll(metadata);
-		this.constants = claimAll(constants);
+		this.annotations = claimAll(annotations);
+		this.constants   = claimAll(constants);
 	}
 
-	/// Summary: The metadata associated with the global constant,
-	///          as a {NodeList} of {WrappedMetadatum} instances.
-	public metadata;
+	/// Summary: The annotations associated with the global constant,
+	///          as a {NodeList} of {WrappedAnnotation} instances.
+	public annotations;
 
 	/// Summary: Gets the declared {Accessibility} of the global constants.
 	public get accessibility = wrappedNode.accessibility;
@@ -54,18 +54,18 @@ public class WrappedGlobalConstantDeclaration is WrappedNode
 
 public class WrappedGlobalFunctionDeclaration is WrappedNode
 {
-	public new(wrappedNode, metadata, parameters, body)
+	public new(wrappedNode, annotations, parameters, body)
 	{
 		new base(wrappedNode);
 
-		this.metadata   = claimAll(metadata);
-		this.parameters = claimAll(parameters);
-		this.body       = claim(body);
+		this.annotations = claimAll(annotations);
+		this.parameters  = claimAll(parameters);
+		this.body        = claim(body);
 	}
 
-	/// Summary: The metadata associated with the global function,
-	///          as a {NodeList} of {WrappedMetadatum} instances.
-	public metadata;
+	/// Summary: The annotations associated with the global function,
+	///          as a {NodeList} of {WrappedAnnotation} instances.
+	public annotations;
 
 	/// Summary: Gets the declared {Accessibility} of the global constants.
 	public get accessibility = wrappedNode.accessibility;
@@ -89,16 +89,16 @@ public class WrappedGlobalFunctionDeclaration is WrappedNode
 
 public abstract class WrappedTypeDeclaration is WrappedNode
 {
-	public new(wrappedNode, metadata)
+	public new(wrappedNode, annotations)
 	{
 		new base(wrappedNode);
 
-		this.metadata = claimAll(metadata);
+		this.annotations = claimAll(annotations);
 	}
 
-	/// Summary: The metadata associated with the type, as a
-	///          {NodeList} of {WrappedMetadatum} instances.
-	public metadata;
+	/// Summary: The annotations associated with the type, as a
+	///          {NodeList} of {WrappedAnnotation} instances.
+	public annotations;
 
 	/// Summary: Gets the declared {Accessibility} of the type.
 	public get accessibility = wrappedNode.accessibility;
@@ -111,9 +111,9 @@ public abstract class WrappedTypeDeclaration is WrappedNode
 
 public class WrappedClassDeclaration is WrappedTypeDeclaration
 {
-	public new(wrappedNode, metadata, baseType, members)
+	public new(wrappedNode, annotations, baseType, members)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.baseType = claim(baseType);
 		this.members  = claimAll(members);
@@ -147,16 +147,16 @@ public class WrappedClassDeclaration is WrappedTypeDeclaration
 
 public abstract class WrappedClassMember is WrappedNode
 {
-	public new(wrappedNode, metadata)
+	public new(wrappedNode, annotations)
 	{
 		new base(wrappedNode);
 
-		this.metadata = claimAll(metadata);
+		this.annotations = claimAll(annotations);
 	}
 
-	/// Summary: The metadata associated with the member, as a
-	///          {NodeList} of {WrappedMetadatum} instances.
-	public metadata;
+	/// Summary: The annotations associated with the member, as a
+	///          {NodeList} of {WrappedAnnotation} instances.
+	public annotations;
 
 	/// Summary: Gets the declared {Accessibility} of the member.
 	public get accessibility = wrappedNode.accessibility;
@@ -175,9 +175,9 @@ public abstract class WrappedClassMember is WrappedNode
 
 public class WrappedConstructorDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, parameters, body)
+	public new(wrappedNode, annotations, parameters, body)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.parameters = claimAll(parameters);
 		this.body       = claim(body);
@@ -198,9 +198,9 @@ public class WrappedConstructorDeclaration is WrappedClassMember
 
 public class WrappedStaticConstructorDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, body)
+	public new(wrappedNode, annotations, body)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.body = claim(body);
 	}
@@ -216,9 +216,9 @@ public class WrappedStaticConstructorDeclaration is WrappedClassMember
 
 public class WrappedFieldDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, fields)
+	public new(wrappedNode, annotations, fields)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.fields = claimAll(fields);
 	}
@@ -235,9 +235,9 @@ public class WrappedFieldDeclaration is WrappedClassMember
 
 public inheritable WrappedPropertyDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, body)
+	public new(wrappedNode, annotations, body)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.body = claim(body);
 	}
@@ -269,9 +269,9 @@ public inheritable WrappedPropertyDeclaration is WrappedClassMember
 
 public class WrappedIndexerDeclaration is WrappedPropertyDeclaration
 {
-	public new(wrappedNode, metadata, parameters, body)
+	public new(wrappedNode, annotations, parameters, body)
 	{
-		new base(wrappedNode, metadata, body);
+		new base(wrappedNode, annotations, body);
 
 		this.parameters = claimAll(parameters);
 	}
@@ -287,9 +287,9 @@ public class WrappedIndexerDeclaration is WrappedPropertyDeclaration
 
 public inheritable WrappedMethodDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, parameters, body)
+	public new(wrappedNode, annotations, parameters, body)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.parameters = claimAll(parameters);
 		this.body       = claim(body);
@@ -319,9 +319,9 @@ public inheritable WrappedMethodDeclaration is WrappedClassMember
 
 public class WrappedInvocatorDeclaration is WrappedMethodDeclaration
 {
-	public new(wrappedNode, metadata, parameters, body)
+	public new(wrappedNode, annotations, parameters, body)
 	{
-		new base(wrappedNode, metadata, parameters, body);
+		new base(wrappedNode, annotations, parameters, body);
 	}
 
 	override accept(visitor, arg)
@@ -332,9 +332,9 @@ public class WrappedInvocatorDeclaration is WrappedMethodDeclaration
 
 public class WrappedClassConstantDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, constants)
+	public new(wrappedNode, annotations, constants)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.constants = claimAll(constants);
 	}
@@ -351,9 +351,9 @@ public class WrappedClassConstantDeclaration is WrappedClassMember
 
 public class WrappedIteratorDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, body)
+	public new(wrappedNode, annotations, body)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.body = body;
 	}
@@ -369,9 +369,9 @@ public class WrappedIteratorDeclaration is WrappedClassMember
 
 public class WrappedOperatorDeclaration is WrappedClassMember
 {
-	public new(wrappedNode, metadata, parameters, body)
+	public new(wrappedNode, annotations, parameters, body)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.parameters = claimAll(parameters);
 		this.body       = claim(body);
@@ -402,9 +402,9 @@ public class WrappedOperatorDeclaration is WrappedClassMember
 
 public class WrappedEnumDeclaration is WrappedTypeDeclaration
 {
-	public new(wrappedNode, metadata, members)
+	public new(wrappedNode, annotations, members)
 	{
-		new base(wrappedNode, metadata);
+		new base(wrappedNode, annotations);
 
 		this.members = claimAll(members);
 	}
@@ -423,17 +423,17 @@ public class WrappedEnumDeclaration is WrappedTypeDeclaration
 
 public class WrappedEnumMember is WrappedNode
 {
-	public new(wrappedNode, metadata, value)
+	public new(wrappedNode, annotations, value)
 	{
 		new base(wrappedNode);
 
-		this.metadata = claimAll(metadata);
-		this.value    = claim(value);
+		this.annotations = claimAll(annotations);
+		this.value = claim(value);
 	}
 
-	/// Summary: The metadata associated with the enum member,
-	///          as a {NodeList} of {WrappedMetadatum} instances.
-	public metadata;
+	/// Summary: The annotations associated with the enum member,
+	///          as a {NodeList} of {WrappedAnnotation} instances.
+	public annotations;
 
 	/// Summary: Gets an {Identifier} corresponding to the name of the member.
 	public get name = wrappedNode.name;
@@ -535,7 +535,7 @@ public class WrappedGlobalVariableDeclaration is WrappedLocalDeclaration
 	}
 }
 
-public class WrappedMetadatum is WrappedNode
+public class WrappedAnnotation is WrappedNode
 {
 	public new(wrappedNode, type, positionalArguments, namedArguments)
 	{
@@ -546,19 +546,19 @@ public class WrappedMetadatum is WrappedNode
 		this.namedArguments = claimAll(namedArguments);
 	}
 
-	/// Summary: The {WrappedTypeName} of the metadata type.
+	/// Summary: The {WrappedTypeName} of the annotation type.
 	public type;
 
 	/// Summary: A {WrappedArgumentList} containing the positional arguments
-	///          of this metadatum.
+	///          of this annotation.
 	public positionalArguments;
 
-	/// Summary: A {NodeList} containing the named arguments of this metadatum,
+	/// Summary: A {NodeList} containing the named arguments of this annotation,
 	///          represented by {WrappedMemberInitializer}s.
 	public namedArguments;
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitMetadatum(this, arg);
+		return visitor.visitAnnotation(this, arg);
 	}
 }

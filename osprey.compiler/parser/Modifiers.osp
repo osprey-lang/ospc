@@ -10,9 +10,9 @@ namespace osprey.compiler.parser;
 ///          The {Parser.parseModifiers} method is used for parsing modifiers.
 public class Modifiers
 {
-	/// Summary: A {NodeList} containing the {Metadatum} instances associated
+	/// Summary: A {NodeList} containing the {Annotation} instances associated
 	///          with the {Modifiers}.
-	public metadata = EmptyLists.node;
+	public annotations = EmptyLists.node;
 
 	/// Summary: The first modifier {Token}, or null if this instance has no modifiers.
 	public start;
@@ -35,7 +35,7 @@ public class Modifiers
 	public _override;
 
 	/// Summary: Determines whether this {Modifiers} instance has no modifiers
-	///          and no metadata.
+	///          and no annotations.
 	public get isEmpty =
 		not (_public     or
 			_protected   or
@@ -45,7 +45,7 @@ public class Modifiers
 			_inheritable or
 			_overridable or
 			_override) and
-		metadata.isEmpty;
+		annotations.isEmpty;
 
 	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
 	public get hasModifiers =
@@ -78,7 +78,7 @@ public class Modifiers
 	/// Summary: Removes all modifiers from this instance.
 	public clear()
 	{
-		metadata     = EmptyLists.node;
+		annotations  = EmptyLists.node;
 		start        = null;
 		_public      = null;
 		_protected   = null;

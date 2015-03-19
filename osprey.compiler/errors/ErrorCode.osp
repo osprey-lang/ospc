@@ -82,7 +82,7 @@ public static class ErrorCode
 	public const err_ExpectedParameter = 1711;
 	public const err_ExpectedArgument = 1721;
 	public const err_RefArgumentNotAllowed = 1722;
-	public const err_PositionalMetaArgumentMustComeBeforeNamed = 1723;
+	public const err_PositionalAnnotationArgumentMustComeBeforeNamed = 1723;
 	public const err_ExpectedLoopAfterLabel = 1801;
 	public const err_ExpectedJumpStatement = 1802;
 	public const err_SpecificCatchClauseAfterGeneric = 1803;

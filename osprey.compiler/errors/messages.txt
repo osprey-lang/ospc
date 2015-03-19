@@ -104,7 +104,7 @@
 // Argument list errors
 1721:err_ExpectedArgument = "Expected an argument. An empty argument list is not permitted in this context.";
 1722:err_RefArgumentNotAllowed = "Pass-by-reference arguments are not permitted in this context.";
-1723:err_PositionalMetaArgumentMustComeBeforeNamed = "All positional arguments must come before all named arguments.";
+1723:err_PositionalAnnotationArgumentMustComeBeforeNamed = "All positional arguments must come before all named arguments.";
 
 // Statement errors
 1801:err_ExpectedLoopAfterLabel = "Expected an iteration statement ('for', 'while', 'do' or 'do–while') after loop label.";

@@ -30,19 +30,19 @@ public inheritable NamespaceDeclaration is ParseNode
 
 public class GlobalConstantDeclaration is ParseNode
 {
-	public new(location, metadata, accessibility, constants)
+	public new(location, annotations, accessibility, constants)
 	{
 		new base(location);
 
-		this._metadata      = claimAll(metadata ?? EmptyLists.node);
+		this._annotations   = claimAll(annotations ?? EmptyLists.node);
 		this._accessibility = accessibility;
 		this._constants     = claimAll(constants);
 	}
 
-	private _metadata;
-	/// Summary: Gets the metadata associated with the global constant,
-	///          as a {NodeList} of {Metadatum} instances.
-	public get metadata = _metadata;
+	private _annotations;
+	/// Summary: Gets the annotations associated with the global constant,
+	///          as a {NodeList} of {Annotation} instances.
+	public get annotations = _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the global constants.
@@ -61,21 +61,21 @@ public class GlobalConstantDeclaration is ParseNode
 
 public class GlobalFunctionDeclaration is ParseNode
 {
-	public new(location, metadata, accessibility, name, parameters, body)
+	public new(location, annotations, accessibility, name, parameters, body)
 	{
 		new base(location);
 
-		this._metadata   = claimAll(metadata ?? EmptyLists.node);
+		this._annotations   = claimAll(annotations ?? EmptyLists.node);
 		this._accessibility = accessibility;
-		this._name       = name;
-		this._parameters = claimAll(parameters);
-		this._body       = claim(body);
+		this._name          = name;
+		this._parameters    = claimAll(parameters);
+		this._body          = claim(body);
 	}
 
-	private _metadata;
-	/// Summary: Gets the metadata associated with the global function,
-	///          as a {NodeList} of {Metadatum} instances.
-	public get metadata = _metadata;
+	private _annotations;
+	/// Summary: Gets the annotations associated with the global function,
+	///          as a {NodeList} of {Annotation} instances.
+	public get annotations = _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the global constants.
@@ -103,19 +103,19 @@ public class GlobalFunctionDeclaration is ParseNode
 
 public abstract class TypeDeclaration is ParseNode
 {
-	public new(location, metadata, accessibility, name)
+	public new(location, annotations, accessibility, name)
 	{
 		new base(location);
 
-		this._metadata = claimAll(metadata ?? EmptyLists.node);
+		this._annotations = claimAll(annotations ?? EmptyLists.node);
 		this._accessibility = accessibility;
 		this._name = name;
 	}
 
-	private _metadata;
-	/// Summary: Gets the metadata associated with the type,
-	///          as a {NodeList} of {Metadatum} instances.
-	public get metadata = _metadata;
+	private _annotations;
+	/// Summary: Gets the annotations associated with the type,
+	///          as a {NodeList} of {Annotation} instances.
+	public get annotations = _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the type.
@@ -132,17 +132,17 @@ public class ClassDeclaration is TypeDeclaration
 {
 	public new(location, modifiers, name, baseType, members, typeInitializer = null)
 	{
-		new this(location, modifiers.metadata, modifiers.accessibility,
+		new this(location, modifiers.annotations, modifiers.accessibility,
 			modifiers._static is not null,
 			modifiers._abstract is not null,
 			modifiers._inheritable is not null,
 			name, baseType, members, typeInitializer);
 	}
-	public new(location, metadata, accessibility, isStatic,
+	public new(location, annotations, accessibility, isStatic,
 		isAbstract, isInheritable, name, baseType, members,
 		typeInitializer = null)
 	{
-		new base(location, metadata, accessibility, name);
+		new base(location, annotations, accessibility, name);
 
 		if baseType is TypeName:
 			claim(baseType);
@@ -193,20 +193,20 @@ public class ClassDeclaration is TypeDeclaration
 
 public abstract class ClassMember is ParseNode
 {
-	public new(location, metadata, accessibility, isStatic, name)
+	public new(location, annotations, accessibility, isStatic, name)
 	{
 		new base(location);
 
-		this._metadata      = claimAll(metadata ?? EmptyLists.node);
+		this._annotations   = claimAll(annotations ?? EmptyLists.node);
 		this._accessibility = accessibility;
 		this._isStatic      = isStatic;
 		this._name          = name;
 	}
 
-	private _metadata;
-	/// Summary: Gets the metadata associated with the member,
-	///          as a {NodeList} of {Metadatum} instances.
-	public get metadata = _metadata;
+	private _annotations;
+	/// Summary: Gets the annotations associated with the member,
+	///          as a {NodeList} of {Annotation} instances.
+	public get annotations = _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the member.
@@ -228,9 +228,9 @@ public abstract class ClassMember is ParseNode
 
 public class ConstructorDeclaration is ClassMember
 {
-	public new(location, metadata, accessibility, parameters, body)
+	public new(location, annotations, accessibility, parameters, body)
 	{
-		new base(location, metadata, accessibility, false, null);
+		new base(location, annotations, accessibility, false, null);
 
 		this._parameters = claimAll(parameters);
 		this._body       = claim(body);
@@ -253,9 +253,9 @@ public class ConstructorDeclaration is ClassMember
 
 public class StaticConstructorDeclaration is ClassMember
 {
-	public new(location, metadata, body)
+	public new(location, annotations, body)
 	{
-		new base(location, metadata, Accessibility._private, true, null);
+		new base(location, annotations, Accessibility._private, true, null);
 
 		this._body = claim(body);
 	}
@@ -274,13 +274,13 @@ public class FieldDeclaration is ClassMember
 {
 	public new(location, modifiers, fields)
 	{
-		new this(location, modifiers.metadata, modifiers.accessibility,
+		new this(location, modifiers.annotations, modifiers.accessibility,
 			modifiers._static is not null,
 			fields);
 	}
-	public new(location, metadata, accessibility, isStatic, fields)
+	public new(location, annotations, accessibility, isStatic, fields)
 	{
-		new base(location, metadata, accessibility, isStatic, null);
+		new base(location, annotations, accessibility, isStatic, null);
 
 		this._fields = claimAll(fields);
 	}
@@ -300,18 +300,18 @@ public inheritable PropertyDeclaration is ClassMember
 {
 	public new(location, modifiers, isSetter, name, body)
 	{
-		new this(location, modifiers.metadata, modifiers.accessibility,
+		new this(location, modifiers.annotations, modifiers.accessibility,
 			modifiers._static is not null,
 			modifiers._abstract is not null,
 			modifiers._override is not null,
 			modifiers._overridable is not null,
 			isSetter, name, body);
 	}
-	public new(location, metadata, accessibility,
+	public new(location, annotations, accessibility,
 		isStatic, isAbstract, isOverride, isOverridable,
 		isSetter, name, body)
 	{
-		new base(location, metadata, accessibility, isStatic, name);
+		new base(location, annotations, accessibility, isStatic, name);
 
 		this._isAbstract    = isAbstract;
 		this._isOverride    = isOverride;
@@ -354,17 +354,17 @@ public class IndexerDeclaration is PropertyDeclaration
 {
 	public new(location, modifiers, isSetter, parameters, body)
 	{
-		new this(location, modifiers.metadata, modifiers.accessibility,
+		new this(location, modifiers.annotations, modifiers.accessibility,
 			modifiers._abstract is not null,
 			modifiers._override is not null,
 			modifiers._overridable is not null,
 			isSetter, parameters, body);
 	}
-	public new(location, metadata, accessibility,
+	public new(location, annotations, accessibility,
 		isAbstract, isOverride, isOverridable,
 		isSetter, parameters, body)
 	{
-		new base(location, metadata, accessibility,
+		new base(location, annotations, accessibility,
 			/*isStatic=*/ false,
 			isAbstract, isOverride, isOverridable,
 			isSetter, null, body);
@@ -386,18 +386,18 @@ public inheritable MethodDeclaration is ClassMember
 {
 	public new(location, modifiers, name, parameters, body)
 	{
-		new this(location, modifiers.metadata, modifiers.accessibility,
+		new this(location, modifiers.annotations, modifiers.accessibility,
 			modifiers._static is not null,
 			modifiers._abstract is not null,
 			modifiers._override is not null,
 			modifiers._overridable is not null,
 			name, parameters, body);
 	}
-	public new(location, metadata, accessibility,
+	public new(location, annotations, accessibility,
 		isStatic, isAbstract, isOverride, isOverridable,
 		name, parameters, body)
 	{
-		new base(location, metadata, accessibility, isStatic, name);
+		new base(location, annotations, accessibility, isStatic, name);
 
 		this._isAbstract    = isAbstract;
 		this._isOverride    = isOverride;
@@ -437,17 +437,17 @@ public class InvocatorDeclaration is MethodDeclaration
 {
 	public new(location, modifiers, parameters, body)
 	{
-		new this(location, modifiers.metadata, modifiers.accessibility,
+		new this(location, modifiers.annotations, modifiers.accessibility,
 			modifiers._abstract is not null,
 			modifiers._override is not null,
 			modifiers._overridable is not null,
 			parameters, body);
 	}
-	public new(location, metadata, accessibility,
+	public new(location, annotations, accessibility,
 		isAbstract, isOverride, isOverridable,
 		parameters, body)
 	{
-		new base(location, metadata, accessibility,
+		new base(location, annotations, accessibility,
 			/*isStatic=*/ false,
 			isAbstract, isOverride, isOverridable,
 			null, parameters, body);
@@ -461,9 +461,9 @@ public class InvocatorDeclaration is MethodDeclaration
 
 public class ClassConstantDeclaration is ClassMember
 {
-	public new(location, metadata, accessibility, constants)
+	public new(location, annotations, accessibility, constants)
 	{
-		new base(location, metadata, accessibility, true, null);
+		new base(location, annotations, accessibility, true, null);
 
 		this._constants = claimAll(constants);
 	}
@@ -481,9 +481,9 @@ public class ClassConstantDeclaration is ClassMember
 
 public class IteratorDeclaration is ClassMember
 {
-	public new(location, metadata, body)
+	public new(location, annotations, body)
 	{
-		new base(location, metadata, Accessibility.notApplicable, false, null);
+		new base(location, annotations, Accessibility.notApplicable, false, null);
 
 		this._body = body;
 	}
@@ -500,9 +500,9 @@ public class IteratorDeclaration is ClassMember
 
 public class OperatorDeclaration is ClassMember
 {
-	public new(location, metadata, op, parameters, body)
+	public new(location, annotations, op, parameters, body)
 	{
-		new base(location, metadata, Accessibility.notApplicable, true, null);
+		new base(location, annotations, Accessibility.notApplicable, true, null);
 
 		this._op         = op;
 		this._parameters = claimAll(parameters);
@@ -537,9 +537,9 @@ public class OperatorDeclaration is ClassMember
 
 public class EnumDeclaration is TypeDeclaration
 {
-	public new(location, metadata, accessibility, isSet, name, members)
+	public new(location, annotations, accessibility, isSet, name, members)
 	{
-		new base(location, metadata, accessibility, name);
+		new base(location, annotations, accessibility, name);
 
 		this._isSet   = isSet;
 		this._members = claimAll(members ?? EmptyLists.node);
@@ -561,19 +561,19 @@ public class EnumDeclaration is TypeDeclaration
 
 public class EnumMember is ParseNode
 {
-	public new(location, metadata, name, value)
+	public new(location, annotations, name, value)
 	{
 		new base(location);
 
-		this._metadata = claimAll(metadata ?? EmptyLists.node);
-		this._name     = name;
-		this._value    = claim(value);
+		this._annotations = claimAll(annotations ?? EmptyLists.node);
+		this._name = name;
+		this._value = claim(value);
 	}
 
-	private _metadata;
-	/// Summary: Gets the metadata associated with the enum member,
-	///          as a {NodeList} of {Metadatum} instances.
-	public get metadata = _metadata;
+	private _annotations;
+	/// Summary: Gets the annotations associated with the enum member,
+	///          as a {NodeList} of {Annotation} instances.
+	public get annotations = _annotations;
 
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the name of the member.
@@ -690,7 +690,7 @@ public class GlobalVariableDeclaration is LocalDeclaration
 	}
 }
 
-public class Metadatum is ParseNode
+public class Annotation is ParseNode
 {
 	public new(location, type, positionalArguments, namedArguments)
 	{
@@ -702,21 +702,21 @@ public class Metadatum is ParseNode
 	}
 
 	private _type;
-	/// Summary: Gets the {TypeName} of the metadata type.
+	/// Summary: Gets the {TypeName} of the annotation type.
 	public get type = _type;
 
 	private _positionalArguments;
 	/// Summary: Gets an {ArgumentList} containing the positional arguments
-	///          of this metadatum.
+	///          of this annotation.
 	public get positionalArguments = _positionalArguments;
 
 	private _namedArguments;
-	/// Summary: Gets a {NodeList} containing the named arguments of this metadatum,
+	/// Summary: Gets a {NodeList} containing the named arguments of this annotation,
 	///          represented by {MemberInitializer}s.
 	public get namedArguments = _namedArguments;
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitMetadatum(this, arg);
+		return visitor.visitAnnotation(this, arg);
 	}
 }

@@ -854,7 +854,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the constant declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {GlobalConstantDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'global-constant-declaration' nonterminal.
@@ -895,7 +895,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon);
 		return new GlobalConstantDeclaration(getLocation(modifiers.start ?? start, end),
-			modifiers.metadata,
+			modifiers.annotations,
 			modifiers.accessibility,
 			constants);
 	}
@@ -905,7 +905,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the function declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {GlobalFunctionDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'global-function-declaration' nonterminal.
@@ -931,7 +931,7 @@ public inheritable Parser
 		var body = parseBlockOrExtern(ref i);
 
 		return new GlobalFunctionDeclaration(getLocation(modifiers.start ?? start, body),
-			modifiers.metadata,
+			modifiers.annotations,
 			modifiers.accessibility,
 			name,
 			parameters,
@@ -943,7 +943,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the class declaration, such as an accessibility modifier or
-	///          metadata. If null, this method will parse modifiers at {i} by calling
+	///          annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {ClassDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'class-declaration' nonterminal.
@@ -951,8 +951,8 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   class-declaration:
-		 *     metadata? class-modifiers? 'class' identifier class-base? class-body
-		 *     metadata? class-modifiers? 'inheritable' identifier class-base? class-body
+		 *     annotations? class-modifiers? 'class' identifier class-base? class-body
+		 *     annotations? class-modifiers? 'inheritable' identifier class-base? class-body
 		 *   class-modifiers:
 		 *     class-modifier
 		 *     class-modifiers class-modifier
@@ -1092,7 +1092,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the constructor declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {ConstructorDeclaration} or {StaticConstructorDeclaration} from the
 	///          tokens at the starting index.
@@ -1107,7 +1107,7 @@ public inheritable Parser
 		 *     block
 		 *     ';'
 		 *   static-constructor-declaration:
-		 *     metadata? 'static' 'new' '(' ')' block
+		 *     annotations? 'static' 'new' '(' ')' block
 		 */
 		if modifiers is null:
 			modifiers = parseModifiers(ref i);
@@ -1132,10 +1132,10 @@ public inheritable Parser
 
 		if modifiers._static:
 			return new StaticConstructorDeclaration(getLocation(start, end),
-				modifiers.metadata,
+				modifiers.annotations,
 				body);
 		return new ConstructorDeclaration(getLocation(start, end),
-			modifiers.metadata,
+			modifiers.annotations,
 			modifiers.accessibility,
 			parameters,
 			body);
@@ -1146,7 +1146,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the property declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {PropertyDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of both the 'property-accessor-declaration'
@@ -1158,9 +1158,9 @@ public inheritable Parser
 		 *     property-getter-declaration
 		 *     property-setter-declaration
 		 *   property-getter-declaration:
-		 *     metadata? property-modifiers? 'get' identifier property-getter-body
+		 *     annotations? property-modifiers? 'get' identifier property-getter-body
 		 *   property-setter-declaration:
-		 *     metadata? property-modifiers? 'set' identifier property-setter-body
+		 *     annotations? property-modifiers? 'set' identifier property-setter-body
 		 *   property-modifiers:
 		 *     property-modifier
 		 *     property-modifiers property-modifier
@@ -1181,9 +1181,9 @@ public inheritable Parser
 		 *     indexer-getter-declaration
 		 *     indexer-setter-declaration
 		 *   indexer-getter-declaration:
-		 *     metadata? property-modifiers? 'get' 'this' '[' parameter-list ']' property-getter-body
+		 *     annotations? property-modifiers? 'get' 'this' '[' parameter-list ']' property-getter-body
 		 *   indexer-setter-declaration:
-		 *     metadata? property-modifiers? 'set' 'this' '[' parameter-list ']' property-setter-body
+		 *     annotations? property-modifiers? 'set' 'this' '[' parameter-list ']' property-setter-body
 		 * Additional notes:
 		 *   This method parses both property-accessor-declaration and indexer-declaration,
 		 *   since they both start with property-modifiers followed by 'get' or 'set'.
@@ -1258,7 +1258,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the field declaration, such as an accessibility modifier or
-	///          metadata. If null, this method will parse modifiers at {i} by calling
+	///          annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {FieldDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'field-declaration' nonterminal.
@@ -1266,8 +1266,8 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   field-declaration:
-		 *     metadata? field-modifiers 'var'? field-declarators ';'
-		 *     metadata? field-modifiers? 'var' field-declarators ';'
+		 *     annotations? field-modifiers 'var'? field-declarators ';'
+		 *     annotations? field-modifiers? 'var' field-declarators ';'
 		 *   field-modifiers:
 		 *     field-modifier
 		 *     field-modifiers field-modifier
@@ -1316,7 +1316,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the method declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {MethodDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'method-declaration' nonterminal.
@@ -1324,7 +1324,7 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   method-declaration:
-		 *     metadata? method-modifiers? 'function'? method-name '(' parameter-list? ')' method-body
+		 *     annotations? method-modifiers? 'function'? method-name '(' parameter-list? ')' method-body
 		 *   method-modifiers:
 		 *     method-modifier
 		 *     method-modifiers method-modifier
@@ -1392,7 +1392,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the constant declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: A {ClassConstantDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'class-constant-declaration' nonterminal.
@@ -1400,7 +1400,7 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   class-constant-declaration:
-		 *     metadata? access-level-modifier? 'const' constant-declarators ';'
+		 *     annotations? access-level-modifier? 'const' constant-declarators ';'
 		 *   constant-declarators:
 		 *     constant-declarator
 		 *     constant-declarators ',' constant-declarator
@@ -1433,7 +1433,7 @@ public inheritable Parser
 		var end = expectr(ref i, TokenType.semicolon);
 
 		return new ClassConstantDeclaration(getLocation(modifiers.start ?? start, end),
-			modifiers.metadata, modifiers.accessibility, constants);
+			modifiers.annotations, modifiers.accessibility, constants);
 	}
 
 	/// Summary: Parses an iterator declaration at the specified token index.
@@ -1441,7 +1441,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the iterator declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: An {IteratorDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'iterator-declaration' nonterminal.
@@ -1449,7 +1449,7 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   iterator-declaration:
-		 *     metadata? 'iter' block
+		 *     annotations? 'iter' block
 		 * Additional notes:
 		 *   When extensions are enabled, the body can also be an `__extern` block.
 		 */
@@ -1462,7 +1462,7 @@ public inheritable Parser
 		var body = parseBlockOrExtern(ref i);
 
 		return new IteratorDeclaration(getLocation(start, body),
-			modifiers.metadata,
+			modifiers.annotations,
 			body);
 	}
 
@@ -1471,7 +1471,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the operator declaration, such as an accessibility modifier
-	///          or metadata. If null, this method will parse modifiers at {i} by calling
+	///          or annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: An {OperatorDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'operator-declaration' nonterminal.
@@ -1479,8 +1479,8 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   operator-declaration:
-		 *     metadata? 'operator' unary-operator-declarator block
-		 *     metadata? 'operator' binary-operator-declarator block
+		 *     annotations? 'operator' unary-operator-declarator block
+		 *     annotations? 'operator' binary-operator-declarator block
 		 *   unary-operator-declarator:
 		 *     overloadable-unary-operator '(' identifier ')'
 		 *   overloadable-unary-operator: one of
@@ -1562,7 +1562,7 @@ public inheritable Parser
 		var body = parseBlockOrExtern(ref i);
 
 		return new OperatorDeclaration(getLocation(start, body),
-			modifiers.metadata, op, parameters, body);
+			modifiers.annotations, op, parameters, body);
 	}
 
 	/// Summary: Parses an enum declaration at the specified token index.
@@ -1570,7 +1570,7 @@ public inheritable Parser
 	///          the index of the token that immediately follows the returned parse tree.
 	/// Param modifiers: (optional) An instance of {Modifiers}, which contains the member
 	///          modifiers of the enum declaration, such as an accessibility modifier or
-	///          metadata. If null, this method will parse modifiers at {i} by calling
+	///          annotations. If null, this method will parse modifiers at {i} by calling
 	///          {parseModifiers}.
 	/// Returns: An {EnumDeclaration} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'enum-declaration' nonterminal.
@@ -1581,7 +1581,7 @@ public inheritable Parser
 		 *     simple-enum-declaration
 		 *     enum-set-declaration
 		 *   simple-enum-declaration:
-		 *     metadata? enum-modifier? 'enum' identifier '{' simple-enum-body? '}'
+		 *     annotations? enum-modifier? 'enum' identifier '{' simple-enum-body? '}'
 		 *   enum-modifier:
 		 *     'public'
 		 *     'private'
@@ -1591,10 +1591,10 @@ public inheritable Parser
 		 *     enum-member
 		 *     enum-members ',' enum-member
 		 *   enum-member:
-		 *     metadata? identifier
-		 *     metadata? identifier '=' constant-expression
+		 *     annotations? identifier
+		 *     annotations? identifier '=' constant-expression
 		 *   enum-set-declaration:
-		 *     metadata? enum-modifier? 'enum' 'set' identifier '{' enum-set-body? '}'
+		 *     annotations? enum-modifier? 'enum' 'set' identifier '{' enum-set-body? '}'
 		 *   enum-set-body:
 		 *     enum-members ','?
 		 */
@@ -1613,7 +1613,7 @@ public inheritable Parser
 		if not accept(i, TokenType.curlyClose):
 			do
 			{
-				var fieldMeta = parseMetadata(ref i);
+				var fieldAnnotations = parseAnnotations(ref i);
 
 				var fieldName = expectr(ref i, TokenType.identifier);
 				var value;
@@ -1622,7 +1622,7 @@ public inheritable Parser
 
 				members.add(
 					new EnumMember(getLocation(fieldName, value ?? fieldName),
-						fieldMeta, fieldName, value)
+						fieldAnnotations, fieldName, value)
 				);
 			} while acceptr(ref i, TokenType.comma) and
 				not accept(i, TokenType.curlyClose);
@@ -1630,7 +1630,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.curlyClose);
 		return new EnumDeclaration(getLocation(modifiers.start ?? start, end),
-			modifiers.metadata,
+			modifiers.annotations,
 			modifiers.accessibility,
 			isSet,
 			typeName,
@@ -4235,7 +4235,7 @@ public inheritable Parser
 		else:
 			modifiers.clear();
 
-		modifiers.metadata = parseMetadata(ref i);
+		modifiers.annotations = parseAnnotations(ref i);
 
 		while accept(i, TokenType.memberModifier)
 		{
@@ -4248,33 +4248,33 @@ public inheritable Parser
 		return modifiers;
 	}
 
-	/// Summary: Parses zero or more metadata at the specified index.
+	/// Summary: Parses zero or more annotations at the specified index.
 	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
 	///          the index of the token that immediately follows the returned parse tree.
-	/// Returns: A {NodeList} of {Metadatum} instances from the tokens at the starting
+	/// Returns: A {NodeList} of {Annotation} instances from the tokens at the starting
 	///          index.
-	/// Remarks: In general, call {parseModifiers} instead of {parseMetadata} if you want
+	/// Remarks: In general, call {parseModifiers} instead of {parseAnnotations} if you want
 	///          to parse member modifiers, and then use one of the `verify*` methods on
 	///          the returned {Modifiers}. Calling this method directly can be useful when
-	///          the member accepts no other modifiers than metadata – this is done, for
+	///          the member accepts no other modifiers than annotations – this is done, for
 	///          instance, with enum fields.
-	public parseMetadata(ref i)
+	public parseAnnotations(ref i)
 	{
 		/* Syntax:
-		 *   metadata:
-		 *     metadatum
-		 *     metadata metadatum
-		 *   metadatum:
-		 *     '!' type meta-argument-list?
-		 *   meta-arguments-list:
-		 *     '(' meta-positional-arguments? ')'
-		 *     '(' meta-named-arguments ')'
-		 *     '(' meta-positional-arguments ',' meta-named-arguments ')'
+		 *   annotations:
+		 *     annotation
+		 *     annotations annotation
+		 *   annotation:
+		 *     '!' type annotation-argument-list?
+		 *   annotation-arguments-list:
+		 *     '(' positional-annotation-arguments? ')'
+		 *     '(' named-annotation-arguments ')'
+		 *     '(' positional-annotation-arguments ',' named-annotation-arguments ')'
 		 */
 		if not accept(i, TokenType.exclam):
 			return EmptyLists.node;
 
-		var metadata = new List(1);
+		var annotations = new List(1);
 		while accept(i, TokenType.exclam)
 		{
 			var start = lex[i];
@@ -4286,34 +4286,34 @@ public inheritable Parser
 			var namedArguments = EmptyLists.node;
 
 			if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose):
-				parseMetadataArguments(ref i, ref positionalArguments, ref namedArguments);
+				parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments);
 
-			metadata.add(
-				new Metadatum(getLocation(start, lex[i - 1]),
+			annotations.add(
+				new Annotation(getLocation(start, lex[i - 1]),
 					type, positionalArguments, namedArguments)
 			);
 		}
-		metadata = new NodeList(metadata);
+		annotations = new NodeList(annotations);
 
-		return metadata;
+		return annotations;
 	}
 
-	private parseMetadataArguments(ref i, ref positionalArguments, ref namedArguments)
+	private parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments)
 	{
 		/* Syntax:
-		 *   meta-positional-arguments:
-		 *     meta-argument
-		 *     meta-positional-arguments ',' meta-argument
-		 *   meta-named-arguments:
-		 *     meta-named-argument
-		 *     meta-named-arguments ',' meta-named-argument
-		 *   meta-named-argument:
-		 *     identifier ':' meta-argument
-		 *   meta-argument:
+		 *   positional-annotation-arguments:
+		 *     annotation-argument
+		 *     positional-annotation-arguments ',' annotation-argument
+		 *   named-annotation-arguments:
+		 *     named-annotation-argument
+		 *     named-annotation-arguments ',' named-annotation-argument
+		 *   annotation-named-argument:
+		 *     identifier ':' annotation-argument
+		 *   annotation-argument:
 		 *     expression
 		 * Additional restrictions:
-		 *   Each meta-argument must be a constant expression or a simple-list-expression
-		 *   containing only meta-arguments. This is verified elsewhere.
+		 *   Each annotation-argument must be a constant expression or a simple-list-expression
+		 *   containing only annotation-arguments. This is verified elsewhere.
 		 */
 
 		var _positionalArguments = new List(1);
@@ -4331,7 +4331,7 @@ public inheritable Parser
 			var argument = parseExpression(ref i);
 
 			if not memberName and not _namedArguments.isEmpty:
-				recoverableError(argument, ErrorCode.err_PositionalMetaArgumentMustComeBeforeNamed);
+				recoverableError(argument, ErrorCode.err_PositionalAnnotationArgumentMustComeBeforeNamed);
 
 			if memberName:
 				_namedArguments.add(
