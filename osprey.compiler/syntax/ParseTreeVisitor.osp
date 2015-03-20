@@ -50,12 +50,14 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitClassConstantDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.constants.acceptAll(this, arg);
 		return null;
 	}
 
 	public overridable visitClassDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		if decl.baseType is TypeName:
 			decl.baseType.accept(this, arg);
 		decl.members.acceptAll(this, arg);
@@ -64,6 +66,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitConstructorDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.parameters.acceptAll(this, arg);
 		decl.body?.accept(this, arg);
 		return null;
@@ -77,12 +80,14 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitEnumDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.members.acceptAll(this, arg);
 		return null;
 	}
 
 	public overridable visitEnumMember(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.value?.accept(this, arg);
 		return null;
 	}
@@ -96,18 +101,21 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitFieldDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.fields.acceptAll(this, arg);
 		return null;
 	}
 
 	public overridable visitGlobalConstantDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.constants.acceptAll(this, arg);
 		return null;
 	}
 
 	public overridable visitGlobalFunctionDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.parameters.acceptAll(this, arg);
 		decl.body.accept(this, arg);
 		return null;
@@ -121,6 +129,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitPropertyDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.body?.accept(this, arg);
 		return null;
 	}
@@ -142,6 +151,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitMethodDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.parameters.acceptAll(this, arg);
 		decl.body?.accept(this, arg);
 		return null;
@@ -161,6 +171,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitIteratorDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.body.accept(this, arg);
 		return null;
 	}
@@ -173,6 +184,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitOperatorDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.parameters.acceptAll(this, arg);
 		decl.body.accept(this, arg);
 		return null;
@@ -180,6 +192,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitStaticConstructorDeclaration(decl, arg)
 	{
+		decl.annotations.acceptAll(this, arg);
 		decl.body.accept(this, arg);
 		return null;
 	}
