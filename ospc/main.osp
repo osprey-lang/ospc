@@ -7,6 +7,7 @@ use namespace osprey.compiler.syntax.wrapped;
 namespace osprey.compiler;
 
 private enum ParseMode { expression, statement, document }
+private const continuationLabel = ".. ";
 
 /// Summary: The application entry point.
 /// Param args: Command-line arguments passed to the application.
@@ -24,9 +25,9 @@ public function main(args)
 	}
 
 	var labels = {
-		(ParseMode.expression): "expr> ",
-		(ParseMode.statement): "stmt> ",
-		(ParseMode.document): "doc> ",
+		(ParseMode.expression): "E> ",
+		(ParseMode.statement): "S> ",
+		(ParseMode.document): "D> ",
 	};
 	var parsers = {
 		(ParseMode.expression): @parser
@@ -48,85 +49,134 @@ public function main(args)
 			return parser.parseDocument();
 		}
 	};
+	var commands = {
+		"!clear": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			Console.clear();
+		},
+		"!expr": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			mode = ParseMode.expression;
+		},
+		"!stmt": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			mode = ParseMode.statement;
+		},
+		"!doc": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			mode = ParseMode.document;
+		},
+		"!wrap": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			wrapNodes = not wrapNodes;
+			print("Wrapping nodes: " :: (wrapNodes ? "yes": "no"));
+		},
+		"!+": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			multiLine = true;
+			print("Entering multi-line mode");
+		},
+		"!1": @(ref mode, ref wrapNodes, ref multiLine)
+		{
+			multiLine = false;
+			print("Entering single-line mode");
+		},
+	};
 
-	mainLoop(parsers, labels);
+	mainLoop(parsers, labels, commands);
 }
 
-private function mainLoop(parsers, labels)
+private function mainLoop(parsers, labels, commands)
 {
 	var err = new CompilerErrorManager(true, true);
 
 	var mode = ParseMode.expression;
-	var modeLabel = labels[mode];
 	var wrapNodes = false;
+	var multiLine = false;
 
-	Console.write(modeLabel);
+	writeLabel(labels[mode]);
+	var input = "";
 	var line;
 	while line = Console.readLine()
 	{
 		err.clearAll();
 
-		if line == "!clear"
+		var command;
+		if not (multiLine and input.length > 0) and
+			commands.tryGet(line, ref command)
 		{
-			Console.clear();
-		}
-		else if line == "!expr"
-		{
-			mode = ParseMode.expression;
-			modeLabel = labels[mode];
-		}
-		else if line == "!stmt"
-		{
-			mode = ParseMode.statement;
-			modeLabel = labels[mode];
-		}
-		else if line == "!doc"
-		{
-			mode = ParseMode.document;
-			modeLabel = labels[mode];
-		}
-		else if line == "!wrap"
-		{
-			wrapNodes = not wrapNodes;
-			print("Wrapping nodes: " :: (wrapNodes ? "yes" : "no"));
+			command(ref mode, ref wrapNodes, ref multiLine);
 		}
 		else
 		{
-			line = line.trim();
-			if not line.isEmpty
+			if multiLine
 			{
-				var file = SourceFile.createAnon(line, "<stdin>");
-				var parser = new Parser(file, ParseFlags.useExtensions, err);
-				var node;
-				try
+				if line.isEmpty
 				{
-					node = parsers[mode](parser);
+					// Commit!
+					parseAndPrint(input, parsers[mode], err, wrapNodes);
+					input = "";
 				}
-				catch CompileTimeError in e
+				else
 				{
-					err.addError(e);
-					node = null;
+					input ::= Env.newline :: line;
 				}
-				catch Error in e
-				{
-					print(e);
-					node = null;
-				}
-
-				if node and not err.hasErrors
-				{
-					if wrapNodes
-					{
-						var wrapper = new ParseTreeWrapper();
-						node = node.accept(wrapper, null);
-					}
-					SyntaxPrinter.print(node);
-				}
+			}
+			else
+			{
+				line = line.trim();
+				if not line.isEmpty:
+					parseAndPrint(line, parsers[mode], err, wrapNodes);
 			}
 		}
 
-		Console.write(modeLabel);
+		writeLabel(input.length > 0 ? continuationLabel : labels[mode]);
 	}
+}
+
+private function writeLabel(label)
+{
+	Console.textColor = ConsoleColor.cyan;
+	Console.write(label);
+	Console.resetColors();
+}
+
+private function parseAndPrint(text, parseFunc, err, wrapNodes)
+{
+	var file = SourceFile.createAnon(text, "<stdin>");
+	var parser = new Parser(file, ParseFlags.useExtensions, err);
+	var node;
+	try
+	{
+		// Make sure errors and warnings become red
+		Console.textColor = ConsoleColor.red;
+
+		node = parseFunc(parser);
+	}
+	catch CompileTimeError in e
+	{
+		err.addError(e);
+		node = null;
+	}
+	catch Error in e
+	{
+		print(e);
+		node = null;
+	}
+	finally
+	{
+		Console.resetColors();
+	}
+
+	if node and not err.hasErrors
+	{
+		if wrapNodes
+		{
+			var wrapper = new ParseTreeWrapper();
+			node = node.accept(wrapper, null);
+		}
+		SyntaxPrinter.print(node);
+	}	
 }
 
 private static class SyntaxPrinter
