@@ -840,14 +840,11 @@ public class WrappedHashMember is WrappedNode
 	{
 		new base(wrappedNode);
 
-		if key is not Identifier:
-			claim(key);
-
-		this.key   = key;
+		this.key   = claim(key);
 		this.value = claim(value);
 	}
 
-	/// Summary: The key {WrappedExpression} or {Identifier} of this hash member.
+	/// Summary: The key {WrappedExpression} of this hash member.
 	public key;
 
 	/// Summary: The value {WrappedExpression} of this hash member.

@@ -910,15 +910,12 @@ public class HashMember is ParseNode
 	{
 		new base(location);
 
-		if key is not Identifier:
-			claim(key);
-
-		this._key   = key;
+		this._key   = claim(key);
 		this._value = claim(value);
 	}
 
 	private _key;
-	/// Summary: Gets the key {Expression} or {Identifier} of this hash member.
+	/// Summary: Gets the key {Expression} of this hash member.
 	public get key = _key;
 
 	private _value;
