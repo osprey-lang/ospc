@@ -25,26 +25,26 @@ public function main(args)
 	}
 
 	var labels = {
-		(ParseMode.expression): "E> ",
-		(ParseMode.statement): "S> ",
-		(ParseMode.document): "D> ",
+		ParseMode.expression: "E> ",
+		ParseMode.statement: "S> ",
+		ParseMode.document: "D> ",
 	};
 	var parsers = {
-		(ParseMode.expression): @parser
+		ParseMode.expression: @parser
 		{
 			var i = 0;
 			var expr = parser.parseExpression(ref i);
 			parser.expect(i, TokenType.eof);
 			return expr;
 		},
-		(ParseMode.statement): @parser
+		ParseMode.statement: @parser
 		{
 			var i = 0;
 			var stmt = parser.parseStatement(ref i);
 			parser.expect(i, TokenType.eof);
 			return stmt;
 		},
-		(ParseMode.document): @parser
+		ParseMode.document: @parser
 		{
 			return parser.parseDocument();
 		}
@@ -176,7 +176,7 @@ private function parseAndPrint(text, parseFunc, err, wrapNodes)
 			node = node.accept(wrapper, null);
 		}
 		SyntaxPrinter.print(node);
-	}	
+	}
 }
 
 private static class SyntaxPrinter

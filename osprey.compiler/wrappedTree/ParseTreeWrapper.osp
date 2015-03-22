@@ -492,9 +492,7 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitHashMember(member, arg)
 	{
-		var key = member.key;
-		if key is not Identifier:
-			key = key.accept(this, null);
+		var key = member.key.accept(this, null);
 		var value = member.value.accept(this, null);
 		return new WrappedHashMember(member, key, value);
 	}

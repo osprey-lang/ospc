@@ -3675,32 +3675,9 @@ public inheritable Parser
 		 *   hash-member:
 		 *     hash-key ':' expression
 		 *   hash-key:
-		 *     identifier
-		 *     string-literal
-		 *     integer-literal
-		 *     character-literal
-		 *     parenthesized-expression
+		 *     expression
 		 */
-		var key;
-		if accept(i, TokenType.identifier)
-		{
-			key = lex[i];
-			i += 1;
-		}
-		else if accept(i, TokenType.string, TokenType.int, TokenType.char)
-		{
-			var token = lex[i];
-			key = literalFuncs[token.type](token);
-			i += 1;
-		}
-		else
-		{
-			var keyStart = expectr(ref i, TokenType.parenOpen);
-			var inner = parseExpression(ref i);
-			var keyEnd = expectr(ref i, TokenType.parenClose);
-			key = new ParenthesizedExpression(getLocation(keyStart, keyEnd),
-				inner);
-		}
+		var key = parseExpression(ref i);
 
 		expectr(ref i, TokenType.colon);
 
@@ -4350,7 +4327,7 @@ public inheritable Parser
 
 	// Functions that set modifiers as they are being parsed.
 	private static modifierFuncs = {
-		(TokenType._public): @(parser, modifiers, token)
+		TokenType._public: @(parser, modifiers, token)
 		{
 			if modifiers._public:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["public"]);
@@ -4361,7 +4338,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._protected): @(parser, modifiers, token)
+		TokenType._protected: @(parser, modifiers, token)
 		{
 			if modifiers._protected:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["protected"]);
@@ -4372,7 +4349,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._private): @(parser, modifiers, token)
+		TokenType._private: @(parser, modifiers, token)
 		{
 			if modifiers._private:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["private"]);
@@ -4383,7 +4360,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._static): @(parser, modifiers, token)
+		TokenType._static: @(parser, modifiers, token)
 		{
 			if modifiers._static:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["static"]);
@@ -4392,7 +4369,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._abstract): @(parser, modifiers, token)
+		TokenType._abstract: @(parser, modifiers, token)
 		{
 			if modifiers._abstract:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["abstract"]);
@@ -4401,7 +4378,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._inheritable): @(parser, modifiers, token)
+		TokenType._inheritable: @(parser, modifiers, token)
 		{
 			if modifiers._inheritable:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["inheritable"]);
@@ -4410,7 +4387,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._overridable): @(parser, modifiers, token)
+		TokenType._overridable: @(parser, modifiers, token)
 		{
 			if modifiers._overridable:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["overridable"]);
@@ -4419,7 +4396,7 @@ public inheritable Parser
 			if modifiers.start is null:
 				modifiers.start = token;
 		},
-		(TokenType._override): @(parser, modifiers, token)
+		TokenType._override: @(parser, modifiers, token)
 		{
 			if modifiers._override:
 				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["override"]);
@@ -4440,77 +4417,77 @@ public inheritable Parser
 	]);
 
 	private static typeToBinaryOperator = {
-		(TokenType.doubleEqual):  BinaryOperator.equality,
-		(TokenType.notEqual):     BinaryOperator.inequality,
-		(TokenType._refeq):       BinaryOperator.refEquality,
-		(TokenType.less):         BinaryOperator.less,
-		(TokenType.greater):      BinaryOperator.greater,
-		(TokenType.lessEqual):    BinaryOperator.lessEqual,
-		(TokenType.greaterEqual): BinaryOperator.greaterEqual,
-		(TokenType.compare):      BinaryOperator.comparison,
-		(TokenType.dollar):       BinaryOperator.dollar,
-		(TokenType.hash):         BinaryOperator.hash,
-		(TokenType.shiftLeft):    BinaryOperator.shiftLeft,
-		(TokenType.shiftRight):   BinaryOperator.shiftRight,
-		(TokenType.plus):         BinaryOperator.addition,
-		(TokenType.minus):        BinaryOperator.subtraction,
-		(TokenType.pipe):         BinaryOperator.bitwiseOr,
-		(TokenType.multiply):     BinaryOperator.multiplication,
-		(TokenType.divide):       BinaryOperator.division,
-		(TokenType.modulo):       BinaryOperator.modulo,
-		(TokenType.ampersand):    BinaryOperator.bitwiseAnd,
+		TokenType.doubleEqual:  BinaryOperator.equality,
+		TokenType.notEqual:     BinaryOperator.inequality,
+		TokenType._refeq:       BinaryOperator.refEquality,
+		TokenType.less:         BinaryOperator.less,
+		TokenType.greater:      BinaryOperator.greater,
+		TokenType.lessEqual:    BinaryOperator.lessEqual,
+		TokenType.greaterEqual: BinaryOperator.greaterEqual,
+		TokenType.compare:      BinaryOperator.comparison,
+		TokenType.dollar:       BinaryOperator.dollar,
+		TokenType.hash:         BinaryOperator.hash,
+		TokenType.shiftLeft:    BinaryOperator.shiftLeft,
+		TokenType.shiftRight:   BinaryOperator.shiftRight,
+		TokenType.plus:         BinaryOperator.addition,
+		TokenType.minus:        BinaryOperator.subtraction,
+		TokenType.pipe:         BinaryOperator.bitwiseOr,
+		TokenType.multiply:     BinaryOperator.multiplication,
+		TokenType.divide:       BinaryOperator.division,
+		TokenType.modulo:       BinaryOperator.modulo,
+		TokenType.ampersand:    BinaryOperator.bitwiseAnd,
 		// Compound assignment operators
-		(TokenType.plusAssign):       BinaryOperator.addition,
-		(TokenType.minusAssign):      BinaryOperator.subtraction,
-		(TokenType.pipeAssign):       BinaryOperator.bitwiseOr,
-		(TokenType.mulAssign):        BinaryOperator.multiplication,
-		(TokenType.divAssign):        BinaryOperator.division,
-		(TokenType.modAssign):        BinaryOperator.modulo,
-		(TokenType.ampAssign):        BinaryOperator.bitwiseAnd,
-		(TokenType.caretAssign):      BinaryOperator.bitwiseXor,
-		(TokenType.concatAssign):     BinaryOperator.concatenation,
-		(TokenType.shiftLeftAssign):  BinaryOperator.shiftLeft,
-		(TokenType.shiftRightAssign): BinaryOperator.shiftRight,
-		(TokenType.powerAssign):      BinaryOperator.exponentiation,
-		(TokenType.hashAssign):       BinaryOperator.hash,
-		(TokenType.dollarAssign):     BinaryOperator.dollar,
+		TokenType.plusAssign:       BinaryOperator.addition,
+		TokenType.minusAssign:      BinaryOperator.subtraction,
+		TokenType.pipeAssign:       BinaryOperator.bitwiseOr,
+		TokenType.mulAssign:        BinaryOperator.multiplication,
+		TokenType.divAssign:        BinaryOperator.division,
+		TokenType.modAssign:        BinaryOperator.modulo,
+		TokenType.ampAssign:        BinaryOperator.bitwiseAnd,
+		TokenType.caretAssign:      BinaryOperator.bitwiseXor,
+		TokenType.concatAssign:     BinaryOperator.concatenation,
+		TokenType.shiftLeftAssign:  BinaryOperator.shiftLeft,
+		TokenType.shiftRightAssign: BinaryOperator.shiftRight,
+		TokenType.powerAssign:      BinaryOperator.exponentiation,
+		TokenType.hashAssign:       BinaryOperator.hash,
+		TokenType.dollarAssign:     BinaryOperator.dollar,
 	};
 
 	private static typeToUnaryOperator = {
-		(TokenType.plus):  UnaryOperator.plus,
-		(TokenType.minus): UnaryOperator.negation,
-		(TokenType.tilde): UnaryOperator.bitwiseNot,
-		(TokenType._not):  UnaryOperator.booleanNot
+		TokenType.plus:  UnaryOperator.plus,
+		TokenType.minus: UnaryOperator.negation,
+		TokenType.tilde: UnaryOperator.bitwiseNot,
+		TokenType._not:  UnaryOperator.booleanNot
 	};
 
 	private static typeToLambdaOperator = {
-		(TokenType._or):             LambdaOperator.conditionalOr,
-		(TokenType._xor):            LambdaOperator.conditionalXor,
-		(TokenType._and):            LambdaOperator.conditionalAnd,
-		(TokenType.doubleEqual):     LambdaOperator.equality,
-		(TokenType.notEqual):        LambdaOperator.inequality,
-		(TokenType.less):            LambdaOperator.less,
-		(TokenType.lessEqual):       LambdaOperator.lessEqual,
-		(TokenType.greater):         LambdaOperator.greater,
-		(TokenType.greaterEqual):    LambdaOperator.greaterEqual,
-		(TokenType.compare):         LambdaOperator.comparison,
-		(TokenType.hash):            LambdaOperator.hash,
-		(TokenType.dollar):          LambdaOperator.dollar,
-		(TokenType.shiftLeft):       LambdaOperator.shiftLeft,
-		(TokenType.shiftRight):      LambdaOperator.shiftRight,
-		(TokenType.plus):            LambdaOperator.plus,
-		(TokenType.minus):           LambdaOperator.minus,
-		(TokenType.pipe):            LambdaOperator.bitwiseOr,
-		(TokenType.caret):           LambdaOperator.bitwiseXor,
-		(TokenType.multiply):        LambdaOperator.multiplication,
-		(TokenType.divide):          LambdaOperator.division,
-		(TokenType.modulo):          LambdaOperator.modulo,
-		(TokenType.ampersand):       LambdaOperator.bitwiseAnd,
-		(TokenType.power):           LambdaOperator.exponentiation,
-		(TokenType.funcApplication): LambdaOperator.functionApplication,
-		(TokenType.concatenate):     LambdaOperator.concatenation,
-		(TokenType.tilde):           LambdaOperator.bitwiseNot,
-		(TokenType._not):            LambdaOperator.booleanNot,
+		TokenType._or:             LambdaOperator.conditionalOr,
+		TokenType._xor:            LambdaOperator.conditionalXor,
+		TokenType._and:            LambdaOperator.conditionalAnd,
+		TokenType.doubleEqual:     LambdaOperator.equality,
+		TokenType.notEqual:        LambdaOperator.inequality,
+		TokenType.less:            LambdaOperator.less,
+		TokenType.lessEqual:       LambdaOperator.lessEqual,
+		TokenType.greater:         LambdaOperator.greater,
+		TokenType.greaterEqual:    LambdaOperator.greaterEqual,
+		TokenType.compare:         LambdaOperator.comparison,
+		TokenType.hash:            LambdaOperator.hash,
+		TokenType.dollar:          LambdaOperator.dollar,
+		TokenType.shiftLeft:       LambdaOperator.shiftLeft,
+		TokenType.shiftRight:      LambdaOperator.shiftRight,
+		TokenType.plus:            LambdaOperator.plus,
+		TokenType.minus:           LambdaOperator.minus,
+		TokenType.pipe:            LambdaOperator.bitwiseOr,
+		TokenType.caret:           LambdaOperator.bitwiseXor,
+		TokenType.multiply:        LambdaOperator.multiplication,
+		TokenType.divide:          LambdaOperator.division,
+		TokenType.modulo:          LambdaOperator.modulo,
+		TokenType.ampersand:       LambdaOperator.bitwiseAnd,
+		TokenType.power:           LambdaOperator.exponentiation,
+		TokenType.funcApplication: LambdaOperator.functionApplication,
+		TokenType.concatenate:     LambdaOperator.concatenation,
+		TokenType.tilde:           LambdaOperator.bitwiseNot,
+		TokenType._not:            LambdaOperator.booleanNot,
 	};
 
 	private static relationalOperators = [
@@ -4536,13 +4513,13 @@ public inheritable Parser
 	];
 
 	private static literalFuncs = {
-		(TokenType._null):  @token = new NullLiteralExpression(token.location),
-		(TokenType._false): @token = new BooleanLiteralExpression(token.location, false),
-		(TokenType._true):  @token = new BooleanLiteralExpression(token.location, true),
-		(TokenType.int):    @token = new IntegerLiteralExpression(token.location, token.literalValue),
-		(TokenType.real):   @token = new RealLiteralExpression(token.location, token.literalValue),
-		(TokenType.string): @token = new StringLiteralExpression(token.location, token.literalValue),
-		(TokenType.char):   @token = new CharLiteralExpression(token.location, token.literalValue),
+		TokenType._null:  @token = new NullLiteralExpression(token.location),
+		TokenType._false: @token = new BooleanLiteralExpression(token.location, false),
+		TokenType._true:  @token = new BooleanLiteralExpression(token.location, true),
+		TokenType.int:    @token = new IntegerLiteralExpression(token.location, token.literalValue),
+		TokenType.real:   @token = new RealLiteralExpression(token.location, token.literalValue),
+		TokenType.string: @token = new StringLiteralExpression(token.location, token.literalValue),
+		TokenType.char:   @token = new CharLiteralExpression(token.location, token.literalValue),
 	};
 
 	private static primaryExpressionStarters = [

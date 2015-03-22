@@ -482,8 +482,7 @@ public abstract class ParseTreeVisitor
 
 	public overridable visitHashMember(member, arg)
 	{
-		if member.key is not Identifier:
-			member.key.accept(this, arg);
+		member.key.accept(this, arg);
 		member.value.accept(this, arg);
 		return null;
 	}
