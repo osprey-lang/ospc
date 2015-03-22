@@ -233,10 +233,13 @@ public inheritable Parser
 	/// Param i: The token’s index in the lexer.
 	/// Param keyword: The contextual keyword to look for. (String)
 	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
+	/// Remarks: The Osprey grammar allows identifiers to be escaped (with '\\'),
+	//           which prevents them from being interpreted as contextual keywords.
+	///          This method never matches escaped identifiers.
 	public acceptContextual(i, keyword)
 	{
 		var tok = lex[i];
-		if tok.match(TokenType.identifier) and tok.value == keyword:
+		if tok.match(TokenType.identifier) and not tok.escaped and tok.value == keyword:
 			return true;
 		return false;
 	}
@@ -248,10 +251,13 @@ public inheritable Parser
 	/// Param i: (ref) The token’s index in the lexer.
 	/// Param keyword: The contextual keyword to look for. (String)
 	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
+	/// Remarks: The Osprey grammar allows identifiers to be escaped (with '\\'),
+	//           which prevents them from being interpreted as contextual keywords.
+	///          This method never matches escaped identifiers.
 	public acceptrContextual(ref i, keyword)
 	{
 		var tok = lex[i];
-		if tok.match(TokenType.identifier) and tok.value == keyword
+		if tok.match(TokenType.identifier) and not tok.escaped and tok.value == keyword
 		{
 			i += 1;
 			return true;
@@ -571,8 +577,7 @@ public inheritable Parser
 
 		// version-specifier
 		var version;
-		if accept(i, TokenType.identifier) and
-			lex[i].value == "version" and
+		if acceptContextual(i, "version") and
 			accept(i + 1, TokenType.int):
 			version = parseVersionSpecifier(ref i);
 
