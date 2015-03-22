@@ -115,12 +115,12 @@ public class Identifier is Token
 
 		this._identifier = identifier;
 	}
-	public new(location, identifier, isEscaped)
+	public new(location, identifier, escaped)
 	{
 		new base(location, TokenType.identifier, null);
 
 		this._identifier = identifier;
-		this._isEscaped  = isEscaped;
+		this._escaped  = escaped;
 	}
 
 	private _identifier;
@@ -128,15 +128,15 @@ public class Identifier is Token
 	///          from the token’s {value} if the identifier has been normalized.
 	public get identifier = _identifier;
 
-	private _isEscaped;
+	private _escaped;
 
 	/// Summary: Determines whether the identifier is escaped; that is, the source text
 	///          begins with a backslash (`\`).
-	public get isEscaped
+	public get escaped
 	{
-		if _isEscaped is null:
-			_isEscaped = value[0] == '\\';
-		return _isEscaped;
+		if _escaped is null:
+			_escaped = value[0] == '\\';
+		return _escaped;
 	}
 
 	override toString()
