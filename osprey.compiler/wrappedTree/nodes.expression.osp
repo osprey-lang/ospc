@@ -649,7 +649,7 @@ public class WrappedObjectCreationExpression is WrappedExpression
 	/// Summary: A {WrappedArgumentList} with the arguments to the constructor.
 	public arguments;
 
-	/// Summary: The {WrappedObjectInitializer} associated with the object creation
+	/// Summary: The {WrappedInitializer} associated with the object creation
 	///          expression, or null if it has none.
 	public initializer;
 
@@ -659,7 +659,17 @@ public class WrappedObjectCreationExpression is WrappedExpression
 	}
 }
 
-public class WrappedObjectInitializer is WrappedNode
+public abstract class WrappedInitializer is ParseNode
+{
+	public new(wrappedNode)
+	{
+		new base(wrappedNode);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class WrappedObjectInitializer is WrappedInitializer
 {
 	public new(wrappedNode, members)
 	{
@@ -696,6 +706,62 @@ public class WrappedMemberInitializer is WrappedNode
 	override accept(visitor, arg)
 	{
 		return visitor.visitMemberInitializer(this, arg);
+	}
+}
+
+public inheritable WrappedCollectionInitializer is WrappedInitializer
+{
+	public new(wrappedNode, elements)
+	{
+		new base(wrappedNode);
+
+		this.elements = claimAll(elements);
+	}
+
+	/// Summary: A {NodeList} with the {WrappedElementInitializer}s of this
+	///          collection initializer.
+	public elements;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitCollectionInitializer(this, arg);
+	}
+}
+
+public class WrappedComprehensionInitializer is WrappedCollectionInitializer
+{
+	public new(wrappedNode, elements, comprehenders)
+	{
+		new base(wrappedNode, elements);
+
+		this.comprehenders = claimAll(comprehenders);
+	}
+
+	/// Summary: A {NodeList} of {ListComprehensionPart}s belonging to the comprehension initializer.
+	public comprehenders;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitComprehensionInitializer(this, arg);
+	}
+}
+
+public class WrappedElementInitializer is WrappedNode
+{
+	public new(wrappedNode, arguments)
+	{
+		new base(wrappedNode);
+
+		this.arguments = claimAll(arguments);
+	}
+
+	/// Summary: A {WrappedNodeList} containing this initializer’s arguments
+	///          to the newly constructed value’s `add` method.
+	public arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitElementInitializer(this, arg);
 	}
 }
 

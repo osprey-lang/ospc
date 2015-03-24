@@ -584,6 +584,25 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 		return initializer;
 	}
 
+	overridable override visitCollectionInitializer(initializer, arg)
+	{
+		updateNodeList(initializer.elements, arg);
+		return initializer;
+	}
+
+	overridable override visitComprehensionInitializer(initializer, arg)
+	{
+		updateNodeList(initializer.elements, arg);
+		updateNodeList(initializer.comprehenders, arg);
+		return initializer;
+	}
+
+	overridable override visitElementInitializer(initializer, arg)
+	{
+		updateNodeList(initializer.arguments, arg);
+		return initializer;
+	}
+
 	overridable override visitParenthesizedExpression(expr, arg)
 	{
 		expr.inner = expr.inner.accept(this, arg);

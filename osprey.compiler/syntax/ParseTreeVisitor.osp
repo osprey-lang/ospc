@@ -586,6 +586,25 @@ public abstract class ParseTreeVisitor
 		return null;
 	}
 
+	public overridable visitCollectionInitializer(initializer, arg)
+	{
+		initializer.elements.acceptAll(this, arg);
+		return null;
+	}
+
+	public overridable visitComprehensionInitializer(initializer, arg)
+	{
+		initializer.elements.acceptAll(this, arg);
+		initializer.comprehenders.acceptAll(this, arg);
+		return null;
+	}
+
+	public overridable visitElementInitializer(initializer, arg)
+	{
+		initializer.arguments.acceptAll(this, arg);
+		return null;
+	}
+
 	public overridable visitParenthesizedExpression(expr, arg)
 	{
 		expr.inner.accept(this, arg);
