@@ -598,6 +598,25 @@ public class ParseTreeWrapper is ParseTreeVisitor
 		return new WrappedMemberInitializer(initializer, expression);
 	}
 
+	override visitCollectionInitializer(initializer, arg)
+	{
+		var elements = wrapNodeList(initializer.elements);
+		return new WrappedCollectionInitializer(initializer, elements);
+	}
+
+	override visitComprehensionInitializer(initializer, arg)
+	{
+		var elements = wrapNodeList(initializer.elements);
+		var comprehenders = wrapNodeList(initializer.comprehenders);
+		return new WrappedComprehensionInitializer(initializer, elements, comprehenders);
+	}
+
+	override visitElementInitializer(initializer, arg)
+	{
+		var arguments = wrapNodeList(initializer.arguments);
+		return new WrappedElementInitializer(initializer, arguments);
+	}
+
 	override visitParenthesizedExpression(expr, arg)
 	{
 		var inner = expr.inner.accept(this, null);

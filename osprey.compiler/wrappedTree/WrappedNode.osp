@@ -96,15 +96,15 @@ public abstract class WrappedNode is Syntax
 	///          which method to call on {visitor}.
 	/// Param visitor: An object with a visit method for the current node. The node
 	///                type determines which method to call. This parameter should
-	///                generally derive from {ParseTreeVisitor}.
+	///                generally derive from {WrappedTreeVisitor}.
 	/// Param arg:     An argument that is passed to the visit method on {visitor}.
 	/// Returns: The return value of the call to the visit method.
 	/// Remarks: This method calls exactly one visit method on {visitor}. Children
 	///          of this node are therefore not visited; the {visitor} must take
 	///          care of calling {accept} (or similar) on the child nodes it is
 	///          interested in. For this reason, it is recommended that {visitor}
-	///          be derived from {ParseTreeVisitor}, which provides methods for all
-	///          parse node types, with default implementations that simply walk
-	///          the entire tree.
+	///          be derived from {WrappedTreeVisitor}, which provides methods for
+	///          all wrapped node types, with default implementations that simply
+	///          walk the entire tree.
 	public abstract accept(visitor, arg);
 }

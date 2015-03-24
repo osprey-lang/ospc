@@ -704,8 +704,8 @@ public class ObjectCreationExpression is Expression
 	public get arguments = _arguments;
 
 	private _initializer;
-	/// Summary: Gets the {ObjectInitializer} associated with the object creation
-	///          expression, or null if it has none.
+	/// Summary: Gets the {Initializer} associated with the object creation expression,
+	///          or null if it has none.
 	public get initializer = _initializer;
 
 	override accept(visitor, arg)
@@ -714,7 +714,17 @@ public class ObjectCreationExpression is Expression
 	}
 }
 
-public class ObjectInitializer is ParseNode
+public abstract class Initializer is ParseNode
+{
+	public new(location)
+	{
+		new base(location);
+	}
+
+	abstract override accept(visitor, arg);
+}
+
+public class ObjectInitializer is Initializer
 {
 	public new(location, members)
 	{
@@ -755,6 +765,64 @@ public class MemberInitializer is ParseNode
 	override accept(visitor, arg)
 	{
 		return visitor.visitMemberInitializer(this, arg);
+	}
+}
+
+public inheritable CollectionInitializer is Initializer
+{
+	public new(location, elements)
+	{
+		new base(location);
+
+		this._elements = claimAll(elements);
+	}
+
+	private _elements;
+	/// Summary: Gets a {NodeList} with the {ElementInitializer}s of this collection initializer.
+	public get elements = _elements;
+
+	overridable override accept(visitor, arg)
+	{
+		return visitor.visitCollectionInitializer(this, arg);
+	}
+}
+
+public class ComprehensionInitializer is CollectionInitializer
+{
+	public new(location, elements, comprehenders)
+	{
+		new base(location, elements);
+
+		this._comprehenders = claimAll(comprehenders);
+	}
+
+	private _comprehenders;
+	/// Summary: Gets a {NodeList} of {ListComprehensionPart}s belonging to the comprehension initializer.
+	public get comprehenders = _comprehenders;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitComprehensionInitializer(this, arg);
+	}
+}
+
+public class ElementInitializer is ParseNode
+{
+	public new(location, arguments)
+	{
+		new base(location);
+
+		this._arguments = claimAll(arguments);
+	}
+
+	private _arguments;
+	/// Summary: Gets a {NodeList} containing this initializer’s arguments to
+	///          the newly constructed value’s `add` method.
+	public get arguments = _arguments;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitElementInitializer(this, arg);
 	}
 }
 

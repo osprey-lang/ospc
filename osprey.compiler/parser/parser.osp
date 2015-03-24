@@ -3452,16 +3452,8 @@ public inheritable Parser
 	{
 		/* Syntax:
 		 *   object-creation-expression:
-		 *     'new' type '(' argument-list? ')' object-initializer?
-		 *     'new' type object-initializer
-		 *   object-initializer:
-		 *     'with' '{' member-initializer-list? '}'
-		 *     'with' '{' member-initializer-list ',' '}'
-		 *   member-initializer-list:
-		 *     member-initializer
-		 *     member-initializer-list ',' member-initializer
-		 *   member-initializer:
-		 *     identifier ':' expression
+		 *     'new' type '(' argument-list? ')' object-or-collection-initializer?
+		 *     'new' type object-or-collection-initializer
 		 */
 		var start = expectr(ref i, TokenType._new);
 
@@ -3480,37 +3472,169 @@ public inheritable Parser
 		}
 
 		var initializer;
-		if accept(i, TokenType._with)
+		if acceptr(ref i, TokenType._with)
 		{
-			var initStart = lex[i];
-			i += 1;
-			expectr(ref i, TokenType.curlyOpen);
-
-			var members = new List(2);
-			if not accept(i, TokenType.curlyClose):
-				do
-				{
-					var memberName = expectr(ref i, TokenType.identifier);
-					expectr(ref i, TokenType.colon);
-					var memberValue = parseExpression(ref i);
-
-					members.add(
-						new MemberInitializer(getLocation(memberName, memberValue),
-							memberName, memberValue)
-					);
-				} while acceptr(ref i, TokenType.comma) and
-					not accept(i, TokenType.curlyClose);
-			members = new NodeList(members);
-
-			var initEnd = expectr(ref i, TokenType.curlyClose);
-
-			initializer = new ObjectInitializer(getLocation(initStart, initEnd),
-				members);
+			initializer = parseObjectOrCollectionInitializer(ref i);
 			end = initializer;
 		}
 
 		return new ObjectCreationExpression(getLocation(start, end),
 			type, arguments, initializer);
+	}
+
+	private parseObjectOrCollectionInitializer(ref i)
+	{
+		/* Syntax:
+		 *   object-or-collection-initializer:
+		 *     object-initializer
+		 *     collection-initializer
+		 *     comprehension-initializer
+		 * Additional notes:
+		 *   This method is called with 'i' just past the 'with' keyword. We should therefore
+		 *   not expect it here. Also, collection-initializer and comprehension-initializer
+		 *   are both parsed by parseCollectionInitializer. 
+		 */
+		if accept(i, TokenType.squareOpen):
+			return parseCollectionInitializer(ref i);
+		else:
+			return parseObjectInitializer(ref i);
+	}
+
+	private parseObjectInitializer(ref i)
+	{
+		/* Syntax:
+		 *   object-initializer:
+		 *     'with' '{' member-initializer-list? '}'
+		 *     'with' '{' member-initializer-list ',' '}'
+		 *   member-initializer-list:
+		 *     member-initializer
+		 *     member-initializer-list ',' member-initializer
+		 *   member-initializer:
+		 *     identifier ':' expression
+		 * Additional notes:
+		 *   This method is called with 'i' just past the 'with' keyword.
+		 *   We should therefore not expect it here.
+		 */
+		var start = expectr(ref i, TokenType.curlyOpen);
+
+		var members = EmptyLists.node;
+		if not accept(i, TokenType.curlyClose)
+		{
+			members = new List(2);
+			do
+			{
+				var memberName = expectr(ref i, TokenType.identifier);
+				expectr(ref i, TokenType.colon);
+				var memberValue = parseExpression(ref i);
+
+				members.add(
+					new MemberInitializer(getLocation(memberName, memberValue),
+						memberName, memberValue)
+				);
+			} while acceptr(ref i, TokenType.comma) and
+				not accept(i, TokenType.curlyClose);
+			members = new NodeList(members);
+		}
+
+		var end = expectr(ref i, TokenType.curlyClose);
+
+		return new ObjectInitializer(getLocation(start, end), members);
+	}
+
+	private parseCollectionInitializer(ref i)
+	{
+		/* Syntax:
+		 *   collection-initializer:
+		 *     'with' '[' element-initializer-list? ']'
+		 *     'with' '[' element-initializer-list ',' ']'
+		 *   comprehension-initializer:
+		 *     'with' '[' element-initializer-list list-comprehension-parts ']'
+		 * Additional notes:
+		 *   This method is called with 'i' just past the 'with' keyword. We should therefore
+		 *   not expect it here. Also, this method parses collection-initializer as well as
+		 *   comprehension-initializer, because they both start with an element-initializer-list.
+		 */
+		var start = expectr(ref i, TokenType.squareOpen);
+
+		var elements = EmptyLists.node;
+		if not accept(i, TokenType.squareClose)
+		{
+			var endsWithComma;
+			elements = parseElementInitializers(ref i, ref endsWithComma);
+
+			if not endsWithComma and acceptStartOfListComprehensionPart(i)
+			{
+				var listCompParts = new List(1);
+				do
+				{
+					listCompParts.add(parseListComprehensionPart(ref i));
+				} while acceptStartOfListComprehensionPart(i);
+				listCompParts = new NodeList(listCompParts);
+
+				var end = expectr(ref i, TokenType.squareClose);
+				return new ComprehensionInitializer(getLocation(start, end),
+					elements, listCompParts);
+			}
+		}
+
+		do
+		{
+			var end = expectr(ref i, TokenType.squareClose);
+			return new CollectionInitializer(getLocation(start, end), elements);
+		};
+	}
+
+	private parseElementInitializers(ref i, ref endsWithComma)
+	{
+		/* Syntax:
+		 *   element-initializer-list:
+		 *     element-initializer
+		 *     element-initializer-list ',' element-initializer
+		 *   element-initializer:
+		 *     expression
+		 *     '(' expression-list ')'
+		 * Additional notes:
+		 *   The grammar for collection-initializer allows a trailing comma. If there is
+		 *   no trailing comma, the element initializer list may have one or more list
+		 *   comprehension parts (starting with "for" or "where") following it. Hence
+		 *   the endsWithComma parameter.
+		 */
+		var _endsWithComma = false;
+		var elements = new List(2);
+		do
+		{
+			var argStart = lex[i], argEnd;
+			var arguments;
+			if acceptr(ref i, TokenType.parenOpen)
+			{
+				arguments = new List(2);
+				if not accept(i, TokenType.parenClose):
+					do
+					{
+						arguments.add(parseExpression(ref i));
+					} while acceptr(ref i, TokenType.comma) and
+						not accept(i, TokenType.parenClose);
+
+				argEnd = expectr(ref i, TokenType.parenClose);
+			}
+			else
+			{
+				arguments = parseExpression(ref i);
+				argEnd = arguments;
+			}
+			arguments = new NodeList(arguments);
+
+			elements.add(
+				new ElementInitializer(getLocation(argStart, argEnd),
+					arguments)
+			);
+		} while (_endsWithComma = acceptr(ref i, TokenType.comma)) and
+			not accept(i, TokenType.curlyClose);
+		elements = new NodeList(elements);
+
+		endsWithComma = _endsWithComma;
+
+		return elements;
 	}
 
 	/// Summary: Parses a list creation expression at the specified token index.
@@ -3576,13 +3700,13 @@ public inheritable Parser
 			}
 
 			// Try a list comprehension!
-			if accept(i, TokenType._for) or acceptContextual(i, "where")
+			if acceptStartOfListComprehensionPart(i)
 			{
 				var listCompParts = new List(1);
 				do
 				{
 					listCompParts.add(parseListComprehensionPart(ref i));
-				} while accept(i, TokenType._for) or acceptContextual(i, "where");
+				} while acceptStartOfListComprehensionPart(i);
 				listCompParts = new NodeList(listCompParts);
 
 				var end = expectr(ref i, TokenType.squareClose);
@@ -3598,6 +3722,11 @@ public inheritable Parser
 			return new ListCreationExpression(getLocation(start, end),
 				values);
 		};
+	}
+
+	private acceptStartOfListComprehensionPart(i)
+	{
+		return accept(i, TokenType._for) or acceptContextual(i, "where");
 	}
 
 	private parseListComprehensionPart(ref i)
