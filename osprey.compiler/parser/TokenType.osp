@@ -43,105 +43,105 @@ public enum set TokenType
 	/** Keywords **/
 
 	/// Summary: abstract
-	_abstract = 1 | keyword | memberModifier,
+	\abstract = 1 | keyword | memberModifier,
 	/// Summary: and
-	_and = 2 | keyword | lambdaOperator,
+	\and = 2 | keyword | lambdaOperator,
 	/// Summary: async (unused)
-	_async = 3 | keyword,
+	\async = 3 | keyword,
 	/// Summary: base
-	_base = 4 | keyword,
+	\base = 4 | keyword,
 	/// Summary: break
-	_break = 5 | keyword,
+	\break = 5 | keyword,
 	/// Summary: catch
-	_catch = 6 | keyword,
+	\catch = 6 | keyword,
 	/// Summary: class
-	_class = 7 | keyword,
+	\class = 7 | keyword,
 	/// Summary: const
-	_const = 8 | keyword,
+	\const = 8 | keyword,
 	/// Summary: do
-	_do = 9 | keyword,
+	\do = 9 | keyword,
 	/// Summary: else
-	_else = 10 | keyword,
+	\else = 10 | keyword,
 	/// Summary: enum
-	_enum = 11 | keyword,
+	\enum = 11 | keyword,
 	/// Summary: false
-	_false = 12 | keyword | literal,
+	\false = 12 | keyword | literal,
 	/// Summary: finally
-	_finally = 13 | keyword,
+	\finally = 13 | keyword,
 	/// Summary: for
-	_for = 14 | keyword,
+	\for = 14 | keyword,
 	/// Summary: function
-	_function = 15 | keyword,
+	\function = 15 | keyword,
 	/// Summary: get
-	_get = 16 | keyword,
+	\get = 16 | keyword,
 	/// Summary: global
-	_global = 17 | keyword,
+	\global = 17 | keyword,
 	/// Summary: if
-	_if = 18 | keyword,
+	\if = 18 | keyword,
 	/// Summary: in
-	_in = 19 | keyword,
+	\in = 19 | keyword,
 	/// Summary: inheritable
-	_inheritable = 20 | keyword | memberModifier,
+	\inheritable = 20 | keyword | memberModifier,
 	/// Summary: is
-	_is = 21 | keyword,
+	\is = 21 | keyword,
 	/// Summary: iter
-	_iter = 22 | keyword,
+	\iter = 22 | keyword,
 	/// Summary: namespace
-	_namespace = 23 | keyword,
+	\namespace = 23 | keyword,
 	/// Summary: new
-	_new = 24 | keyword,
+	\new = 24 | keyword,
 	/// Summary: next
-	_next = 25 | keyword,
+	\next = 25 | keyword,
 	/// Summary: not
-	_not = 26 | keyword | lambdaOperator,
+	\not = 26 | keyword | lambdaOperator,
 	/// Summary: null
-	_null = 27 | keyword | literal,
+	\null = 27 | keyword | literal,
 	/// Summary: operator
-	_operator = 28 | keyword,
+	\operator = 28 | keyword,
 	/// Summary: or
-	_or = 29 | keyword | lambdaOperator,
+	\or = 29 | keyword | lambdaOperator,
 	/// Summary: overridable
-	_overridable = 30 | keyword | memberModifier,
+	\overridable = 30 | keyword | memberModifier,
 	/// Summary: override
-	_override = 31 | keyword | memberModifier,
+	\override = 31 | keyword | memberModifier,
 	/// Summary: private
-	_private = 32 | keyword | memberModifier,
+	\private = 32 | keyword | memberModifier,
 	/// Summary: protected
-	_protected = 33 | keyword | memberModifier,
+	\protected = 33 | keyword | memberModifier,
 	/// Summary: public
-	_public = 34 | keyword | memberModifier,
+	\public = 34 | keyword | memberModifier,
 	/// Summary: ref
-	_ref = 35 | keyword,
+	\ref = 35 | keyword,
 	/// Summary: refeq
-	_refeq = 36 | keyword,
+	\refeq = 36 | keyword,
 	/// Summary: return
-	_return = 37 | keyword,
+	\return = 37 | keyword,
 	/// Summary: set
-	_set = 38 | keyword,
+	\set = 38 | keyword,
 	/// Summary: static
-	_static = 39 | keyword | memberModifier,
+	\static = 39 | keyword | memberModifier,
 	/// Summary: this
-	_this = 40 | keyword,
+	\this = 40 | keyword,
 	/// Summary: throw
-	_throw = 41 | keyword,
+	\throw = 41 | keyword,
 	/// Summary: true
-	_true = 42 | keyword | literal,
+	\true = 42 | keyword | literal,
 	/// Summary: try
-	_try = 43 | keyword,
+	\try = 43 | keyword,
 	/// Summary: typeof
-	_typeof = 44 | keyword,
+	\typeof = 44 | keyword,
 	/// Summary: use
-	_use = 45 | keyword,
+	\use = 45 | keyword,
 	/// Summary: var
-	_var = 46 | keyword,
+	\var = 46 | keyword,
 	/// Summary: with
-	_with = 47 | keyword,
+	\with = 47 | keyword,
 	/// Summary: while
-	_while = 48 | keyword,
+	\while = 48 | keyword,
 	/// Summary: xor
-	_xor = 49 | keyword | lambdaOperator,
+	\xor = 49 | keyword | lambdaOperator,
 	/// Summary: yield
-	_yield = 50 | keyword,
+	\yield = 50 | keyword,
 
 	/** Literals **/
 

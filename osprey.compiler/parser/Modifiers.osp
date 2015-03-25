@@ -18,21 +18,21 @@ public class Modifiers
 	public start;
 
 	/// Summary: The `public` modifier {Token} if specified, otherwise null.
-	public _public;
+	public \public;
 	/// Summary: The `protected` modifier {Token} if specified, otherwise null.
-	public _protected;
+	public \protected;
 	/// Summary: The `private` modifier {Token} if specified, otherwise null.
-	public _private;
+	public \private;
 	/// Summary: The `static` modifier {Token} if specified, otherwise null.
-	public _static;
+	public \static;
 	/// Summary: The `abstract` modifier {Token} if specified, otherwise null.
-	public _abstract;
+	public \abstract;
 	/// Summary: The `inheritable` modifier {Token} if specified, otherwise null.
-	public _inheritable;
+	public \inheritable;
 	/// Summary: The `overridable` modifier {Token} if specified, otherwise null.
-	public _overridable;
+	public \overridable;
 	/// Summary: The `override` modifier {Token} if specified, otherwise null.
-	public _override;
+	public \override;
 
 	/// Summary: Determines whether this {Modifiers} instance has no modifiers
 	///          and no annotations.
@@ -40,29 +40,29 @@ public class Modifiers
 
 	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
 	public get hasModifiers =
-		_public      or
-		_protected   or
-		_private     or
-		_static      or
-		_abstract    or
-		_inheritable or
-		_overridable or
-		_override;
+		\public      or
+		\protected   or
+		\private     or
+		\static      or
+		\abstract    or
+		\inheritable or
+		\overridable or
+		\override;
 
 	/// Summary: Determines whether this {Modifiers} instance has an accessibility modifier.
-	public get hasAccessibility = _public or _protected or _private;
+	public get hasAccessibility = \public or \protected or \private;
 
 	/// Summary: Gets an {Accessibility} value representing the declared accessibility
 	///          of the member. If no accessibility modifier is present, the return
 	///          value is always {Accessibility.none}.
 	public get accessibility
 	{
-		if _public:
-			return Accessibility._public;
-		if _protected:
-			return Accessibility._protected;
-		if _private:
-			return Accessibility._private;
+		if \public:
+			return Accessibility.\public;
+		if \protected:
+			return Accessibility.\protected;
+		if \private:
+			return Accessibility.\private;
 		return Accessibility.none;
 	}
 
@@ -71,14 +71,14 @@ public class Modifiers
 	{
 		annotations  = EmptyLists.node;
 		start        = null;
-		_public      = null;
-		_protected   = null;
-		_private     = null;
-		_static      = null;
-		_abstract    = null;
-		_inheritable = null;
-		_overridable = null;
-		_override    = null;
+		\public      = null;
+		\protected   = null;
+		\private     = null;
+		\static      = null;
+		\abstract    = null;
+		\inheritable = null;
+		\overridable = null;
+		\override    = null;
 	}
 
 	/// Summary: Verifies the modifiers for a global function or constant declaration.
@@ -87,10 +87,10 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForGlobalFunctionOrConstant(parser)
 	{
-		var invalidToken = _protected ??
-			_static ??
-			_abstract ?? _inheritable ??
-			_overridable ?? _override;
+		var invalidToken = \protected ??
+			\static ??
+			\abstract ?? \inheritable ??
+			\overridable ?? \override;
 		if invalidToken:
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
 	}
@@ -100,18 +100,18 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForClass(parser)
 	{
-		var invalidToken = _protected ??
-			_overridable ?? _override;
+		var invalidToken = \protected ??
+			\overridable ?? \override;
 		if invalidToken:
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClass);
 
-		if _static
+		if \static
 		{
-			if _abstract or _inheritable:
-				parser.recoverableError(_abstract ?? _inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
+			if \abstract or \inheritable:
+				parser.recoverableError(\abstract ?? \inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
 		}
-		else if _abstract and _inheritable:
-			parser.recoverableError(_abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
+		else if \abstract and \inheritable:
+			parser.recoverableError(\abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
 	}
 
 	/// Summary: Verifies the modifiers for a constructor declaration. If any modifiers
@@ -119,20 +119,20 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForConstructor(parser)
 	{
-		if _static
+		if \static
 		{
 			var invalidToken =
-				_public ?? _protected ?? _private ??
-				_abstract ?? _inheritable ??
-				_overridable ?? _override;
+				\public ?? \protected ?? \private ??
+				\abstract ?? \inheritable ??
+				\overridable ?? \override;
 			if invalidToken:
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
 		}
 		else
 		{
 			var invalidToken =
-				_abstract ?? _inheritable ??
-				_overridable ?? _override;
+				\abstract ?? \inheritable ??
+				\overridable ?? \override;
 			if invalidToken:
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
 		}
@@ -144,8 +144,8 @@ public class Modifiers
 	public verifyForField(parser)
 	{
 		var invalidToken =
-			_abstract ?? _inheritable ??
-			_overridable ?? _override;
+			\abstract ?? \inheritable ??
+			\overridable ?? \override;
 		if invalidToken:
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForField);
 	}
@@ -155,21 +155,21 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForMethod(parser)
 	{
-		if _static
+		if \static
 		{
 			var invalidToken =
-				_abstract ?? _inheritable ??
-				_overridable ?? _override;
+				\abstract ?? \inheritable ??
+				\overridable ?? \override;
 			if invalidToken:
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
 		}
 		else
 		{
-			if _inheritable:
-				parser.recoverableError(_inheritable, ErrorCode.err_MethodCannotBeInheritable);
+			if \inheritable:
+				parser.recoverableError(\inheritable, ErrorCode.err_MethodCannotBeInheritable);
 
-			if _abstract and _overridable:
-				parser.recoverableError(_overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
+			if \abstract and \overridable:
+				parser.recoverableError(\overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
 		}
 	}
 
@@ -178,8 +178,8 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForInvocator(parser)
 	{
-		if _static:
-			parser.recoverableError(_static, ErrorCode.err_InvocatorCannotBeStatic);
+		if \static:
+			parser.recoverableError(\static, ErrorCode.err_InvocatorCannotBeStatic);
 		verifyForMethod(parser);
 	}
 
@@ -188,21 +188,21 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForProperty(parser)
 	{
-		if _static
+		if \static
 		{
 			var invalidToken =
-				_abstract ?? _inheritable ??
-				_overridable ?? _override;
+				\abstract ?? \inheritable ??
+				\overridable ?? \override;
 			if invalidToken:
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
 		}
 		else
 		{
-			if _inheritable:
-				parser.recoverableError(_inheritable, ErrorCode.err_PropertyCannotBeInheritable);
+			if \inheritable:
+				parser.recoverableError(\inheritable, ErrorCode.err_PropertyCannotBeInheritable);
 
-			if _abstract and _overridable:
-				parser.recoverableError(_overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
+			if \abstract and \overridable:
+				parser.recoverableError(\overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
 		}
 	}
 
@@ -211,8 +211,8 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForIndexer(parser)
 	{
-		if _static:
-			parser.recoverableError(_static, ErrorCode.err_IndexerCannotBeStatic);
+		if \static:
+			parser.recoverableError(\static, ErrorCode.err_IndexerCannotBeStatic);
 		verifyForProperty(parser);
 	}
 
@@ -222,9 +222,9 @@ public class Modifiers
 	public verifyForClassConstant(parser)
 	{
 		var invalidToken =
-			_static ??
-			_abstract ?? _inheritable ??
-			_overridable ?? _override;
+			\static ??
+			\abstract ?? \inheritable ??
+			\overridable ?? \override;
 		if invalidToken:
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
 	}
@@ -252,10 +252,10 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForEnum(parser)
 	{
-		var invalidToken = _protected ??
-			_static ??
-			_abstract ?? _inheritable ??
-			_overridable ?? _override;
+		var invalidToken = \protected ??
+			\static ??
+			\abstract ?? \inheritable ??
+			\overridable ?? \override;
 		if invalidToken:
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForEnum);
 	}
