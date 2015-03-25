@@ -133,9 +133,9 @@ public class ClassDeclaration is TypeDeclaration
 	public new(location, modifiers, name, baseType, members, typeInitializer = null)
 	{
 		new this(location, modifiers.annotations, modifiers.accessibility,
-			modifiers._static is not null,
-			modifiers._abstract is not null,
-			modifiers._inheritable is not null,
+			modifiers.\static is not null,
+			modifiers.\abstract is not null,
+			modifiers.\inheritable is not null,
 			name, baseType, members, typeInitializer);
 	}
 	public new(location, annotations, accessibility, isStatic,
@@ -255,7 +255,7 @@ public class StaticConstructorDeclaration is ClassMember
 {
 	public new(location, annotations, body)
 	{
-		new base(location, annotations, Accessibility._private, true, null);
+		new base(location, annotations, Accessibility.\private, true, null);
 
 		this._body = claim(body);
 	}
@@ -275,7 +275,7 @@ public class FieldDeclaration is ClassMember
 	public new(location, modifiers, fields)
 	{
 		new this(location, modifiers.annotations, modifiers.accessibility,
-			modifiers._static is not null,
+			modifiers.\static is not null,
 			fields);
 	}
 	public new(location, annotations, accessibility, isStatic, fields)
@@ -301,10 +301,10 @@ public inheritable PropertyDeclaration is ClassMember
 	public new(location, modifiers, isSetter, name, body)
 	{
 		new this(location, modifiers.annotations, modifiers.accessibility,
-			modifiers._static is not null,
-			modifiers._abstract is not null,
-			modifiers._override is not null,
-			modifiers._overridable is not null,
+			modifiers.\static is not null,
+			modifiers.\abstract is not null,
+			modifiers.\override is not null,
+			modifiers.\overridable is not null,
 			isSetter, name, body);
 	}
 	public new(location, annotations, accessibility,
@@ -355,9 +355,9 @@ public class IndexerDeclaration is PropertyDeclaration
 	public new(location, modifiers, isSetter, parameters, body)
 	{
 		new this(location, modifiers.annotations, modifiers.accessibility,
-			modifiers._abstract is not null,
-			modifiers._override is not null,
-			modifiers._overridable is not null,
+			modifiers.\abstract is not null,
+			modifiers.\override is not null,
+			modifiers.\overridable is not null,
 			isSetter, parameters, body);
 	}
 	public new(location, annotations, accessibility,
@@ -387,10 +387,10 @@ public inheritable MethodDeclaration is ClassMember
 	public new(location, modifiers, name, parameters, body)
 	{
 		new this(location, modifiers.annotations, modifiers.accessibility,
-			modifiers._static is not null,
-			modifiers._abstract is not null,
-			modifiers._override is not null,
-			modifiers._overridable is not null,
+			modifiers.\static is not null,
+			modifiers.\abstract is not null,
+			modifiers.\override is not null,
+			modifiers.\overridable is not null,
 			name, parameters, body);
 	}
 	public new(location, annotations, accessibility,
@@ -438,9 +438,9 @@ public class InvocatorDeclaration is MethodDeclaration
 	public new(location, modifiers, parameters, body)
 	{
 		new this(location, modifiers.annotations, modifiers.accessibility,
-			modifiers._abstract is not null,
-			modifiers._override is not null,
-			modifiers._overridable is not null,
+			modifiers.\abstract is not null,
+			modifiers.\override is not null,
+			modifiers.\overridable is not null,
 			parameters, body);
 	}
 	public new(location, annotations, accessibility,

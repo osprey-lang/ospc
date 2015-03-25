@@ -156,9 +156,9 @@ public enum Accessibility
 	/// Summary: No explicitly declared accessibility.
 	none = 0,
 	/// Summary: Public accessibility.
-	_public = 1,
+	\public = 1,
 	/// Summary: Protected accessibility.
-	_protected = 2,
+	\protected = 2,
 	/// Summary: Private accessibility.
-	_private = 3,
+	\private = 3,
 }

@@ -1019,10 +1019,12 @@ public class Lexer
 		 *   letter-character:
 		 *     A Unicode character of classes Lu, Ll, Lt, Lm, Lo or Nl
 		 */
-		var cat = source.getCategory(i);
+		// UnicodeCategory is all flags, specifically to enable code like this:
+		const identifierStartCategories =
+			UnicodeCategory.letter |
+			UnicodeCategory.letterNumber;
 		return char == '_' or
-			cat & UnicodeCategory.letter != UnicodeCategory.none or
-			cat == UnicodeCategory.letterNumber;
+			source.getCategory(i) & identifierStartCategories != UnicodeCategory.none;
 	}
 
 	private static isIdentifierChar(category)
@@ -1041,13 +1043,14 @@ public class Lexer
 		 *   separately whether the identifier contains formatting characters, and only
 		 *   remove them (which requires a StringBuffer) when they are present.
 		 */
-		// Note: deliberately excludes UnicodeCategory.format, which is
-		// tested for separately.
-		return category & UnicodeCategory.letter != UnicodeCategory.none
-			or category == UnicodeCategory.decimalNumber
-			or category == UnicodeCategory.letterNumber
-			or category == UnicodeCategory.connectorPunct
-			or category & UnicodeCategory.mark != UnicodeCategory.none;
+		// UnicodeCategory is all flags, specifically to enable code like this:
+		const identifierCategories =
+			UnicodeCategory.letter |
+			UnicodeCategory.decimalNumber |
+			UnicodeCategory.letterNumber |
+			UnicodeCategory.connectorPunct |
+			UnicodeCategory.mark;
+		return category & identifierCategories != UnicodeCategory.none;
 	}
 
 	private static isNewline(char)
@@ -1089,65 +1092,65 @@ public class Lexer
 	 * Mapping from keyword string to corresponding TokenType.
 	 */
 	private static keywordToType = {
-		"abstract":    TokenType._abstract,
-		"and":         TokenType._and,
-		"async":       TokenType._async,
-		"base":        TokenType._base,
-		"break":       TokenType._break,
-		"catch":       TokenType._catch,
-		"class":       TokenType._class,
-		"const":       TokenType._const,
-		"do":          TokenType._do,
-		"else":        TokenType._else,
-		"enum":        TokenType._enum,
-		"false":       TokenType._false,
-		"finally":     TokenType._finally,
-		"for":         TokenType._for,
-		"function":    TokenType._function,
-		"get":         TokenType._get,
-		"global":      TokenType._global,
-		"if":          TokenType._if,
-		"in":          TokenType._in,
-		"inheritable": TokenType._inheritable,
-		"is":          TokenType._is,
-		"iter":        TokenType._iter,
-		"namespace":   TokenType._namespace,
-		"new":         TokenType._new,
-		"next":        TokenType._next,
-		"not":         TokenType._not,
-		"null":        TokenType._null,
-		"operator":    TokenType._operator,
-		"or":          TokenType._or,
-		"overridable": TokenType._overridable,
-		"override":    TokenType._override,
-		"private":     TokenType._private,
-		"protected":   TokenType._protected,
-		"public":      TokenType._public,
-		"ref":         TokenType._ref,
-		"refeq":       TokenType._refeq,
-		"return":      TokenType._return,
-		"set":         TokenType._set,
-		"static":      TokenType._static,
-		"this":        TokenType._this,
-		"throw":       TokenType._throw,
-		"true":        TokenType._true,
-		"try":         TokenType._try,
-		"typeof":      TokenType._typeof,
-		"use":         TokenType._use,
-		"var":         TokenType._var,
-		"while":       TokenType._while,
-		"with":        TokenType._with,
-		"xor":         TokenType._xor,
-		"yield":       TokenType._yield,
+		"abstract":    TokenType.\abstract,
+		"and":         TokenType.\and,
+		"async":       TokenType.\async,
+		"base":        TokenType.\base,
+		"break":       TokenType.\break,
+		"catch":       TokenType.\catch,
+		"class":       TokenType.\class,
+		"const":       TokenType.\const,
+		"do":          TokenType.\do,
+		"else":        TokenType.\else,
+		"enum":        TokenType.\enum,
+		"false":       TokenType.\false,
+		"finally":     TokenType.\finally,
+		"for":         TokenType.\for,
+		"function":    TokenType.\function,
+		"get":         TokenType.\get,
+		"global":      TokenType.\global,
+		"if":          TokenType.\if,
+		"in":          TokenType.\in,
+		"inheritable": TokenType.\inheritable,
+		"is":          TokenType.\is,
+		"iter":        TokenType.\iter,
+		"namespace":   TokenType.\namespace,
+		"new":         TokenType.\new,
+		"next":        TokenType.\next,
+		"not":         TokenType.\not,
+		"null":        TokenType.\null,
+		"operator":    TokenType.\operator,
+		"or":          TokenType.\or,
+		"overridable": TokenType.\overridable,
+		"override":    TokenType.\override,
+		"private":     TokenType.\private,
+		"protected":   TokenType.\protected,
+		"public":      TokenType.\public,
+		"ref":         TokenType.\ref,
+		"refeq":       TokenType.\refeq,
+		"return":      TokenType.\return,
+		"set":         TokenType.\set,
+		"static":      TokenType.\static,
+		"this":        TokenType.\this,
+		"throw":       TokenType.\throw,
+		"true":        TokenType.\true,
+		"try":         TokenType.\try,
+		"typeof":      TokenType.\typeof,
+		"use":         TokenType.\use,
+		"var":         TokenType.\var,
+		"while":       TokenType.\while,
+		"with":        TokenType.\with,
+		"xor":         TokenType.\xor,
+		"yield":       TokenType.\yield,
 	};
 	// Mapping from TokenType to keyword string. Assigned to by static constructor.
 	private static typeToKeyword;
 
 	// Mapping from literal keyword type to corresponding literal value.
 	private static literalKeywordTypes = {
-		TokenType._true:  true,
-		TokenType._false: false,
-		TokenType._null:  null,
+		TokenType.\true:  true,
+		TokenType.\false: false,
+		TokenType.\null:  null,
 	};
 
 	// Receives the length of the longest keyword. Assigned to by static constructor.
