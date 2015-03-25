@@ -109,14 +109,17 @@ public class Lexer
 
 	private ensureMinIndex(index)
 	{
+		if index < tokens.length:
+			return true;
 		if eof and index >= tokens.length:
+			// We've already determined there are no more tokens to read
 			return false;
 
-		while tokens.length < index + 1:
+		while tokens.length <= index + extraTokens:
 			if not moveNext():
-				return false;
+				break;
 
-		return true;
+		return index < tokens.length;
 	}
 
 	private moveNext()
@@ -1061,6 +1064,10 @@ public class Lexer
 	}
 
 	//<region: Static members>
+
+	// When trying to read a token, scan up to this number of tokens
+	// past the requested index. This somewhat improves performance.
+	private const extraTokens = 25;
 
 	private static normalizeIdentifier(ident, hasFormatChars)
 	{
