@@ -241,7 +241,7 @@ public inheritable Parser
 	public acceptContextual(i, keyword)
 	{
 		var tok = lex[i];
-		if tok.match(TokenType.identifier) and not tok.escaped and tok.value == keyword:
+		if tok.match(TokenType.identifier) and not tok.escaped and tok.identifier == keyword:
 			return true;
 		return false;
 	}
@@ -259,7 +259,7 @@ public inheritable Parser
 	public acceptrContextual(ref i, keyword)
 	{
 		var tok = lex[i];
-		if tok.match(TokenType.identifier) and not tok.escaped and tok.value == keyword
+		if tok.match(TokenType.identifier) and not tok.escaped and tok.identifier == keyword
 		{
 			i += 1;
 			return true;
@@ -698,7 +698,7 @@ public inheritable Parser
 		 *     ':' integer-literal
 		 */
 		var start = expectr(ref i, TokenType.identifier);
-		if start.value != "version":
+		if start.escaped or start.identifier != "version":
 			fatalError(start, ErrorCode.err_UnexpectedToken);
 
 		var major, minor, build, revision;
@@ -3476,9 +3476,9 @@ public inheritable Parser
 		{
 			if useExtensions and not start.escaped
 			{
-				if start.value == "__named_const":
+				if start.identifier == "__named_const":
 					return parseNamedConstantExpression(ref i);
-				if start.value == "__get_argc":
+				if start.identifier == "__get_argc":
 					return new GetArgumentCountExpression(start.location);
 			}
 			return new SimpleNameExpression(start.location, start);
