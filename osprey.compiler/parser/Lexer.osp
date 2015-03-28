@@ -273,8 +273,7 @@ public class Lexer
 			}
 
 			if not foundEnd:
-				fatalError(ErrorCode.err_DelimitedCommentNotTerminated,
-					startIndex, 2);
+				fatalError(ErrorCode.err_DelimitedCommentNotTerminated, startIndex, 2);
 		}
 		else
 		{
@@ -462,9 +461,11 @@ public class Lexer
 			else:
 				value = Int.parse(value);
 
-			if value is not null:
+			if value is not null
+			{
 				try { value *= multiplier; }
 				catch OverflowError { value = null; }
+			}
 		}
 
 		// The parsing can only ever fail due to an overflow. The number is
@@ -474,9 +475,11 @@ public class Lexer
 			type = hasDecimals ? "Real" :
 				isUnsigned ? "UInt" :
 				"Int";
-			recoverableError(ErrorCode.err_NumberOutOfRange,
+			recoverableError(
+				ErrorCode.err_NumberOutOfRange,
 				[type, source.substr(startIndex, i - startIndex)],
-				startIndex, i - startIndex);
+				startIndex, i - startIndex
+			);
 			value = LiteralToken.invalidValue;
 		}
 
@@ -534,15 +537,19 @@ public class Lexer
 				if hexDigits.tryGet(ch, ref digitValue)
 				{
 					emptySection = false;
-					if not overflow:
+					if not overflow
+					{
 						try { value = value * 16 + digitValue; }
 						// If the operation overflows, do keep parsing the literal.
 						// That way, we can report the entire literal as the error
 						// source, rather than just part of it, which looks better.
 						catch OverflowError { overflow = true; }
+					}
 				}
-				else:
+				else
+				{
 					break;
+				}
 			}
 
 			i += 1; // Skip hex digit or underscore
@@ -562,21 +569,26 @@ public class Lexer
 			}
 		}
 
-		if not overflow and not isUnsigned:
+		if not overflow and not isUnsigned
+		{
 			try { value = int(value); }
 			catch OverflowError { overflow = true; }
+		}
 
 		if overflow
 		{
-			recoverableError(ErrorCode.err_NumberOutOfRange,
+			recoverableError(
+				ErrorCode.err_NumberOutOfRange,
 				[isUnsigned ? "UInt" : "Int", source.substr(startIndex, i - startIndex)],
-				startIndex, i - startIndex);
+				startIndex, i - startIndex
+			);
 			value = LiteralToken.invalidValue;
 		}
 
-		return new LiteralToken(getLocation(startIndex, i),
-			TokenType.int,
-			value);
+		return new LiteralToken(
+			getLocation(startIndex, i),
+			TokenType.int, value
+		);
 	}
 
 	private scanRegularString(ref i)
@@ -639,12 +651,13 @@ public class Lexer
 		if i > partStart:
 			sb.appendSubstr(source, partStart, i - partStart);
 
-
 		i += 1; // Skip "
 
-		return new LiteralToken(getLocation(startIndex, i),
+		return new LiteralToken(
+			getLocation(startIndex, i),
 			TokenType.string,
-			hasError ? LiteralToken.invalidValue : sb.toString());
+			hasError ? LiteralToken.invalidValue : sb.toString()
+		);
 	}
 
 	private scanVerbatimString(ref i)
@@ -699,7 +712,10 @@ public class Lexer
 			// Replace all escapes in one go
 			value = value.replace("\"\"", "\"");
 
-		return new LiteralToken(getLocation(startIndex, i), TokenType.string, value);
+		return new LiteralToken(
+			getLocation(startIndex, i),
+			TokenType.string, value
+		);
 	}
 
 	private scanCharLiteral(ref i)
@@ -745,11 +761,13 @@ public class Lexer
 			fatalError(ErrorCode.err_CharLiteralTooLong, i, 1);
 		i += 1; // Skip '
 
-		return new LiteralToken(getLocation(startIndex, i),
+		return new LiteralToken(
+			getLocation(startIndex, i),
 			TokenType.char,
 			// If scanEscapeSequence returns null, it's an error.
 			// In any other case, ch is a Char
-			ch ?? LiteralToken.invalidValue);
+			ch ?? LiteralToken.invalidValue
+		);
 	}
 
 	private scanEscapeSequence(ref i)
@@ -797,9 +815,11 @@ public class Lexer
 		{
 			var digitValue;
 			if not hexDigits.tryGet(source[i], ref digitValue):
-				fatalError(ErrorCode.err_InvalidUnicodeEscapeSequence,
+				fatalError(
+					ErrorCode.err_InvalidUnicodeEscapeSequence,
 					[expectedLength],
-					i, 1);
+					i, 1
+				);
 
 			codepoint = (codepoint << 4) | digitValue;
 			length -= 1;
@@ -859,8 +879,10 @@ public class Lexer
 				i += ch.length;
 				hasFormatChars = true;
 			}
-			else:
+			else
+			{
 				break;
+			}
 		}
 
 		var location = getLocation(startIndex, i);
@@ -911,9 +933,11 @@ public class Lexer
 				{
 					if isEOF(i):
 						i -= 1;
-					fatalError(ErrorCode.err_InvalidCharacter,
+					fatalError(
+						ErrorCode.err_InvalidCharacter,
 						[ch, (+ch).toString("X4")],
-						i, 1);
+						i, 1
+					);
 				}
 				// Otherwise, assign baseType to type; this is the end of
 				// the token.
@@ -950,29 +974,37 @@ public class Lexer
 
 	private fatalError(errorCode, index, length)
 	{
-		throw new ParseError(getErrorToken(index, length),
+		throw new ParseError(
+			getErrorToken(index, length),
 			errorCode,
-			errors.getMessage(errorCode));
+			errors.getMessage(errorCode)
+		);
 	}
 	private fatalError(errorCode, formatArg, index, length)
 	{
-		throw new ParseError(getErrorToken(index, length),
+		throw new ParseError(
+			getErrorToken(index, length),
 			errorCode,
-			errors.getMessage(errorCode, formatArg));
+			errors.getMessage(errorCode, formatArg)
+		);
 	}
 
 	private recoverableError(errorCode, index, length)
 	{
-		var error = new ParseError(getErrorToken(index, length),
+		var error = new ParseError(
+			getErrorToken(index, length),
 			errorCode,
-			errors.getMessage(errorCode));
+			errors.getMessage(errorCode)
+		);
 		errors.addError(error);
 	}
 	private recoverableError(errorCode, formatArg, index, length)
 	{
-		var error = new ParseError(getErrorToken(index, length),
+		var error = new ParseError(
+			getErrorToken(index, length),
 			errorCode,
-			errors.getMessage(errorCode, formatArg));
+			errors.getMessage(errorCode, formatArg)
+		);
 		errors.addError(error);
 	}
 
