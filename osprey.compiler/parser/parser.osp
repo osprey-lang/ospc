@@ -85,11 +85,13 @@ public inheritable Parser
 		else if source is SourceFile
 		{
 			this.file = source;
-			this.lex = new Lexer(source,
+			this.lex = new Lexer(
+				source,
 				flags.hasFlag(ParseFlags.normalizeIdentifiers) ?
 					LexerFlags.normalizeIdentifiers :
 					LexerFlags.none,
-				errorManager);
+				errorManager
+			);
 		}
 		else
 		{
@@ -313,8 +315,10 @@ public inheritable Parser
 			if errorCode is null:
 				errorCode = ErrorCode.err_UnexpectedToken;
 			// Failed expectations are never recoverable
-			throw new UnexpectedTokenError(errorCode, tok, type,
-				errors.getMessage(errorCode));
+			throw new UnexpectedTokenError(
+				errorCode, tok, type,
+				errors.getMessage(errorCode)
+			);
 		}
 		return tok;
 	}
@@ -334,8 +338,10 @@ public inheritable Parser
 			if errorCode is null:
 				errorCode = ErrorCode.err_UnexpectedToken;
 			// Failed expectations are never recoverable
-			throw new UnexpectedTokenError(errorCode, tok, type,
-				errors.getMessage(errorCode));
+			throw new UnexpectedTokenError(
+				errorCode, tok, type,
+				errors.getMessage(errorCode)
+			);
 		}
 		i += 1;
 		return tok;
@@ -378,9 +384,7 @@ public inheritable Parser
 	///                  constants.
 	public fatalError(source, errorCode)
 	{
-		throw new ParseError(source,
-			errorCode,
-			errors.getMessage(errorCode));
+		throw new ParseError(source, errorCode, errors.getMessage(errorCode));
 	}
 	/// Summary: Throws an irrecoverable {ParseError}. This indicates a syntax error
 	///          that the parser cannot recover from.
@@ -391,9 +395,7 @@ public inheritable Parser
 	///                  message.
 	public fatalError(source, errorCode, formatArg)
 	{
-		throw new ParseError(source,
-			errorCode,
-			errors.getMessage(errorCode, formatArg));
+		throw new ParseError(source, errorCode, errors.getMessage(errorCode, formatArg));
 	}
 
 	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
@@ -405,9 +407,7 @@ public inheritable Parser
 	///                  constants.
 	public recoverableError(source, errorCode)
 	{
-		var error = new ParseError(source,
-			errorCode,
-			errors.getMessage(errorCode));
+		var error = new ParseError(source, errorCode, errors.getMessage(errorCode));
 		errors.addError(error);
 	}
 	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
@@ -421,9 +421,7 @@ public inheritable Parser
 	///                  message.
 	public recoverableError(source, errorCode, formatArg)
 	{
-		var error = new ParseError(source,
-			errorCode,
-			errors.getMessage(errorCode, formatArg));
+		var error = new ParseError(source, errorCode, errors.getMessage(errorCode, formatArg));
 		errors.addError(error);
 	}
 
@@ -674,12 +672,14 @@ public inheritable Parser
 		statements = new NodeList(statements);
 
 		var end = lex[i];
-		return new Document(getLocation(start, end),
+		return new Document(
+			getLocation(start, end),
 			version,
 			uses,
 			fileNamespace,
 			members,
-			statements);
+			statements
+		);
 	}
 
 	/// Summary: Parses a version specifier at the specified token index.
@@ -716,8 +716,10 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon);
 
-		return new VersionSpecifier(getLocation(start, end),
-			major, minor, build, revision);
+		return new VersionSpecifier(
+			getLocation(start, end),
+			major, minor, build, revision
+		);
 	}
 
 	/// Summary: Parses a `use` directive at the specified token index.
@@ -849,9 +851,10 @@ public inheritable Parser
 		members = new NodeList(members);
 
 		var end = expectr(ref i, TokenType.curlyClose);
-		return new NamespaceDeclaration(getLocation(start, end),
-			name,
-			members);
+		return new NamespaceDeclaration(
+			getLocation(start, end),
+			name, members
+		);
 	}
 
 	/// Summary: Parses a global constant declaration at the specified token index.
@@ -891,18 +894,21 @@ public inheritable Parser
 			var value = parseExpression(ref i);
 
 			constants.add(
-				new VariableDeclarator(getLocation(name, value),
-					name,
-					value)
+				new VariableDeclarator(
+					getLocation(name, value),
+					name, value
+				)
 			);
 		} while acceptr(ref i, TokenType.comma);
 		constants = new NodeList(constants);
 
 		var end = expectr(ref i, TokenType.semicolon);
-		return new GlobalConstantDeclaration(getLocation(modifiers.start ?? start, end),
+		return new GlobalConstantDeclaration(
+			getLocation(modifiers.start ?? start, end),
 			modifiers.annotations,
 			modifiers.accessibility,
-			constants);
+			constants
+		);
 	}
 
 	/// Summary: Parses a global function declaration at the specified token index.
@@ -935,12 +941,14 @@ public inheritable Parser
 
 		var body = parseBlockOrExtern(ref i);
 
-		return new GlobalFunctionDeclaration(getLocation(modifiers.start ?? start, body),
+		return new GlobalFunctionDeclaration(
+			getLocation(modifiers.start ?? start, body),
 			modifiers.annotations,
 			modifiers.accessibility,
 			name,
 			parameters,
-			body);
+			body
+		);
 	}
 
 	/// Summary: Parses a class declaration at the specified token index.
@@ -1009,12 +1017,14 @@ public inheritable Parser
 		var members = parseClassMembers(ref i);
 
 		var end = expectr(ref i, TokenType.curlyClose);
-		return new ClassDeclaration(getLocation(start, end),
+		return new ClassDeclaration(
+			getLocation(start, end),
 			modifiers,
 			name,
 			baseType,
 			members,
-			typeIniter);
+			typeIniter
+		);
 	}
 
 	private parseClassMembers(ref i)
@@ -1136,14 +1146,18 @@ public inheritable Parser
 		var end = lex[i - 1];
 
 		if modifiers.\static:
-			return new StaticConstructorDeclaration(getLocation(start, end),
+			return new StaticConstructorDeclaration(
+				getLocation(start, end),
 				modifiers.annotations,
-				body);
-		return new ConstructorDeclaration(getLocation(start, end),
+				body
+			);
+		return new ConstructorDeclaration(
+			getLocation(start, end),
 			modifiers.annotations,
 			modifiers.accessibility,
 			parameters,
-			body);
+			body
+		);
 	}
 
 	/// Summary: Parses a property or indexer declaration at the specified token index.
@@ -1209,9 +1223,11 @@ public inheritable Parser
 			modifiers.verifyForIndexer(this);
 			expectr(ref i, TokenType.squareOpen);
 
-			indexerParams = parseParameterList(ref i,
+			indexerParams = parseParameterList(
+				ref i,
 				/*endToken=*/ TokenType.squareClose,
-				/*allowEmpty=*/ false);
+				/*allowEmpty=*/ false
+			);
 			if indexerParams.hasOptionalParameters:
 				recoverableError(indexerParams.first(@.isOptional), ErrorCode.err_IndexerCannotHaveOptionalParameters);
 			if indexerParams.variadicParameter != VariadicParameter.none:
@@ -1252,10 +1268,8 @@ public inheritable Parser
 
 		var location = getLocation(modifiers.start ?? start, lex[i - 1]);
 		if name is null:
-			return new IndexerDeclaration(location,
-				modifiers, isSetter, indexerParams, body);
-		return new PropertyDeclaration(location,
-			modifiers, isSetter, name, body);
+			return new IndexerDeclaration(location, modifiers, isSetter, indexerParams, body);
+		return new PropertyDeclaration(location, modifiers, isSetter, name, body);
 	}
 
 	/// Summary: Parses a field declaration at the specified token index.
@@ -1303,17 +1317,21 @@ public inheritable Parser
 				value = parseExpression(ref i);
 
 			fields.add(
-				new VariableDeclarator(getLocation(name, value ?? name),
-					name, value)
+				new VariableDeclarator(
+					getLocation(name, value ?? name),
+					name, value
+				)
 			);
 		} while acceptr(ref i, TokenType.comma);
 		fields = new NodeList(fields);
 
 		var end = expectr(ref i, TokenType.semicolon);
 
-		return new FieldDeclaration(getLocation(modifiers.start ?? start, end),
+		return new FieldDeclaration(
+			getLocation(modifiers.start ?? start, end),
 			modifiers,
-			fields);
+			fields
+		);
 	}
 
 	/// Summary: Parses a method or invocator declaration at the specified token index.
@@ -1386,10 +1404,8 @@ public inheritable Parser
 
 		var location = getLocation(modifiers.start ?? start, lex[i - 1]);
 		if name is null:
-			return new InvocatorDeclaration(location,
-				modifiers, parameters, body);
-		return new MethodDeclaration(location,
-			modifiers, name, parameters, body);
+			return new InvocatorDeclaration(location, modifiers, parameters, body);
+		return new MethodDeclaration(location, modifiers, name, parameters, body);
 	}
 
 	/// Summary: Parses a class constant declaration at the specified token index.
@@ -1429,16 +1445,20 @@ public inheritable Parser
 			var value = parseExpression(ref i);
 
 			constants.add(
-				new VariableDeclarator(getLocation(name, value),
-					name, value)
+				new VariableDeclarator(
+					getLocation(name, value),
+					name, value
+				)
 			);
 		} while acceptr(ref i, TokenType.comma);
 		constants = new NodeList(constants);
 
 		var end = expectr(ref i, TokenType.semicolon);
 
-		return new ClassConstantDeclaration(getLocation(modifiers.start ?? start, end),
-			modifiers.annotations, modifiers.accessibility, constants);
+		return new ClassConstantDeclaration(
+			getLocation(modifiers.start ?? start, end),
+			modifiers.annotations, modifiers.accessibility, constants
+		);
 	}
 
 	/// Summary: Parses an iterator declaration at the specified token index.
@@ -1466,9 +1486,10 @@ public inheritable Parser
 
 		var body = parseBlockOrExtern(ref i);
 
-		return new IteratorDeclaration(getLocation(start, body),
-			modifiers.annotations,
-			body);
+		return new IteratorDeclaration(
+			getLocation(start, body),
+			modifiers.annotations, body
+		);
 	}
 
 	/// Summary: Parses an operator declaration at the specified token index.
@@ -1544,8 +1565,10 @@ public inheritable Parser
 		if op == UnaryOperator.bitwiseNot
 		{
 			if parameters.length != 1:
-				recoverableError(opToken, ErrorCode.err_WrongParameterCountForOperator,
-					[1, parameters.length]);
+				recoverableError(
+					opToken, ErrorCode.err_WrongParameterCountForOperator,
+					[1, parameters.length]
+				);
 		}
 		else if op == BinaryOperator.addition or op == BinaryOperator.subtraction
 		{
@@ -1554,20 +1577,26 @@ public inheritable Parser
 					UnaryOperator.plus :
 					UnaryOperator.negation;
 			else if parameters.length != 2:
-				recoverableError(opToken, ErrorCode.err_WrongParameterCountForOperator,
-					["1–2", parameters.length]);
+				recoverableError(
+					opToken, ErrorCode.err_WrongParameterCountForOperator,
+					["1–2", parameters.length]
+				);
 		}
 		else
 		{
 			if parameters.length != 2:
-				recoverableError(opToken, ErrorCode.err_WrongParameterCountForOperator,
-					[2, parameters.length]);
+				recoverableError(
+					opToken, ErrorCode.err_WrongParameterCountForOperator,
+					[2, parameters.length]
+				);
 		}
 
 		var body = parseBlockOrExtern(ref i);
 
-		return new OperatorDeclaration(getLocation(start, body),
-			modifiers.annotations, op, parameters, body);
+		return new OperatorDeclaration(
+			getLocation(start, body),
+			modifiers.annotations, op, parameters, body
+		);
 	}
 
 	/// Summary: Parses an enum declaration at the specified token index.
@@ -1626,20 +1655,24 @@ public inheritable Parser
 					value = parseExpression(ref i);
 
 				members.add(
-					new EnumMember(getLocation(fieldName, value ?? fieldName),
-						fieldAnnotations, fieldName, value)
+					new EnumMember(
+						getLocation(fieldName, value ?? fieldName),
+						fieldAnnotations, fieldName, value
+					)
 				);
 			} while acceptr(ref i, TokenType.comma) and
 				not accept(i, TokenType.curlyClose);
 		members = new NodeList(members);
 
 		var end = expectr(ref i, TokenType.curlyClose);
-		return new EnumDeclaration(getLocation(modifiers.start ?? start, end),
+		return new EnumDeclaration(
+			getLocation(modifiers.start ?? start, end),
 			modifiers.annotations,
 			modifiers.accessibility,
 			isSet,
 			typeName,
-			members);
+			members
+		);
 	}
 
 	//</region>
@@ -1711,10 +1744,10 @@ public inheritable Parser
 		expectr(ref i, TokenType.parenClose);
 		var end = expectr(ref i, TokenType.semicolon);
 
-		return new ExternBody(getLocation(start, end),
-			externName,
-			maxStack,
-			locals);
+		return new ExternBody(
+			getLocation(start, end),
+			externName, maxStack, locals
+		);
 	}
 
 	/// Summary: Parses a block at the specified token index.
@@ -1740,8 +1773,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.curlyClose);
 
-		return new Block(getLocation(start, end),
-			statements);
+		return new Block(getLocation(start, end), statements);
 	}
 
 	/// Summary: Parses a statement at the specified token index.
@@ -1810,8 +1842,10 @@ public inheritable Parser
 
 			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-			return new ParallelLocalVariableDeclaration(getLocation(start, end),
-				names, value);
+			return new ParallelLocalVariableDeclaration(
+				getLocation(start, end),
+				names, value
+			);
 		}
 		else
 		{
@@ -1828,16 +1862,17 @@ public inheritable Parser
 					getLocation(name, value) :
 					name.location;
 				variables.add(
-					new VariableDeclarator(location,
-						name, value)
+					new VariableDeclarator(location, name, value)
 				);
 			} while acceptr(ref i, TokenType.comma);
 			variables = new NodeList(variables);
 
 			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-			return new SimpleLocalVariableDeclaration(getLocation(start, end),
-				variables);
+			return new SimpleLocalVariableDeclaration(
+				getLocation(start, end),
+				variables
+			);
 		}
 	}
 
@@ -1870,16 +1905,17 @@ public inheritable Parser
 			var value = parseExpression(ref i);
 
 			constants.add(
-				new VariableDeclarator(getLocation(name, value),
-					name, value)
+				new VariableDeclarator(getLocation(name, value), name, value)
 			);
 		} while acceptr(ref i, TokenType.comma);
 		constants = new NodeList(constants);
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new LocalConstantDeclaration(getLocation(start, end),
-			constants);
+		return new LocalConstantDeclaration(
+			getLocation(start, end),
+			constants
+		);
 	}
 
 	/// Summary: Parses a local function declaration at the specified token index.
@@ -1905,8 +1941,10 @@ public inheritable Parser
 
 		var body = parseBlock(ref i);
 
-		return new LocalFunctionDeclaration(getLocation(start, body),
-			name, parameters, body);
+		return new LocalFunctionDeclaration(
+			getLocation(start, body),
+			name, parameters, body
+		);
 	}
 
 	/// Summary: Parses an embedded statement at the specified token index.
@@ -2009,12 +2047,14 @@ public inheritable Parser
 		if accept(i, TokenType.\else):
 			elseClause = parseElseClause(ref i);
 
-		return new ForStatement(getLocation(start, elseClause ?? body),
+		return new ForStatement(
+			getLocation(start, elseClause ?? body),
 			loopLabel,
 			variables,
 			expression,
 			body,
-			elseClause);
+			elseClause
+		);
 	}
 
 	/// Summary: Parses a `while` statement at the specified token index.
@@ -2036,10 +2076,10 @@ public inheritable Parser
 
 		var body = parseControlStatement(ref i);
 
-		return new WhileStatement(getLocation(start, body),
-			loopLabel,
-			condition,
-			body);
+		return new WhileStatement(
+			getLocation(start, body),
+			loopLabel, condition, body
+		);
 	}
 
 	/// Summary: Parses a `do-while` statement at the specified token index.
@@ -2066,10 +2106,10 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new DoWhileStatement(getLocation(start, end),
-			loopLabel,
-			body,
-			condition);
+		return new DoWhileStatement(
+			getLocation(start, end),
+			loopLabel, body, condition
+		);
 	}
 
 	/// Summary: Parses an `if` statement at the specified token index.
@@ -2091,10 +2131,10 @@ public inheritable Parser
 		if accept(i, TokenType.\else):
 			alternative = parseElseClause(ref i);
 
-		return new IfStatement(getLocation(start, alternative ?? consequence),
-			condition,
-			consequence,
-			alternative);
+		return new IfStatement(
+			getLocation(start, alternative ?? consequence),
+			condition, consequence, alternative
+		);
 	}
 
 	/// Summary: Parses an `else` clause at the specified token index.
@@ -2178,8 +2218,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new ReturnStatement(getLocation(start, end),
-			values);
+		return new ReturnStatement(getLocation(start, end), values);
 	}
 
 	/// Summary: Parses a `yield` statement at the specified token index.
@@ -2204,8 +2243,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new YieldStatement(getLocation(start, end),
-			values);
+		return new YieldStatement(getLocation(start, end), values);
 	}
 
 	/// Summary: Parses a `next` statement at the specified token index.
@@ -2230,8 +2268,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new NextStatement(getLocation(start, end),
-			label);
+		return new NextStatement(getLocation(start, end), label);
 	}
 
 	/// Summary: Parses a `break` statement at the specified token index.
@@ -2256,8 +2293,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new BreakStatement(getLocation(start, end),
-			label);
+		return new BreakStatement(getLocation(start, end), label);
 	}
 
 	/// Summary: Parses a `throw` statement at the specified token index.
@@ -2279,8 +2315,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new ThrowStatement(getLocation(start, end),
-			expr);
+		return new ThrowStatement(getLocation(start, end), expr);
 	}
 
 	/// Summary: Parses a `try` statement at the specified token index.
@@ -2304,10 +2339,12 @@ public inheritable Parser
 		if catchClauses.length == 0 and finallyClause is null:
 			recoverableError(tryClause, ErrorCode.err_TryStatementMustHaveCatchOrFinally);
 
-		return new TryStatement(getLocation(tryClause, lex[i - 1]),
+		return new TryStatement(
+			getLocation(tryClause, lex[i - 1]),
 			tryClause,
 			catchClauses,
-			finallyClause);
+			finallyClause
+		);
 	}
 
 	private parseTryClause(ref i)
@@ -2327,8 +2364,7 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.curlyClose);
 
-		return new TryClause(getLocation(start, end),
-			statements);
+		return new TryClause(getLocation(start, end), statements);
 	}
 
 	private parseCatchClauses(ref i)
@@ -2377,18 +2413,22 @@ public inheritable Parser
 			{
 				if haveGeneric:
 					recoverableError(type, ErrorCode.err_SpecificCatchClauseAfterGeneric);
-				catchClause = new SpecificCatchClause(getLocation(start, end),
+				catchClause = new SpecificCatchClause(
+					getLocation(start, end),
 					type,
 					variable,
-					statements);
+					statements
+				);
 			}
 			else
 			{
 				if haveGeneric:
 					recoverableError(start, ErrorCode.err_MultipleGenericCatchClauses);
 				haveGeneric = true;
-				catchClause = new GenericCatchClause(getLocation(start, end),
-					statements);
+				catchClause = new GenericCatchClause(
+					getLocation(start, end),
+					statements
+				);
 			}
 			clauses.add(catchClause);
 		}
@@ -2414,8 +2454,7 @@ public inheritable Parser
 
 			var end = expectr(ref i, TokenType.curlyClose);
 
-			return new FinallyClause(getLocation(start, end),
-				statements);
+			return new FinallyClause(getLocation(start, end), statements);
 		}
 
 		return null;
@@ -2440,10 +2479,12 @@ public inheritable Parser
 
 		var body = parseControlStatement(ref i);
 
-		return new WithStatement(getLocation(start, body),
+		return new WithStatement(
+			getLocation(start, body),
 			variable,
 			expression,
-			body);
+			body
+		);
 	}
 
 	/// Summary: Parses a control statement at the specified token index. A control
@@ -2493,10 +2534,8 @@ public inheritable Parser
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		if isBase:
-			return new BaseConstructorCall(getLocation(start, end),
-				arguments);
-		return new ThisConstructorCall(getLocation(start, end),
-			arguments);
+			return new BaseConstructorCall(getLocation(start, end), arguments);
+		return new ThisConstructorCall(getLocation(start, end), arguments);
 	}
 
 	/// Summary: Parses an expression statement or assignment statement at the specified
@@ -2545,8 +2584,7 @@ public inheritable Parser
 		if not isStatementExpression(expr):
 			recoverableError(expr, ErrorCode.err_InvalidStatementExpression);
 
-		return new ExpressionStatement(getLocation(expr, end),
-			expr);
+		return new ExpressionStatement(getLocation(expr, end), expr);
 	}
 
 	private parseCompoundAssignment(ref i, target)
@@ -2567,8 +2605,10 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new CompoundAssignment(getLocation(target, end),
-			target, op, value);
+		return new CompoundAssignment(
+			getLocation(target, end),
+			target, op, value
+		);
 	}
 
 	private parseParallelAssignment(ref i, firstTarget)
@@ -2606,8 +2646,10 @@ public inheritable Parser
 		if values.length != 1 and values.length != targets.length:
 			recoverableError(end, ErrorCode.err_ParallelAssignmentWrongValueCount, [targets.length, values.length]);
 
-		return new ParallelAssignment(getLocation(firstTarget, end),
-			targets, values);
+		return new ParallelAssignment(
+			getLocation(firstTarget, end),
+			targets, values
+		);
 	}
 
 	//</region>
@@ -2721,8 +2763,10 @@ public inheritable Parser
 		{
 			ensureAssignable(left);
 			var right = parseExpression(ref i);
-			left = new AssignmentExpression(getLocation(left, right),
-				left, right);
+			left = new AssignmentExpression(
+				getLocation(left, right),
+				left, right
+			);
 		}
 
 		return left;
@@ -2749,8 +2793,10 @@ public inheritable Parser
 			expectr(ref i, TokenType.colon);
 			var falsePart = parseExpression(ref i);
 
-			left = new ConditionalExpression(getLocation(left, falsePart),
-				left, truePart, falsePart);
+			left = new ConditionalExpression(
+				getLocation(left, falsePart),
+				left, truePart, falsePart
+			);
 		}
 
 		return left;
@@ -2774,8 +2820,10 @@ public inheritable Parser
 		if acceptr(ref i, TokenType.nullCoalescing)
 		{
 			var right = parseNullCoalescingExpression(ref i);
-			left = new NullCoalescingExpression(getLocation(left, right),
-				left, right);
+			left = new NullCoalescingExpression(
+				getLocation(left, right),
+				left, right
+			);
 		}
 
 		return left;
@@ -2798,8 +2846,10 @@ public inheritable Parser
 		if acceptr(ref i, TokenType.nullOr)
 		{
 			var right = parseNullOrExpression(ref i);
-			left = new NullOrExpression(getLocation(left, right),
-				left, right);
+			left = new NullOrExpression(
+				getLocation(left, right),
+				left, right
+			);
 		}
 
 		return left;
@@ -2822,8 +2872,10 @@ public inheritable Parser
 		while acceptr(ref i, TokenType.\or)
 		{
 			var right = parseConditionalXorExpression(ref i);
-			left = new ConditionalOrExpression(getLocation(left, right),
-				left, right);
+			left = new ConditionalOrExpression(
+				getLocation(left, right),
+				left, right
+			);
 		}
 
 		return left;
@@ -2846,8 +2898,10 @@ public inheritable Parser
 		while acceptr(ref i, TokenType.\xor)
 		{
 			var right = parseConditionalAndExpression(ref i);
-			left = new ConditionalXorExpression(getLocation(left, right),
-				left, right);
+			left = new ConditionalXorExpression(
+				getLocation(left, right),
+				left, right
+			);
 		}
 
 		return left;
@@ -2870,8 +2924,10 @@ public inheritable Parser
 		while acceptr(ref i, TokenType.\and)
 		{
 			var right = parseEqualityExpression(ref i);
-			left = new ConditionalAndExpression(getLocation(left, right),
-				left, right);
+			left = new ConditionalAndExpression(
+				getLocation(left, right),
+				left, right
+			);
 		}
 
 		return left;
@@ -2902,8 +2958,10 @@ public inheritable Parser
 			if not acceptr(ref i, TokenType.\null):
 				type = parseTypeName(ref i);
 
-			return new TypeTestExpression(getLocation(left, lex[i - 1]),
-				left, type, negated);
+			return new TypeTestExpression(
+				getLocation(left, lex[i - 1]),
+				left, type, negated
+			);
 		}
 
 		while accept(i, TokenType.doubleEqual, TokenType.notEqual, TokenType.\refeq) or
@@ -2925,8 +2983,10 @@ public inheritable Parser
 
 			var right = parseRelationalExpression(ref i);
 
-			left = new BinaryExpression(getLocation(left, right),
-				left, op, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, op, right
+			);
 		}
 
 		return left;
@@ -2957,8 +3017,10 @@ public inheritable Parser
 
 			var right = parseUnreservedExpression(ref i);
 
-			left = new BinaryExpression(getLocation(left, right),
-				left, op, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, op, right
+			);
 		}
 
 		return left;
@@ -2986,8 +3048,10 @@ public inheritable Parser
 
 			var right = parseShiftExpression(ref i);
 
-			left = new BinaryExpression(getLocation(left, right),
-				left, op, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, op, right
+			);
 		}
 
 		return left;
@@ -3015,8 +3079,10 @@ public inheritable Parser
 
 			var right = parseAdditiveExpression(ref i);
 
-			left = new BinaryExpression(getLocation(left, right),
-				left, op, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, op, right
+			);
 		}
 
 		return left;
@@ -3045,8 +3111,10 @@ public inheritable Parser
 
 			var right = parseXorExpression(ref i);
 
-			left = new BinaryExpression(getLocation(left, right),
-				left, op, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, op, right
+			);
 		}
 
 		return left;
@@ -3069,8 +3137,10 @@ public inheritable Parser
 		while acceptr(ref i, TokenType.caret)
 		{
 			var right = parseMultiplicativeExpression(ref i);
-			left = new BinaryExpression(getLocation(left, right),
-				left, BinaryOperator.bitwiseXor, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, BinaryOperator.bitwiseXor, right
+			);
 		}
 
 		return left;
@@ -3100,8 +3170,10 @@ public inheritable Parser
 
 			var right = parseConcatenationExpression(ref i);
 
-			left = new BinaryExpression(getLocation(left, right),
-				left, op, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, op, right
+			);
 		}
 
 		return left;
@@ -3124,8 +3196,10 @@ public inheritable Parser
 		while acceptr(ref i, TokenType.concatenate)
 		{
 			var right = parseUnaryExpression(ref i);
-			left = new BinaryExpression(getLocation(left, right),
-				left, BinaryOperator.concatenation, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, BinaryOperator.concatenation, right
+			);
 		}
 
 		return left;
@@ -3153,8 +3227,10 @@ public inheritable Parser
 			i += 1;
 
 			var inner = parseUnaryExpression(ref i);
-			return new UnaryExpression(getLocation(start, inner),
-				op, inner);
+			return new UnaryExpression(
+				getLocation(start, inner),
+				op, inner
+			);
 		}
 
 		return parseExponentialExpression(ref i);
@@ -3177,8 +3253,10 @@ public inheritable Parser
 		if acceptr(ref i, TokenType.power)
 		{
 			var right = parseExponentialExpression(ref i);
-			left = new BinaryExpression(getLocation(left, right),
-				left, BinaryOperator.exponentiation, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, BinaryOperator.exponentiation, right
+			);
 		}
 
 		return left;
@@ -3202,8 +3280,10 @@ public inheritable Parser
 		if acceptr(ref i, TokenType.funcApplication)
 		{
 			var right = parseConcatenationExpression(ref i);
-			left = new BinaryExpression(getLocation(left, right),
-				left, BinaryOperator.functionApplication, right);
+			left = new BinaryExpression(
+				getLocation(left, right),
+				left, BinaryOperator.functionApplication, right
+			);
 		}
 
 		return left;
@@ -3282,14 +3362,18 @@ public inheritable Parser
 				// member-access or iterator-lookup-expression
 				if acceptr(ref i, TokenType.\iter)
 				{
-					inner = new IteratorAccessExpression(getLocation(inner, lex[i - 1]),
-						inner);
+					inner = new IteratorAccessExpression(
+						getLocation(inner, lex[i - 1]),
+						inner
+					);
 				}
 				else
 				{
 					var name = expectr(ref i, TokenType.identifier);
-					inner = new MemberAccessExpression(getLocation(inner, name),
-						inner, name);
+					inner = new MemberAccessExpression(
+						getLocation(inner, name),
+						inner, name
+					);
 				}
 			}
 			else if acceptr(ref i, TokenType.parenOpen)
@@ -3297,24 +3381,34 @@ public inheritable Parser
 				// invocation-expression
 				var arguments = parseArgumentList(ref i);
 				var end = expectr(ref i, TokenType.parenClose);
-				inner = new InvocationExpression(getLocation(inner, end),
-					inner, arguments);
+				inner = new InvocationExpression(
+					getLocation(inner, end),
+					inner, arguments
+				);
 			}
 			else if acceptr(ref i, TokenType.squareOpen)
 			{
 				// indexer-access
-				var arguments = parseArgumentList(ref i, /*endToken=*/ TokenType.squareClose,
-					/*allowEmpty=*/ false, /*allowRefArgs=*/ false);
+				var arguments = parseArgumentList(
+					ref i,
+					/*endToken=*/ TokenType.squareClose,
+					/*allowEmpty=*/ false,
+					/*allowRefArgs=*/ false
+				);
 				var end = expectr(ref i, TokenType.squareClose);
-				inner = new IndexerAccessExpression(getLocation(inner, end),
-					inner, arguments);
+				inner = new IndexerAccessExpression(
+					getLocation(inner, end),
+					inner, arguments
+				);
 			}
 			else
 			{
 				// safe-access
 				var chain = parseSafeAccessChain(ref i);
-				inner = new SafeAccessExpression(getLocation(inner, lex[i - 1]),
-					inner, chain);
+				inner = new SafeAccessExpression(
+					getLocation(inner, lex[i - 1]),
+					inner, chain
+				);
 			}
 		}
 
@@ -3393,8 +3487,7 @@ public inheritable Parser
 		{
 			var inner = parseExpression(ref i);
 			var end = expectr(ref i, TokenType.parenClose);
-			return new ParenthesizedExpression(getLocation(start, end),
-				inner);
+			return new ParenthesizedExpression(getLocation(start, end), inner);
 		}
 		if type == TokenType.\this:
 			return new ThisAccessExpression(start.location);
@@ -3405,15 +3498,13 @@ public inheritable Parser
 			expectr(ref i, TokenType.parenOpen);
 			var inner = parseExpression(ref i);
 			var end = expectr(ref i, TokenType.parenClose);
-			return new TypeOfExpression(getLocation(start, end),
-				inner);
+			return new TypeOfExpression(getLocation(start, end), inner);
 		}
 		if type == TokenType.\global
 		{
 			expectr(ref i, TokenType.dot);
 			var end = expectr(ref i, TokenType.identifier);
-			return new GlobalAccessExpression(getLocation(start, end),
-				end);
+			return new GlobalAccessExpression(getLocation(start, end), end);
 		}
 
 		fatalError(start, ErrorCode.err_ExpectedPrimaryExpression, [start]);
@@ -3438,8 +3529,10 @@ public inheritable Parser
 
 		var end = expectr(ref i, TokenType.parenClose);
 
-		return new NamedConstantExpression(getLocation(start, end),
-			type, value);
+		return new NamedConstantExpression(
+			getLocation(start, end),
+			type, value
+		);
 	}
 
 	/// Summary: Parses an object creation expression at the specified token index.
@@ -3478,8 +3571,10 @@ public inheritable Parser
 			end = initializer;
 		}
 
-		return new ObjectCreationExpression(getLocation(start, end),
-			type, arguments, initializer);
+		return new ObjectCreationExpression(
+			getLocation(start, end),
+			type, arguments, initializer
+		);
 	}
 
 	private parseObjectOrCollectionInitializer(ref i)
@@ -3528,8 +3623,10 @@ public inheritable Parser
 				var memberValue = parseExpression(ref i);
 
 				members.add(
-					new MemberInitializer(getLocation(memberName, memberValue),
-						memberName, memberValue)
+					new MemberInitializer(
+						getLocation(memberName, memberValue),
+						memberName, memberValue
+					)
 				);
 			} while acceptr(ref i, TokenType.comma) and
 				not accept(i, TokenType.curlyClose);
@@ -3572,8 +3669,10 @@ public inheritable Parser
 				listCompParts = new NodeList(listCompParts);
 
 				var end = expectr(ref i, TokenType.squareClose);
-				return new ComprehensionInitializer(getLocation(start, end),
-					elements, listCompParts);
+				return new ComprehensionInitializer(
+					getLocation(start, end),
+					elements, listCompParts
+				);
 			}
 		}
 
@@ -3625,8 +3724,7 @@ public inheritable Parser
 			arguments = new NodeList(arguments);
 
 			elements.add(
-				new ElementInitializer(getLocation(argStart, argEnd),
-					arguments)
+				new ElementInitializer(getLocation(argStart, argEnd), arguments)
 			);
 		} while (_endsWithComma = acceptr(ref i, TokenType.comma)) and
 			not accept(i, TokenType.curlyClose);
@@ -3668,8 +3766,7 @@ public inheritable Parser
 		{
 			var end = lex[i];
 			i += 1;
-			return new ListCreationExpression(getLocation(start, end),
-				EmptyLists.node);
+			return new ListCreationExpression(getLocation(start, end), EmptyLists.node);
 		}
 
 		var values = new List(3);
@@ -3695,8 +3792,10 @@ public inheritable Parser
 
 				var end = expectr(ref i, TokenType.squareClose);
 
-				return new RangeExpression(getLocation(start, end),
-					values[0], highExpr, stepExpr);
+				return new RangeExpression(
+					getLocation(start, end),
+					values[0], highExpr, stepExpr
+				);
 			}
 
 			// Try a list comprehension!
@@ -3711,16 +3810,20 @@ public inheritable Parser
 
 				var end = expectr(ref i, TokenType.squareClose);
 
-				return new ListComprehensionExpression(getLocation(start, end),
-					values, listCompParts);
+				return new ListComprehensionExpression(
+					getLocation(start, end),
+					values, listCompParts
+				);
 			}
 		}
 
 		do
 		{
 			var end = expectr(ref i, TokenType.squareClose);
-			return new ListCreationExpression(getLocation(start, end),
-				values);
+			return new ListCreationExpression(
+				getLocation(start, end),
+				values
+			);
 		};
 	}
 
@@ -3744,8 +3847,10 @@ public inheritable Parser
 		if acceptrContextual(ref i, "where")
 		{
 			var condition = parseExpression(ref i);
-			return new ListComprehensionCondition(getLocation(start, condition),
-				condition);
+			return new ListComprehensionCondition(
+				getLocation(start, condition),
+				condition
+			);
 		}
 
 		expectr(ref i, TokenType.\for);
@@ -3760,8 +3865,10 @@ public inheritable Parser
 
 		var expression = parseExpression(ref i);
 
-		return new ListComprehensionIterator(getLocation(start, expression),
-			variables, expression);
+		return new ListComprehensionIterator(
+			getLocation(start, expression),
+			variables, expression
+		);
 	}
 
 	/// Summary: Parses a hash creation expression at the specified token index.
@@ -3784,8 +3891,7 @@ public inheritable Parser
 		{
 			end = lex[i];
 			i += 1;
-			return new HashCreationExpression(getLocation(start, end),
-				EmptyLists.node);
+			return new HashCreationExpression(getLocation(start, end), EmptyLists.node);
 		}
 
 		var members = new List(2);
@@ -3799,8 +3905,7 @@ public inheritable Parser
 
 		end = expectr(ref i, TokenType.curlyClose);
 
-		return new HashCreationExpression(getLocation(start, end),
-			members);
+		return new HashCreationExpression(getLocation(start, end), members);
 	}
 
 	private parseHashMember(ref i)
@@ -3817,8 +3922,10 @@ public inheritable Parser
 
 		var value = parseExpression(ref i);
 
-		return new HashMember(getLocation(key, value),
-			key, value);
+		return new HashMember(
+			getLocation(key, value),
+			key, value
+		);
 	}
 
 	/// Summary: Parses a lambda expression at the specified token index.
@@ -3863,16 +3970,20 @@ public inheritable Parser
 		{
 			var op = lex[i];
 			i += 1;
-			return new LambdaOperatorExpression(getLocation(start, op),
-				typeToLambdaOperator[op.type]);
+			return new LambdaOperatorExpression(
+				getLocation(start, op),
+				typeToLambdaOperator[op.type]
+			);
 		}
 
 		// How about a lambda-member-expression?
 		if accept(i, TokenType.dot, TokenType.safeAccess)
 		{
 			var members = parseSafeAccessChain(ref i);
-			return new LambdaMemberExpression(getLocation(start, lex[i - 1]),
-				members);
+			return new LambdaMemberExpression(
+				getLocation(start, lex[i - 1]),
+				members
+			);
 		}
 
 		// Must be a simple-lambda-expression
@@ -3883,8 +3994,10 @@ public inheritable Parser
 		{
 			var paramName = lex[i];
 			parameters = new ParameterList([
-				new Parameter(paramName.location,
-					paramName, null, false, false)
+				new Parameter(
+					paramName.location,
+					paramName, null, false, false
+				)
 			]);
 			i += 1;
 		}
@@ -3905,8 +4018,10 @@ public inheritable Parser
 		else:
 			body = parseBlock(ref i);
 
-		return new SimpleLambdaExpression(getLocation(start, body),
-			parameters, body);
+		return new SimpleLambdaExpression(
+			getLocation(start, body),
+			parameters, body
+		);
 	}
 
 	private parseSafeAccessChain(ref i)
@@ -3958,14 +4073,18 @@ public inheritable Parser
 				// safe-iterator-lookup or unsafe-iterator-lookup
 				if acceptr(ref i, TokenType.\iter)
 				{
-					link = new SafeIteratorAccess(getLocation(start, lex[i - 1]),
-						isSafe);
+					link = new SafeIteratorAccess(
+						getLocation(start, lex[i - 1]),
+						isSafe
+					);
 				}
 				else
 				{
 					var member = expectr(ref i, TokenType.identifier);
-					link = new SafeMemberAccess(getLocation(start, member),
-						isSafe, member);
+					link = new SafeMemberAccess(
+						getLocation(start, member),
+						isSafe, member
+					);
 				}
 			}
 			else if type == TokenType.parenOpen or type == TokenType.parenOpenSafe
@@ -3973,17 +4092,25 @@ public inheritable Parser
 				// safe-invocation or unsafe-invocation
 				var arguments = parseArgumentList(ref i);
 				var end = expectr(ref i, TokenType.parenClose);
-				link = new SafeInvocation(getLocation(start, end),
-					isSafe, arguments);
+				link = new SafeInvocation(
+					getLocation(start, end),
+					isSafe, arguments
+				);
 			}
 			else
 			{
 				// safe-indexer-access or unsafe-indexer-access
-				var arguments = parseArgumentList(ref i, /*endToken=*/ TokenType.squareClose,
-					/*allowEmpty=*/ false, /*allowRefArgs=*/ false);
+				var arguments = parseArgumentList(
+					ref i,
+					/*endToken=*/ TokenType.squareClose,
+					/*allowEmpty=*/ false,
+					/*allowRefArgs=*/ false
+				);
 				var end = expectr(ref i, TokenType.squareClose);
-				link = new SafeIndexerAccess(getLocation(start, end),
-					isSafe, arguments);
+				link = new SafeIndexerAccess(
+					getLocation(start, end),
+					isSafe, arguments
+				);
 			}
 			links.add(link);
 		}
@@ -4016,8 +4143,10 @@ public inheritable Parser
 			expectr(ref i, TokenType.assign);
 			var value = parseExpression(ref i);
 			variables.add(
-				new VariableDeclarator(getLocation(name, value),
-					name, value)
+				new VariableDeclarator(
+					getLocation(name, value),
+					name, value
+				)
 			);
 		} while acceptr(ref i, TokenType.comma);
 		variables = new NodeList(variables);
@@ -4026,8 +4155,10 @@ public inheritable Parser
 
 		var expression = parseExpression(ref i);
 
-		return new UseInExpression(getLocation(start, expression),
-			variables, expression);
+		return new UseInExpression(
+			getLocation(start, expression),
+			variables, expression
+		);
 	}
 
 	//</region>
@@ -4078,9 +4209,11 @@ public inheritable Parser
 
 		var name = parseQualifiedName(ref i);
 
-		return new TypeName(getLocation(start, lex[i - 1]),
+		return new TypeName(
+			getLocation(start, lex[i - 1]),
 			globalToken is not null,
-			name);
+			name
+		);
 	}
 
 	/// Summary: Parses a parameter list at the specified token index.
@@ -4191,17 +4324,20 @@ public inheritable Parser
 			if optionalCount and variadic:
 				recoverableError(name, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
 
-			parameters.add(new Parameter(getLocation(start, lex[i - 1]),
-				name,
-				defaultValue,
-				isVariadic,
-				isRef));
+			parameters.add(
+				new Parameter(
+					getLocation(start, lex[i - 1]),
+					name, defaultValue, isVariadic, isRef
+				)
+			);
 		} while acceptr(ref i, TokenType.comma);
 
-		return new ParameterList(parameters,
+		return new ParameterList(
+			parameters,
 			optionalCount,
 			variadic,
-			null);
+			null
+		);
 	}
 
 	/// Summary: Parses a constructor paremter list at the specified token index. This
@@ -4303,23 +4439,24 @@ public inheritable Parser
 
 			var param;
 			if hasThisPrefix:
-				param = new ThisParameter(getLocation(start, lex[i - 1]),
-					name,
-					defaultValue,
-					isVariadic);
+				param = new ThisParameter(
+					getLocation(start, lex[i - 1]),
+					name, defaultValue, isVariadic
+				);
 			else:
-				param = new Parameter(getLocation(start, lex[i - 1]),
-					name,
-					defaultValue,
-					isVariadic,
-					isRef);
+				param = new Parameter(
+					getLocation(start, lex[i - 1]),
+					name, defaultValue, isVariadic, isRef
+				);
 			parameters.add(param);
 		} while acceptr(ref i, TokenType.comma);
 
-		return new ParameterList(parameters,
+		return new ParameterList(
+			parameters,
 			optionalCount,
 			variadic,
-			null);
+			null
+		);
 	}
 
 	/// Summary: Parses zero or more member modifiers at the specified index.
@@ -4400,8 +4537,10 @@ public inheritable Parser
 				parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments);
 
 			annotations.add(
-				new Annotation(getLocation(start, lex[i - 1]),
-					type, positionalArguments, namedArguments)
+				new Annotation(
+					getLocation(start, lex[i - 1]),
+					type, positionalArguments, namedArguments
+				)
 			);
 		}
 		annotations = new NodeList(annotations);
@@ -4446,8 +4585,10 @@ public inheritable Parser
 
 			if memberName:
 				_namedArguments.add(
-					new MemberInitializer(getLocation(memberName, argument),
-						memberName, argument)
+					new MemberInitializer(
+						getLocation(memberName, argument),
+						memberName, argument
+					)
 				);
 			else:
 				_positionalArguments.add(argument);
