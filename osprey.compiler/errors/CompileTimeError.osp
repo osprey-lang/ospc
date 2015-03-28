@@ -18,8 +18,10 @@ public inheritable CompileTimeError is Error
 		new base(message ?? defaultMessage, innerError);
 
 		if source is not null and source is not Syntax:
-			throw new ArgumentError("source must be null or an osprey.compiler.syntax.Syntax",
-				"source");
+			throw new ArgumentError(
+				"source must be null or an osprey.compiler.syntax.Syntax",
+				"source"
+			);
 
 		this._source = source;
 		this._errorCode = errorCode;
