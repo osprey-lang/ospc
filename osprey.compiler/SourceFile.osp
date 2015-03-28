@@ -71,9 +71,11 @@ public class SourceFile
 				return; // The line is already in the cache
 
 			if lineNumber != lastLine.lineNumber + 1:
-				throw new ArgumentRangeError("lineNumber",
+				throw new ArgumentRangeError(
+					"lineNumber",
 					"Lines must be added consecutively (got {0}, expected {1})."
-						.format([lineNumber, lastLine.lineNumber + 1]));
+						.format([lineNumber, lastLine.lineNumber + 1])
+				);
 
 			// The last line might be a partial; update its range
 			// to run up to the startIndex of the next line, i.e.
@@ -83,8 +85,10 @@ public class SourceFile
 		else
 		{
 			if lineNumber != 1 or startIndex != 0:
-				throw new ArgumentRangeError(null,
-					"The first line must be numbered 1 and start at index 0.");
+				throw new ArgumentRangeError(
+					null,
+					"The first line must be numbered 1 and start at index 0."
+				);
 		}
 
 		lines.add(new LineInfo with

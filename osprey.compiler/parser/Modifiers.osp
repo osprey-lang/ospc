@@ -110,8 +110,10 @@ public class Modifiers
 			if \abstract or \inheritable:
 				parser.recoverableError(\abstract ?? \inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
 		}
-		else if \abstract and \inheritable:
+		else if \abstract and \inheritable
+		{
 			parser.recoverableError(\abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for a constructor declaration. If any modifiers

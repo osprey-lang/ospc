@@ -88,12 +88,16 @@ public abstract class ErrorManager
 	public overridable addError(source, error)
 	{
 		if source is not null and source is not Syntax:
-			throw new ArgumentError("source must be null or an osprey.compiler.syntax.Syntax.",
-				"source");
+			throw new ArgumentError(
+				"source must be null or an osprey.compiler.syntax.Syntax.",
+				"source"
+			);
 
 		if error.source not refeq source:
-			throw new ArgumentError("error’s source must be the same reference as the source parameter.",
-				"error");
+			throw new ArgumentError(
+				"error’s source must be the same reference as the source parameter.",
+				"error"
+			);
 
 		addErrorInner(source, error);
 	}
@@ -188,8 +192,10 @@ public class Warning
 	public new(source, errorCode, message)
 	{
 		if source is not null and source is not Syntax:
-			throw new ArgumentError("source must be null or an osprey.compiler.syntax.Syntax.",
-				"source");
+			throw new ArgumentError(
+				"source must be null or an osprey.compiler.syntax.Syntax.",
+				"source"
+			);
 		errorCode = int(errorCode);
 		message = string(message);
 
