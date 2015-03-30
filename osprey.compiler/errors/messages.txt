@@ -30,7 +30,7 @@
 1401:err_NewlineInCharLiteral = "Newline in character literal.";
 1402:err_EmptyCharLiteral = "Empty character literal is not allowed.";
 1403:err_CharLiteralNotTerminated = "Could not find the end of the character literal.";
-1404:err_CharLiteralTooLong = "All character literals must contain exactly one Unicode character.";
+1404:err_CharLiteralTooLong = "All character literals must contain exactly one Unicode code point.";
 
 // Escape sequence errors (1500-1599)
 1501:err_MissingEscapeSequence = "Expected escape sequence after backslash.";
