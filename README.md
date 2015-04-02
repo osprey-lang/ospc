@@ -10,7 +10,7 @@ This is very much a work in progress. At the time of writing, only lexing and pa
 
 All documentation is in [the wiki][ospcwiki]. Hence why this readme file ends rather abruptly.
 
-  [ospcsharp]: https://bitbucket.org/Heurlinius/osprey "Osprey compiler (in C#)"
+  [ospcsharp]: https://bitbucket.org/OspreyLang/osprey "Osprey compiler (in C#)"
   [repl]: https://en.wikipedia.org/wiki/Read–eval–print_loop "Read–eval–print loop"
   [ide]: https://en.wikipedia.org/wiki/Integrated_development_environment "Integrated development environment"
-  [ospcwiki]: https://bitbucket.org/Heurlinius/ospc/wiki "ospc wiki"
+  [ospcwiki]: https://bitbucket.org/OspreyLang/ospc/wiki "ospc wiki"
