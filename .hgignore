@@ -1,7 +1,0 @@
-syntax: glob
-
-bin/*
-build.bat
-errorCodeGen/build.bat
-
-*.ovm.dbg
