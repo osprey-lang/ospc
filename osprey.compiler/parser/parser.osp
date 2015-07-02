@@ -3587,7 +3587,7 @@ public inheritable Parser
 		 * Additional notes:
 		 *   This method is called with 'i' just past the 'with' keyword. We should therefore
 		 *   not expect it here. Also, collection-initializer and comprehension-initializer
-		 *   are both parsed by parseCollectionInitializer. 
+		 *   are both parsed by parseCollectionInitializer.
 		 */
 		if accept(i, TokenType.squareOpen):
 			return parseCollectionInitializer(ref i);
@@ -3727,7 +3727,7 @@ public inheritable Parser
 				new ElementInitializer(getLocation(argStart, argEnd), arguments)
 			);
 		} while (_endsWithComma = acceptr(ref i, TokenType.comma)) and
-			not accept(i, TokenType.curlyClose);
+			not accept(i, TokenType.squareClose);
 		elements = new NodeList(elements);
 
 		endsWithComma = _endsWithComma;
