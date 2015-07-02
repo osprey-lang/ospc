@@ -1,0 +1,13 @@
+use osprey.compiler;
+use testing.unit;
+
+use namespace aves;
+use namespace aves.reflection; // for Module
+use namespace testing.unit;
+
+namespace osprey.compiler.tests;
+
+public function main()
+{
+	TestFixture.runAll(Module.getCurrentModule());
+}

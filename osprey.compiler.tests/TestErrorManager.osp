@@ -1,0 +1,45 @@
+use namespace aves;
+
+namespace osprey.compiler.tests;
+
+/// Summary: Implements an {ErrorManager} that just collects everything given to it.
+///          It doesn't throw, nor does it print anything to the console.
+public class TestErrorManager is ErrorManager
+{
+	private errors = [];
+	private warnings = [];
+
+	override get hasErrors = not errors.isEmpty;
+
+	override get hasWarnings = not warnings.isEmpty;
+
+	override addErrorInner(source, error)
+	{
+		errors.add(error);
+	}
+
+	override getAllErrors()
+	{
+		return errors;
+	}
+
+	override clearErrors()
+	{
+		errors.clear();
+	}
+
+	override addWarningInner(warning)
+	{
+		warnings.add(warning);
+	}
+
+	override getAllWarnings()
+	{
+		return warnings;
+	}
+
+	override clearWarnings()
+	{
+		warnings.clear();
+	}
+}

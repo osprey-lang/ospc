@@ -1,0 +1,154 @@
+use namespace aves;
+use namespace testing.unit;
+use namespace osprey.compiler.tests;
+
+namespace osprey.compiler.parser.tests;
+
+public class LexerTests is TestFixture
+{
+	public new() { new base("osprey.compiler.parser.Lexer tests"); }
+
+	private errors = new TestErrorManager();
+
+	override setUp()
+	{
+		errors.clearAll();
+	}
+
+	// Constructor tests
+
+	public test_Constructor1()
+	{
+		var file = SourceFile.createAnon("");
+		var lexer;
+		Assert.doesNotThrow(@{ lexer = new Lexer(file); });
+		Assert.areSameRef(file, lexer.sourceFile);
+	}
+
+	public test_Constructor1WithInvalidFile()
+	{
+		Assert.throws(typeof(ArgumentError), @= new Lexer(""));
+		Assert.throws(typeof(ArgumentNullError), @= new Lexer(null));
+	}
+
+	public test_Constructor2()
+	{
+		var file = SourceFile.createAnon("");
+		var lexer;
+		Assert.doesNotThrow(@{ lexer = new Lexer(file, LexerFlags.none); });
+		Assert.areSameRef(file, lexer.sourceFile);
+	}
+
+	public test_Constructor2WithInvalidFile()
+	{
+		Assert.throws(typeof(ArgumentError), @= new Lexer("", LexerFlags.none));
+		Assert.throws(typeof(ArgumentNullError), @= new Lexer(null, LexerFlags.none));
+	}
+
+	public test_Constructor2WithInvalidFlags()
+	{
+		var file = SourceFile.createAnon("");
+		Assert.throws(typeof(ArgumentError), @= new Lexer(file, 0));
+		Assert.throws(typeof(ArgumentError), @= new Lexer(file, "none"));
+	}
+
+	public test_Constructor3()
+	{
+		var file = SourceFile.createAnon("");
+		var errors = new TestErrorManager();
+		var lexer;
+		Assert.doesNotThrow(@{ lexer = new Lexer(file, LexerFlags.none, errors); });
+		Assert.areSameRef(file, lexer.sourceFile);
+		Assert.areSameRef(errors, lexer.errorManager);
+	}
+
+	public test_Constructor3WithNullErrorManager()
+	{
+		// When the ErrorManager is null, the lexer creates its own.
+		var file = SourceFile.createAnon("");
+		var lexer;
+		Assert.doesNotThrow(@{ lexer = new Lexer(file, LexerFlags.none, null); });
+		Assert.areSameRef(file, lexer.sourceFile);
+		Assert.isNotNull(lexer.errorManager);
+	}
+
+	public test_Constructor3WithInvalidFile()
+	{
+		var errors = new TestErrorManager();
+		Assert.throws(typeof(ArgumentError), @= new Lexer("", LexerFlags.none, errors));
+		Assert.throws(typeof(ArgumentNullError), @= new Lexer(null, LexerFlags.none, errors));
+	}
+
+	public test_Constructor3WithInvalidFlags()
+	{
+		var file = SourceFile.createAnon("");
+		var errors = new TestErrorManager();
+		Assert.throws(typeof(ArgumentError), @= new Lexer(file, 0, errors));
+		Assert.throws(typeof(ArgumentError), @= new Lexer(file, "none", errors));
+	}
+
+	public test_Constructor3WithInvalidErrorManager()
+	{
+		var file = SourceFile.createAnon("");
+		Assert.throws(typeof(ArgumentError), @= new Lexer(file, LexerFlags.none, "Not an ErrorManager"));
+	}
+
+	// Actual lexing tests!
+
+	// Helper method for creating a Lexer.
+	private lex(source, flags = LexerFlags.none)
+	{
+		var file = SourceFile.createAnon(source);
+		return new Lexer(file, flags, errors);
+	}
+
+	private assertTokenMatches(token, type)
+	{
+		Assert.areEqual(token.type, type);
+	}
+
+	private assertTokenMatches(token, type, value)
+	{
+		Assert.areEqual(token.type, type);
+		Assert.areEqual(token.value, value);
+	}
+
+	private assertIsEOF(token)
+	{
+		assertTokenMatches(token, TokenType.eof);
+	}
+
+	public test_LineComment1()
+	{
+		var source = "//comment";
+		var lexer = lex(source, LexerFlags.includeComments);
+		assertTokenMatches(lexer[0], TokenType.comment, source);
+		assertIsEOF(lexer[1]);
+	}
+
+	public test_LineComment2()
+	{
+		var lexer = lex("//comment 1\t\n//comment 2  \n", LexerFlags.includeComments);
+		// The comments should not contain the newlines, but should
+		// contain the trailing white space.
+		assertTokenMatches(lexer[0], TokenType.comment, "//comment 1\t");
+		assertTokenMatches(lexer[1], TokenType.comment, "//comment 2  ");
+		assertIsEOF(lexer[2]);
+	}
+
+	public test_LineDocComment1()
+	{
+		var lexer = lex("///doc comment", LexerFlags.includeComments);
+		assertTokenMatches(lexer[0], TokenType.comment, "///doc comment");
+		assertIsEOF(lexer[1]);
+	}
+
+	public test_LineDocComment2()
+	{
+		var source = "///doc comment line 1\n///doc comment line 2";
+		var lexer = lex(source, LexerFlags.includeComments);
+		// The lexer DOES include all the lines of a doc comment, verbatim.
+		assertTokenMatches(lexer[0], TokenType.comment, source);
+		assertIsEOF(lexer[1]);
+	}
+}
