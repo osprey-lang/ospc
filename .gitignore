@@ -1,2 +1,3 @@
 bin/*
+*.ovm
 *.ovm.dbg
