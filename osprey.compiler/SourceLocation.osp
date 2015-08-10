@@ -61,4 +61,20 @@ public class SourceLocation
 	{
 		return index >= _startIndex and index < _endIndex;
 	}
+
+	override getHashCode()
+	{
+		var indexHash = _startIndex | (_endIndex << 16);
+		return indexHash ^ _sourceFile.getHashCode();
+	}
+
+	operator ==(a, b)
+	{
+		if b is not SourceLocation:
+			return false;
+
+		return a._startIndex == b._startIndex and
+			a._endIndex == b._endIndex and
+			a._sourceFile == b._sourceFile;
+	}
 }
