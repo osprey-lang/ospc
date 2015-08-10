@@ -62,6 +62,74 @@ public class SourceLocation
 		return index >= _startIndex and index < _endIndex;
 	}
 
+	/// Summary: Determines whether the current source location fully encloses the
+	///          specified {SourceLocation} or {Syntax}.
+	/// Param other: The {SourceLocation} or {Syntax} to test against.
+	/// Returns: True if the current source location fully encloses {other}; that is,
+	///          no part of {other} is outside the current source location. Otherwise,
+	///          false.
+	/// Throws ArgumentNullError:
+	///          {other} is null.
+	/// Remarks: To test if the source location contains a single index, use {contains}.
+	public encloses(other)
+	{
+		if other is null:
+			throw new ArgumentNullError("other");
+		if other is Syntax:
+			other = other.location;
+		return encloses(other.startIndex, other.endIndex);
+	}
+	/// Summary: Determines whether the current source location fully encloses the
+	///          specified range of source characters.
+	/// Param startIndex: The inclusive start index of the range.
+	/// Param endIndex:   The exclusive end index of the range.
+	/// Returns: True if the current source location fully encloses the range described
+	///          by {startIndex} and {endIndex}; that is, no part of the range is
+	///          outside the current source location. Otherwise, false.
+	/// Throws ArgumentError:
+	///          {startIndex} is greater than {endIndex}.
+	/// Remarks: To test if the source location contains a single index, use {contains}.
+	public encloses(startIndex, endIndex)
+	{
+		if endIndex < startIndex:
+			throw new ArgumentError("startIndex must be less than or equal to endIndex.");
+		return this._startIndex >= startIndex and this._endIndex <= endIndex;
+	}
+
+	/// Summary: Determines whether the current source location overlaps the specified
+	///          {SourceLocation} or {Syntax}.
+	/// Param other: The {SourceLocation} or {Syntax} to test against.
+	/// Returns: True if the current source location overlaps {other}; that is, any part
+	///          of {other} intersects any part of the current source location. Otherwise,
+	///          false.
+	/// Throws ArgumentNullError:
+	///          {other} is null.
+	/// Remarks: To test if the source location contains a single index, use {contains}.
+	public overlaps(other)
+	{
+		if other is null:
+			throw new ArgumentNullError("other");
+		if other is Syntax:
+			other = other.location;
+		return overlaps(other.startIndex, other.endIndex);
+	}
+	/// Summary: Determines whether the current source location overlaps the specified
+	///          range of source characters.
+	/// Param startIndex: The inclusive start index of the range.
+	/// Param endIndex:   The exclusive end index of the range.
+	/// Returns: True if the current source location overlaps the range described by
+	///          {startIndex} and {endIndex}; that is, any part of the range intersects
+	///          any part of the current source location. Otherwise, false.
+	/// Throws ArgumentError:
+	///          {startIndex} is greater than {endIndex}.
+	/// Remarks: To test if the source location contains a single index, use {contains}.
+	public overlaps(startIndex, endIndex)
+	{
+		if endIndex < startIndex:
+			throw new ArgumentError("startIndex must be less than or equal to endIndex.");
+		return startIndex <= this._endIndex and endIndex >= this._startIndex;
+	}
+
 	override getHashCode()
 	{
 		var indexHash = _startIndex | (_endIndex << 16);
