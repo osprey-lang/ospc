@@ -1,142 +1,142 @@
-0000:err_Unspecified = "Unspecified compile-time error.";
+0000 err_Unspecified = "Unspecified compile-time error.";
 
 
 //## Parse errors (1000-1999) ##
 
-1000:err_Syntax = "Syntax error.";
-1001:err_InvalidCharacter = "Invalid character: '{0}' (U+{1}).";
+1000 err_Syntax = "Syntax error.";
+1001 err_InvalidCharacter = "Invalid character: '{0}' (U+{1}).";
 
 // Comment errors (1100-1199)
-1101:err_DelimitedCommentNotTerminated = "Unable to locate end of delimited comment.";
+1101 err_DelimitedCommentNotTerminated = "Unable to locate end of delimited comment.";
 
 // Numeric literal errors (1200-1299)
-1201:err_UnderscoreWithoutDigits = "Underscore ('_') must be followed by one or more digits.";
-1202:err_MultipleDecimalPoints = "A floating-point literal may only have one decimal point.";
-1203:err_ExponentialPartBeforeDecimalPoint = "An exponential part is not allowed without a preceding decimal point. In other words, a number like 10e9 is not allowed; use 10.0e9 instead.";
-1204:err_MultipleExponentialParts = "More than one exponential part in numeric literal";
-1205:err_InvalidExponentialPart = "Invalid exponential part. An e or E in a numeric literal is followed by an optional sign (+ or -) and one or more digits.";
-1206:err_UnderscoreAfterDecimalPoint = "Underscore ('_') is not allowed after the decimal point.";
-1207:err_MultipleConsecutiveUnderscores = "Multiple consecutive underscores ('_') are not allowed.";
-1208:err_MultiplierOnReal = "Floating-point literals cannot have a multiplier (k, G, M, T).";
-1209:err_UnsignedOnReal = "Floating-point literals cannot have an unsigned suffix (u or U).";
-1210:err_NumberOutOfRange = "Numeric literal '{1}' is outside the range of {0}.";
-1211:err_HexNumberWithoutDigits = "Hex specifier (0x or 0X) without hexadecimal digits.";
+1201 err_UnderscoreWithoutDigits = "Underscore ('_') must be followed by one or more digits.";
+1202 err_MultipleDecimalPoints = "A floating-point literal may only have one decimal point.";
+1203 err_ExponentialPartBeforeDecimalPoint = "An exponential part is not allowed without a preceding decimal point. In other words, a number like 10e9 is not allowed; use 10.0e9 instead.";
+1204 err_MultipleExponentialParts = "More than one exponential part in numeric literal";
+1205 err_InvalidExponentialPart = "Invalid exponential part. An e or E in a numeric literal is followed by an optional sign (+ or -) and one or more digits.";
+1206 err_UnderscoreAfterDecimalPoint = "Underscore ('_') is not allowed after the decimal point.";
+1207 err_MultipleConsecutiveUnderscores = "Multiple consecutive underscores ('_') are not allowed.";
+1208 err_MultiplierOnReal = "Floating-point literals cannot have a multiplier (k, G, M, T).";
+1209 err_UnsignedOnReal = "Floating-point literals cannot have an unsigned suffix (u or U).";
+1210 err_NumberOutOfRange = "Numeric literal '{1}' is outside the range of {0}.";
+1211 err_HexNumberWithoutDigits = "Hex specifier (0x or 0X) without hexadecimal digits.";
 
 // String literal errors (1300-1399)
-1301:err_NewlineInString = "Newline in string literal.";
-1302:err_StringNotTerminated = "Could not find the end of the string literal.";
+1301 err_NewlineInString = "Newline in string literal.";
+1302 err_StringNotTerminated = "Could not find the end of the string literal.";
 
 // Character literal errors (1400-1499)
-1401:err_NewlineInCharLiteral = "Newline in character literal.";
-1402:err_EmptyCharLiteral = "Empty character literal is not allowed.";
-1403:err_CharLiteralNotTerminated = "Could not find the end of the character literal.";
-1404:err_CharLiteralTooLong = "All character literals must contain exactly one Unicode code point.";
+1401 err_NewlineInCharLiteral = "Newline in character literal.";
+1402 err_EmptyCharLiteral = "Empty character literal is not allowed.";
+1403 err_CharLiteralNotTerminated = "Could not find the end of the character literal.";
+1404 err_CharLiteralTooLong = "All character literals must contain exactly one Unicode code point.";
 
 // Escape sequence errors (1500-1599)
-1501:err_MissingEscapeSequence = "Expected escape sequence after backslash.";
-1502:err_InvalidEscapeSequence = "Invalid or unrecognised escape sequence.";
-1503:err_InvalidUnicodeEscapeSequence = "Expected {0} hexadecimal digits in Unicode escape sequence.";
-1504:err_UnicodeEscapeOutOfRange = "The Unicode code point must be between U+0000 and U+10FFFF.";
+1501 err_MissingEscapeSequence = "Expected escape sequence after backslash.";
+1502 err_InvalidEscapeSequence = "Invalid or unrecognised escape sequence.";
+1503 err_InvalidUnicodeEscapeSequence = "Expected {0} hexadecimal digits in Unicode escape sequence.";
+1504 err_UnicodeEscapeOutOfRange = "The Unicode code point must be between U+0000 and U+10FFFF.";
 
 // Syntax errors (1600–1999)
 // (excluding err_Syntax, which is 1000)
-1601:err_UnexpectedToken = "Unexpected token.";
+1601 err_UnexpectedToken = "Unexpected token.";
 
 // Modifier errors
-1610:err_DuplicateModifier = "The modifier '{0}' occurs more than once.";
-1611:err_MultipleAccessibilityModifiers = "The member has more than one accessibility modifier.";
-1612:err_InvalidModifierForGlobalFunctionOrConstant = "Global functions and global constants only accept the 'public' and 'private' modifiers.";
-1613:err_InvalidModifierForConstructor = "An instance constructor cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
-1614:err_InvalidModifierForStaticConstructor = "A static constructor cannot be marked 'public', 'protected', 'private', 'abstract', 'inheritable', 'overridable' or 'override'.";
-1615:err_InvalidModifierForField = "A field cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
-1616:err_InvalidModifierForStaticMethod = "A static method cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
-1617:err_MethodCannotBeInheritable = "A method cannot be marked 'inheritable'.";
-1618:err_AbstractMethodCannotBeOverridable =  "An abstract method cannot be marked 'overridable'.";
-1619:err_InvocatorCannotBeStatic = "An invocator ('this' method) cannot be marked 'static'.";
-1620:err_InvalidModifierForStaticProperty = "A static property accessor cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
-1621:err_PropertyCannotBeInheritable = "A property or indexer accessor cannot be marked 'inheritable'.";
-1622:err_AbstractPropertyCannotBeOverridable = "An abstract property or indexer accessor cannot be marked 'overridable'.";
-1623:err_IndexerCannotBeStatic = "An indexer accessor cannot be marked 'static'.";
-1624:err_InvalidModifierForClassConstant = "A class constant cannot be marked 'static', 'abstract', 'inheritable', 'overridable' or 'override'.";
-1625:err_InvalidModifierForOperator = "An operator override declaration does not accept any modifiers.";
-1626:err_InvalidModifierForIterator = "An iterator declaration does not accept any modifiers.";
+1610 err_DuplicateModifier = "The modifier '{0}' occurs more than once.";
+1611 err_MultipleAccessibilityModifiers = "The member has more than one accessibility modifier.";
+1612 err_InvalidModifierForGlobalFunctionOrConstant = "Global functions and global constants only accept the 'public' and 'private' modifiers.";
+1613 err_InvalidModifierForConstructor = "An instance constructor cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
+1614 err_InvalidModifierForStaticConstructor = "A static constructor cannot be marked 'public', 'protected', 'private', 'abstract', 'inheritable', 'overridable' or 'override'.";
+1615 err_InvalidModifierForField = "A field cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
+1616 err_InvalidModifierForStaticMethod = "A static method cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
+1617 err_MethodCannotBeInheritable = "A method cannot be marked 'inheritable'.";
+1618 err_AbstractMethodCannotBeOverridable =  "An abstract method cannot be marked 'overridable'.";
+1619 err_InvocatorCannotBeStatic = "An invocator ('this' method) cannot be marked 'static'.";
+1620 err_InvalidModifierForStaticProperty = "A static property accessor cannot be marked 'abstract', 'inheritable', 'overridable' or 'override'.";
+1621 err_PropertyCannotBeInheritable = "A property or indexer accessor cannot be marked 'inheritable'.";
+1622 err_AbstractPropertyCannotBeOverridable = "An abstract property or indexer accessor cannot be marked 'overridable'.";
+1623 err_IndexerCannotBeStatic = "An indexer accessor cannot be marked 'static'.";
+1624 err_InvalidModifierForClassConstant = "A class constant cannot be marked 'static', 'abstract', 'inheritable', 'overridable' or 'override'.";
+1625 err_InvalidModifierForOperator = "An operator override declaration does not accept any modifiers.";
+1626 err_InvalidModifierForIterator = "An iterator declaration does not accept any modifiers.";
 
 // Namespace declaration errors
-1631:err_ExpectedNamespaceMember = "Expected a declaration of a class, enum, namespace, global function or global constant.";
-1632:err_InvalidNamespaceModifiers = "Namespace declarations do not accept any modifiers.";
+1631 err_ExpectedNamespaceMember = "Expected a declaration of a class, enum, namespace, global function or global constant.";
+1632 err_InvalidNamespaceModifiers = "Namespace declarations do not accept any modifiers.";
 
 // Type declaration errors
-1641:err_InvalidModifierForClass = "A class declaration cannot be marked 'protected', 'overridable' or 'override'.";
-1642:err_InvalidModifierForEnum = "An enum declaration cannot be marked 'protected', 'inheritable', 'abstract', 'static', 'overridable' or 'override'.";
-1643:err_StaticClassCannotBeAbstractOrInheritable = "A static class declaration cannot be marked 'abstract' or 'inheritable'.";
-1644:err_ClassCannotBeBothAbstractAndInheritable = "A class declaration cannot be marked both 'abstract' and 'inheritable'.";
+1641 err_InvalidModifierForClass = "A class declaration cannot be marked 'protected', 'overridable' or 'override'.";
+1642 err_InvalidModifierForEnum = "An enum declaration cannot be marked 'protected', 'inheritable', 'abstract', 'static', 'overridable' or 'override'.";
+1643 err_StaticClassCannotBeAbstractOrInheritable = "A static class declaration cannot be marked 'abstract' or 'inheritable'.";
+1644 err_ClassCannotBeBothAbstractAndInheritable = "A class declaration cannot be marked both 'abstract' and 'inheritable'.";
 
 // Property and indexer declaration errors
-1651:err_IndexerCannotHaveOptionalParameters = "An indexer accessor cannot have optional parameters.";
-1652:err_IndexerCannotHaveVariadicParameter = "An indexer accessor cannot have a variadic parameter.";
-1653:err_IndexerCannotHaveRefParameters = "An indexer accessor cannot have pass-by-reference parameters.";
-1654:err_NonAbstractPropertyCannotHaveEmptyBody = "A non-abstract property or indexer accessor cannot have an empty body.";
-1655:err_AbstractPropertyMustHaveEmptyBody = "An abstract property or indexer accessor must have an empty body.";
+1651 err_IndexerCannotHaveOptionalParameters = "An indexer accessor cannot have optional parameters.";
+1652 err_IndexerCannotHaveVariadicParameter = "An indexer accessor cannot have a variadic parameter.";
+1653 err_IndexerCannotHaveRefParameters = "An indexer accessor cannot have pass-by-reference parameters.";
+1654 err_NonAbstractPropertyCannotHaveEmptyBody = "A non-abstract property or indexer accessor cannot have an empty body.";
+1655 err_AbstractPropertyMustHaveEmptyBody = "An abstract property or indexer accessor must have an empty body.";
 
 // Method declaration errors
-1661:err_NonAbstractMethodCannotHaveEmptyBody = "A non-abstract method cannot have an empty body.";
-1662:err_AbstractMethodMustHaveEmptyBody = "An abstract method must have an empty body.";
+1661 err_NonAbstractMethodCannotHaveEmptyBody = "A non-abstract method cannot have an empty body.";
+1662 err_AbstractMethodMustHaveEmptyBody = "An abstract method must have an empty body.";
 
 // Operator declaration errors
-1671:err_OperatorCannotHaveOptionalParameters = "An operator declaration cannot have optional parameters.";
-1672:err_OperatorCannotHaveVariadicParameter = "An operator declaration cannot have a variadic parameter";
-1673:err_OperatorCannotHaveRefParameters = "An operator declaration cannot have pass-by-reference parameters.";
-1674:err_WrongParameterCountForOperator = "Wrong parameter count for operator overload (expected {0}, got {1}).";
+1671 err_OperatorCannotHaveOptionalParameters = "An operator declaration cannot have optional parameters.";
+1672 err_OperatorCannotHaveVariadicParameter = "An operator declaration cannot have a variadic parameter";
+1673 err_OperatorCannotHaveRefParameters = "An operator declaration cannot have pass-by-reference parameters.";
+1674 err_WrongParameterCountForOperator = "Wrong parameter count for operator overload (expected {0}, got {1}).";
 
 // Parameter list errors
-1701:err_PreVariadicMustBeFirstParameter = "This variadic parameter must be the first declared parameter.";
-1702:err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";
-1703:err_MultipleVariadicSpecifiers = "Multiple variadic specifiers ('...') on the same parameter.";
-1704:err_PostVariadicMustBeLastParameter = "This variadic parameter must be the last declared parameter.";
-1705:err_CannotMixVariadicAndOptionalParameters = "Cannot mix variadic and optional parameters in the same parameter list.";
-1706:err_RequiredParameterAfterOptional = "All required parameters must come before all optional parameters.";
-1707:err_CannotPassVariadicByRef = "A variadic parameter cannot be passed by reference.";
-1708:err_CannotPassOptionalByRef = "A pass-by-reference parameter cannot be optional.";
-1709:err_MultipleVariadicParameters = "A parameter list can contain at most one variadic parameter.";
-1710:err_CannotPassThisParameterByRef = "A 'this' parameter cannot be passed by reference.";
-1711:err_ExpectedParameter = "Expected a parameter declaration. An empty parameter list is not permitted in this context.";
+1701 err_PreVariadicMustBeFirstParameter = "This variadic parameter must be the first declared parameter.";
+1702 err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";
+1703 err_MultipleVariadicSpecifiers = "Multiple variadic specifiers ('...') on the same parameter.";
+1704 err_PostVariadicMustBeLastParameter = "This variadic parameter must be the last declared parameter.";
+1705 err_CannotMixVariadicAndOptionalParameters = "Cannot mix variadic and optional parameters in the same parameter list.";
+1706 err_RequiredParameterAfterOptional = "All required parameters must come before all optional parameters.";
+1707 err_CannotPassVariadicByRef = "A variadic parameter cannot be passed by reference.";
+1708 err_CannotPassOptionalByRef = "A pass-by-reference parameter cannot be optional.";
+1709 err_MultipleVariadicParameters = "A parameter list can contain at most one variadic parameter.";
+1710 err_CannotPassThisParameterByRef = "A 'this' parameter cannot be passed by reference.";
+1711 err_ExpectedParameter = "Expected a parameter declaration. An empty parameter list is not permitted in this context.";
 
 // Argument list errors
-1721:err_ExpectedArgument = "Expected an argument. An empty argument list is not permitted in this context.";
-1722:err_RefArgumentNotAllowed = "Pass-by-reference arguments are not permitted in this context.";
-1723:err_PositionalAnnotationArgumentMustComeBeforeNamed = "All positional arguments must come before all named arguments.";
+1721 err_ExpectedArgument = "Expected an argument. An empty argument list is not permitted in this context.";
+1722 err_RefArgumentNotAllowed = "Pass-by-reference arguments are not permitted in this context.";
+1723 err_PositionalAnnotationArgumentMustComeBeforeNamed = "All positional arguments must come before all named arguments.";
 
 // Statement errors
-1801:err_ExpectedLoopAfterLabel = "Expected an iteration statement ('for', 'while', 'do' or 'do–while') after loop label.";
-1802:err_ExpectedJumpStatement = "Expected a jump statement ('return', 'yield', 'next', 'break' or 'throw').";
-1803:err_SpecificCatchClauseAfterGeneric = "All specific 'catch' clauses must come before the generic 'catch' clause.";
-1804:err_MultipleGenericCatchClauses = "A 'try' statement can only have one generic 'catch' clause.";
-1805:err_TryStatementMustHaveCatchOrFinally = "A 'try' statement must have at least one 'catch' clause or a 'finally' clause.";
-1806:err_ExpectedParallelAssignment = "Expected a parallel assignment. Use ';' if the intent was to separate statements.";
-1807:err_ParallelAssignmentWrongValueCount = "A parallel assignment must have one value or as many values as there are targets (expected {0}, got {1}).";
-1808:err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
+1801 err_ExpectedLoopAfterLabel = "Expected an iteration statement ('for', 'while', 'do' or 'do–while') after loop label.";
+1802 err_ExpectedJumpStatement = "Expected a jump statement ('return', 'yield', 'next', 'break' or 'throw').";
+1803 err_SpecificCatchClauseAfterGeneric = "All specific 'catch' clauses must come before the generic 'catch' clause.";
+1804 err_MultipleGenericCatchClauses = "A 'try' statement can only have one generic 'catch' clause.";
+1805 err_TryStatementMustHaveCatchOrFinally = "A 'try' statement must have at least one 'catch' clause or a 'finally' clause.";
+1806 err_ExpectedParallelAssignment = "Expected a parallel assignment. Use ';' if the intent was to separate statements.";
+1807 err_ParallelAssignmentWrongValueCount = "A parallel assignment must have one value or as many values as there are targets (expected {0}, got {1}).";
+1808 err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
 
 // Expression errors
-1851:err_ExpectedPrimaryExpression = "Expected an expression; got {0}.";
-1852:err_InvalidStatementExpression = "Only invocation, function application, assignment and object creation can be used as a statement.";
-1853:err_ExpressionMustBeAssignable = "The target of an assignment must be an assignable expression.";
+1851 err_ExpectedPrimaryExpression = "Expected an expression; got {0}.";
+1852 err_InvalidStatementExpression = "Only invocation, function application, assignment and object creation can be used as a statement.";
+1853 err_ExpressionMustBeAssignable = "The target of an assignment must be an assignable expression.";
 
 // Extension errors
-1901:err_x_ExpectedExternKeyword = "Expected the '__extern' keyword.";
-1902:err_x_UnknownExternParameter = "Unknown __extern parameter '{0}'.";
+1901 err_x_ExpectedExternKeyword = "Expected the '__extern' keyword.";
+1902 err_x_UnknownExternParameter = "Unknown __extern parameter '{0}'.";
 
 //## Compile-time errors (2000-5999) ##
-2001:err_NameError = "The name '{0}' caused an unspecified error.";
-2002:err_NameErrorWithoutName = "Unspecified name error.";
-2003:err_UndefinedName = "The name '{0}' does not exist in this context.";
-2004:err_UndefinedNameWithoutName = "An unspecified name does not exist in this context.";
-2005:err_DuplicateName = "The name '{0}' already exists in this context.";
-2006:err_DuplicateNameWithoutName = "An unspecified name already exists in this context.";
+2001 err_NameError = "The name '{0}' caused an unspecified error.";
+2002 err_NameErrorWithoutName = "Unspecified name error.";
+2003 err_UndefinedName = "The name '{0}' does not exist in this context.";
+2004 err_UndefinedNameWithoutName = "An unspecified name does not exist in this context.";
+2005 err_DuplicateName = "The name '{0}' already exists in this context.";
+2006 err_DuplicateNameWithoutName = "An unspecified name already exists in this context.";
 
 // Codes 6000-6999 are used for warnings.
-6001:warn_UnreachableCode = "Unreachable code detected.";
-6002:warn_UnusedVariable = "The variable '{0}' is declared, but never used.";
-6003:warn_VariableAssignedButUnused = "The variable '{0}' is assigned, but its value is never used.";
-6004:warn_VariableUsedButUnassigned = "The variable '{0}' is never assigned to and will always have the default value null.";
+6001 warn_UnreachableCode = "Unreachable code detected.";
+6002 warn_UnusedVariable = "The variable '{0}' is declared, but never used.";
+6003 warn_VariableAssignedButUnused = "The variable '{0}' is assigned, but its value is never used.";
+6004 warn_VariableUsedButUnassigned = "The variable '{0}' is never assigned to and will always have the default value null.";
 
 // Everything else, you can use for your own purposes!

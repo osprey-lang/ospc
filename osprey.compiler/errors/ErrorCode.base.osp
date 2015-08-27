@@ -40,7 +40,6 @@ public static class ErrorCode
 		while not parser.accept(i, TokenType.eof)
 		{
 			var code = parser.expectr(ref i, TokenType.int).literalValue;
-			parser.expectr(ref i, TokenType.colon);
 			parser.expectr(ref i, TokenType.identifier);
 
 			parser.expectr(ref i, TokenType.assign);

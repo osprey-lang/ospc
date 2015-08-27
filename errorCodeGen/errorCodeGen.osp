@@ -25,6 +25,8 @@ function main(args)
 	template = template.split("{$errorCodes$}");
 	with writer = TextWriter.open(outFile)
 	{
+		writer.newline = "\n"; // Always use Unix line endings
+
 		writer.write(template[0]);
 
 		for msg in messages:
@@ -48,7 +50,7 @@ function readMessages(file)
 	//     message
 	//     messages  message
 	//   message:
-	//     integer-literal  ':'  identifier  '='  string-literal  ';'
+	//     integer-literal  identifier  '='  string-literal  ';'
 	// With the additional restriction that the integer literal must be of
 	// type aves.Int. Unsigned integers are not allowed.
 	// We only use the identifier and integer-literal. The string literal
@@ -58,7 +60,6 @@ function readMessages(file)
 	while not parser.accept(i, TokenType.eof)
 	{
 		var code = parser.expectr(ref i, TokenType.int).value;
-		parser.expectr(ref i, TokenType.colon);
 		var name = parser.expectr(ref i, TokenType.identifier).value;
 
 		parser.expectr(ref i, TokenType.assign);
