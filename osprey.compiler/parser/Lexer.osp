@@ -810,7 +810,7 @@ public class Lexer
 		var startIndex = i;
 
 		var expectedLength = length;
-		var codepoint = 0;
+		var codePoint = 0;
 		while length > 0 and not isEOF(i)
 		{
 			var digitValue;
@@ -821,18 +821,18 @@ public class Lexer
 					i, 1
 				);
 
-			codepoint = (codepoint << 4) | digitValue;
+			codePoint = (codePoint << 4) | digitValue;
 			length -= 1;
 			i += 1;
 		}
 
-		if codepoint > 0x10FFFF
+		if codePoint > 0x10FFFF
 		{
 			recoverableError(ErrorCode.err_UnicodeEscapeOutOfRange, startIndex, i - startIndex);
 			return null;
 		}
 
-		return Char.fromCodepoint(codepoint);
+		return Char.fromCodePoint(codePoint);
 	}
 
 	private scanIdentifier(ref i)
