@@ -89,17 +89,15 @@
 1674 err_WrongParameterCountForOperator = "Wrong parameter count for operator overload (expected {0}, got {1}).";
 
 // Parameter list errors
-1701 err_PreVariadicMustBeFirstParameter = "This variadic parameter must be the first declared parameter.";
-1702 err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";
-1703 err_MultipleVariadicSpecifiers = "Multiple variadic specifiers ('...') on the same parameter.";
-1704 err_PostVariadicMustBeLastParameter = "This variadic parameter must be the last declared parameter.";
-1705 err_CannotMixVariadicAndOptionalParameters = "Cannot mix variadic and optional parameters in the same parameter list.";
-1706 err_RequiredParameterAfterOptional = "All required parameters must come before all optional parameters.";
-1707 err_CannotPassVariadicByRef = "A variadic parameter cannot be passed by reference.";
-1708 err_CannotPassOptionalByRef = "A pass-by-reference parameter cannot be optional.";
-1709 err_MultipleVariadicParameters = "A parameter list can contain at most one variadic parameter.";
-1710 err_CannotPassThisParameterByRef = "A 'this' parameter cannot be passed by reference.";
-1711 err_ExpectedParameter = "Expected a parameter declaration. An empty parameter list is not permitted in this context.";
+1701 err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";
+1702 err_VariadicMustBeLastParameter = "A variadic parameter must be the last declared parameter.";
+1703 err_CannotMixVariadicAndOptionalParameters = "Cannot mix variadic and optional parameters in the same parameter list.";
+1704 err_RequiredParameterAfterOptional = "All required parameters must come before all optional parameters.";
+1705 err_CannotPassVariadicByRef = "A variadic parameter cannot be passed by reference.";
+1706 err_CannotPassOptionalByRef = "A pass-by-reference parameter cannot be optional.";
+1707 err_MultipleVariadicParameters = "A parameter list can contain at most one variadic parameter.";
+1708 err_CannotPassThisParameterByRef = "A 'this' parameter cannot be passed by reference.";
+1709 err_ExpectedParameter = "Expected a parameter declaration. An empty parameter list is not permitted in this context.";
 
 // Argument list errors
 1721 err_ExpectedArgument = "Expected an argument. An empty argument list is not permitted in this context.";

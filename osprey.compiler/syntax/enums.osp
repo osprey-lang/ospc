@@ -137,17 +137,6 @@ public enum LambdaOperator
 	booleanNot,
 }
 
-/// Summary: Specifies which parameter, if any, is variadic.
-public enum VariadicParameter
-{
-	/// Summary: The parameter list has no variadic parameter.
-	none = 0,
-	/// Summary: The first parameter is variadic.
-	first = 1,
-	/// Summary: The last parameter is variadic.
-	last = 2,
-}
-
 /// Summary: Specifies the accessibility of a member.
 public enum Accessibility
 {

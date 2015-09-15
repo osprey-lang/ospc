@@ -10,19 +10,19 @@ public inheritable WrappedParameterList is WrappedNodeList
 {
 	public new()
 	{
-		new this([], 0, VariadicParameter.none, 0);
+		new this([], 0, 0, false);
 	}
 	public new(items)
 	{
 		new base(items);
 	}
-	public new(items, optionalParameterCount, variadicParameter, refParameterCount)
+	public new(items, optionalParameterCount, refParameterCount, hasVariadicParameter)
 	{
 		new base(items);
 
 		_optionalParameterCount = optionalParameterCount;
-		_variadicParameter      = variadicParameter;
 		_refParameterCount      = refParameterCount;
+		_hasVariadicParameter   = hasVariadicParameter;
 	}
 
 	private _optionalParameterCount;
@@ -37,24 +37,14 @@ public inheritable WrappedParameterList is WrappedNodeList
 	/// Summary: Determines whether the parameter list has any optional parameters.
 	public get hasOptionalParameters = optionalParameterCount > 0;
 
-	private _variadicParameter;
-	/// Summary: Gets a {VariadicParameter} value that indicates which parameter, if
-	///          any, is variadic.
-	public get variadicParameter
+	private _hasVariadicParameter;
+	/// Summary: Determines whether the parameter list has a variadic parameter.
+	/// Remarks: Variadic parameters can only appear at the end of the parameter list.
+	public get hasVariadicParameter
 	{
-		if _variadicParameter is null
-		{
-			var param = VariadicParameter.none;
-			if length > 0
-			{
-				if collection[-1].isVariadic:
-					param = VariadicParameter.last;
-				else if collection[0].isVariadic:
-					param = VariadicParameter.first;
-			}
-			_variadicParameter = param;
-		}
-		return _variadicParameter;
+		if _hasVariadicParameter is null:
+			_hasVariadicParameter = any(@.isVariadic);
+		return _hasVariadicParameter;
 	}
 
 	private _refParameterCount;
