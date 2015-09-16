@@ -3943,9 +3943,6 @@ public inheritable Parser
 		 *   simple-lambda-expression:
 		 *     '@' lambda-parameters? '=' expression
 		 *     '@' lambda-parameters? block
-		 *   lambda-parameters:
-		 *     identifier
-		 *     '(' parameter-list? ')'
 		 *   lambda-member-expression:
 		 *     '@' lambda-member-access lambda-member safe-access-chain?
 		 *   lambda-member-access: one of
@@ -3989,7 +3986,33 @@ public inheritable Parser
 		// Must be a simple-lambda-expression
 
 		// Parameters
+		var parameters = parseLambdaParameterList(ref i);
+
+		// Body
+		var body;
+		if acceptr(ref i, TokenType.assign):
+			body = parseExpression(ref i);
+		else:
+			body = parseBlock(ref i);
+
+		return new SimpleLambdaExpression(
+			getLocation(start, body),
+			parameters, body
+		);
+	}
+
+	private parseLambdaParameterList(ref i)
+	{
+		/* Syntax:
+		 *   lambda-parameters:
+		 *     identifier
+		 *     '(' parameter-list? ')'
+		 * Additional notes:
+		 *   This method treats the lambda-parameters as optional. If there
+		 *   is no identifier or '(', an empty parameter list is returned.
+		 */
 		var parameters;
+
 		if accept(i, TokenType.identifier)
 		{
 			var paramName = lex[i];
@@ -4011,17 +4034,7 @@ public inheritable Parser
 			parameters = EmptyLists.parameter;
 		}
 
-		// Body
-		var body;
-		if acceptr(ref i, TokenType.assign):
-			body = parseExpression(ref i);
-		else:
-			body = parseBlock(ref i);
-
-		return new SimpleLambdaExpression(
-			getLocation(start, body),
-			parameters, body
-		);
+		return parameters;
 	}
 
 	private parseSafeAccessChain(ref i)
