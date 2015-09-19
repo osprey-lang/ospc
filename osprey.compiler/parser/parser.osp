@@ -464,7 +464,7 @@ public inheritable Parser
 			return expression.op == BinaryOperator.functionApplication;
 
 		if expression is SafeAccessExpression:
-			return expression.chain[-1] is SafeInvocation;
+			return expression.chain.last() is SafeInvocation;
 
 		return expression is InvocationExpression or
 			expression is ObjectCreationExpression or
