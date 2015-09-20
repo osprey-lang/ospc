@@ -512,7 +512,7 @@ public class Lexer
 		var startIndex = i;
 		i += 2; // Skip 0x/0X
 
-		if isEOF(i) or not hexDigits.hasKey(source[i]):
+		if isEOF(i) or not hexDigits.containsKey(source[i]):
 			fatalError(ErrorCode.err_HexNumberWithoutDigits, startIndex, 2);
 
 		var emptySection = true; // False if one or more hex digits encountered after '_'
