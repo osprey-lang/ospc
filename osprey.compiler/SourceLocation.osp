@@ -31,7 +31,7 @@ public class SourceLocation
 	public getText()
 	{
 		return _sourceFile.source
-			.substr(_startIndex, _endIndex - _startIndex)
+			.substringTo(_startIndex, _endIndex)
 			.intern();
 	}
 

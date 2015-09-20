@@ -293,7 +293,7 @@ public class Lexer
 				{
 					var k = i;
 					skipWhiteSpace(ref k);
-					if isEOF(k + 2) or source.substr(k, 3) != "///":
+					if isEOF(k + 2) or source.substring(k, 3) != "///":
 						break;
 					// If we fall through here, then k + 2 is not past the end and
 					// there is a substring "///" at k.
@@ -442,7 +442,7 @@ public class Lexer
 		}
 
 		// Now, let's parse the value!
-		var value = source.substr(startIndex, literalEnd - startIndex).replace("_", "");
+		var value = source.substringTo(startIndex, literalEnd).replace("_", "");
 		var type; // TokenType
 		if hasDecimals
 		{
@@ -477,7 +477,7 @@ public class Lexer
 				"Int";
 			recoverableError(
 				ErrorCode.err_NumberOutOfRange,
-				[type, source.substr(startIndex, i - startIndex)],
+				[type, source.substringTo(startIndex, i)],
 				startIndex, i - startIndex
 			);
 			value = LiteralToken.invalidValue;
@@ -579,7 +579,7 @@ public class Lexer
 		{
 			recoverableError(
 				ErrorCode.err_NumberOutOfRange,
-				[isUnsigned ? "UInt" : "Int", source.substr(startIndex, i - startIndex)],
+				[isUnsigned ? "UInt" : "Int", source.substringTo(startIndex, i)],
 				startIndex, i - startIndex
 			);
 			value = LiteralToken.invalidValue;
@@ -620,7 +620,7 @@ public class Lexer
 			{
 				// Append any pending characters
 				if i > partStart:
-					sb.appendSubstr(source, partStart, i - partStart);
+					sb.appendSubstring(source, partStart, i - partStart);
 				i += 1; // Skip \
 				ch = scanEscapeSequence(ref i);
 				if ch is null:
@@ -649,7 +649,7 @@ public class Lexer
 
 		// Append any pending characters
 		if i > partStart:
-			sb.appendSubstr(source, partStart, i - partStart);
+			sb.appendSubstring(source, partStart, i - partStart);
 
 		i += 1; // Skip "
 
@@ -707,7 +707,7 @@ public class Lexer
 		if not foundEnd:
 			fatalError(ErrorCode.err_StringNotTerminated, startIndex, 2);
 
-		var value = source.substr(startIndex + 2, i - startIndex - 3);
+		var value = source.substringTo(startIndex + 2, i - 1);
 		if hasEscapes:
 			// Replace all escapes in one go
 			value = value.replace("\"\"", "\"");
@@ -886,7 +886,7 @@ public class Lexer
 		}
 
 		var location = getLocation(startIndex, i);
-		var ident = source.substr(identStart, i - identStart);
+		var ident = source.substringTo(identStart, i);
 
 		// All keywords are valid identifier-names, so unless this identifier is
 		// escaped, let's see if it matches a keyword.
@@ -935,7 +935,7 @@ public class Lexer
 						i -= 1;
 					fatalError(
 						ErrorCode.err_InvalidCharacter,
-						[ch, (+ch).toString("X4")],
+						[ch, ch.codePoint.toString("X4")],
 						i, 1
 					);
 				}
