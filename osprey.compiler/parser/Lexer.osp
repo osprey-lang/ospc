@@ -832,7 +832,7 @@ public class Lexer
 			return null;
 		}
 
-		return Char.fromCodePoint(codePoint);
+		return new Char(codePoint);
 	}
 
 	private scanIdentifier(ref i)
