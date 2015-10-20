@@ -1305,6 +1305,7 @@ public class Lexer
 		'-': new PunctInfo(TokenType.minus, {
 			// ->
 			'>': TokenType.funcApplication,
+			// -=
 			'=': TokenType.minusAssign,
 		}),
 		'+': PunctInfo.acceptEqual(TokenType.plus,

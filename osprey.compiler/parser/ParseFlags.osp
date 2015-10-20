@@ -2,7 +2,7 @@ use namespace aves;
 
 namespace osprey.compiler.parser;
 
-/// Summary: Configuration options passed to {Parser}.
+/// Summary: Configuration options passed to {ParserBase}.
 public enum set ParseFlags
 {
 	/// Summary: Specifies no additional parser flags.

@@ -1,0 +1,421 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Defines base functionality used by a parser. A parser contains a {Lexer} whose
+///          tokens are processed in some way, usually to produce a parse tree. This class
+///          also exposes various helper methods, such as {accept} and {expect}.
+///
+///          A parser can produce both fatal and recoverable parse errors. Fatal errors are
+///          typically the result of a grammatically invalid token stream, such as a missing
+///          semicolon at the end of a statement, or having a closing bracket too many. The
+///          parser can usually not continue after such an error. Recoverable errors usually
+///          indicate semantic problems, for instance duplicate accessibility modifiers, or
+///          required parameters after optional parameters. Although the parse tree after a
+///          recoverable error is invalid, the parser can continue to process the rest of the
+///          token stream, allowing as many errors as possible to be collected in one go.
+public abstract class ParserBase
+{
+	/// Summary: Creates a new {ParserBase} with the specified source file and default flags.
+	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
+	/// Throws ArgumentError:
+	///          {source} is not a {SourceFile} or {Lexer}.
+	public new(source)
+	{
+		new this(source, ParseFlags.none, null);
+	}
+	/// Summary: Creates a new {ParserBase} with the specified source file and flags.
+	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
+	/// Param flags:  A {ParseFlags} value that specifies parser options.
+	/// Throws ArgumentError:
+	///          {source} is not a {SourceFile} or {Lexer}.
+	///
+	///          {flags} is not a {ParseFlags}.
+	public new(source, flags)
+	{
+		new this(source, flags, null);
+	}
+	/// Summary: Creates a new {ParserBase} with the specified source file, flags and error
+	///          manager.
+	/// Param source:       A {SourceFile} or {Lexer} that contains the code to parse.
+	/// Param flags:        A {ParseFlags} value that specifies parser options.
+	/// Param errorManager: An {ErrorManager} that receives recoverable parse errors.
+	///                     If this parameter is null, the parser creates its own error
+	///                     manager, which throws all errors.
+	/// Remarks: The {ErrorManager} only receives recoverable errors. Fatal parse errors,
+	///          such as invalid syntax, are always thrown. The {ErrorManager} is passed
+	///          on to the lexer that the parse creates if {source} is a {SourceFile}. If
+	///          {source} is already a {Lexer}, its error manager is used as-is.
+	/// Throws ArgumentError:
+	///          {source} is not a {SourceFile} or {Lexer}.
+	///
+	///          {flags} is not a {ParseFlags}.
+	///
+	///          {errorManager} is not null or an {ErrorManager}.
+	public new(source, flags, errorManager)
+	{
+		if flags is not ParseFlags:
+			throw new ArgumentError("flags must be an osprey.compiler.parser.ParseFlags", "flags");
+
+		// Check this first so that we can initialize the lexer with a proper ErrorManager.
+		if errorManager is null:
+			errorManager = new ParserErrorManager();
+		else if errorManager is not ErrorManager:
+			throw new ArgumentError("errorManager must be an ErrorManager", "errorManager");
+
+		if source is Lexer
+		{
+			this.file = source.sourceFile;
+			this.lex = source;
+		}
+		else if source is SourceFile
+		{
+			this.file = source;
+			this.lex = new Lexer(
+				source,
+				flags.hasFlag(ParseFlags.normalizeIdentifiers) ?
+					LexerFlags.normalizeIdentifiers :
+					LexerFlags.none,
+				errorManager
+			);
+		}
+		else
+		{
+			throw new ArgumentError("source must be a Lexer or SourceFile", "source");
+		}
+
+		this.flags = flags;
+		this.errors = errorManager;
+	}
+
+	private flags;
+	private file;
+	private errors; // ErrorManager
+	/// Summary: The backing field for the {lexer} property, containing the {Lexer} used
+	///          by the parser.
+	/// Remarks: Classes derived from {ParserBase} are strongly recommended not to overwrite
+	///          the value in this field.
+	protected lex;
+
+	/// Summary: Gets the {ErrorManager} that the parser uses.
+	public get errorManager = errors;
+
+	/// Summary: Determines whether the parser recognises non-standard extension keywords.
+	public get useExtensions = flags.hasFlag(ParseFlags.useExtensions);
+
+	/// Summary: Determines whether identifiers are normalized.
+	public get normalizeIdentifiers = flags.hasFlag(ParseFlags.normalizeIdentifiers);
+
+	/// Summary: Gets the {SourceFile} used by this parser.
+	public get sourceFile = file;
+
+	/// Summary: Gets the {Lexer} used by this parser.
+	public get lexer = lex;
+
+	//<region: Accept helpers>
+
+	/// Summary: Determines whether the token at the specified index matches
+	///          the specified {TokenType}.
+	/// Param i:    The token’s index in the lexer.
+	/// Param type: The {TokenType} to test against.
+	/// Returns: True if the token matches the specified type; otherwise, false.
+	public accept(i, type)
+	{
+		return lex[i].match(type);
+	}
+	/// Summary: Determines whether the token at the specified index matches
+	///          any of the specified {TokenType}s.
+	/// Param i:  The token’s index in the lexer.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public accept(i, t1, t2)
+	{
+		var tok = lex[i];
+		return tok.match(t1)
+			or tok.match(t2);
+	}
+	/// Summary: Determines whether the token at the specified index matches
+	///          any of the specified {TokenType}s.
+	/// Param i:  The token’s index in the lexer.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Param t3: The third {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public accept(i, t1, t2, t3)
+	{
+		var tok = lex[i];
+		return tok.match(t1)
+			or tok.match(t2)
+			or tok.match(t3);
+	}
+	/// Summary: Determines whether the token at the specified index matches
+	///          any of the specified {TokenType}s.
+	/// Param i: The token’s index in the lexer.
+	/// Param types: A List, Iterable or Iterator of {TokenType}s to test against. This
+	///              object must support the `any` method.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptAny(i, types)
+	{
+		return types.any(lex[i].match);
+	}
+
+	/// Summary: Determines whether the token at the specified index matches
+	///          the specified {TokenType}, and if so, increments the index by 1.
+	/// Param i:    (ref) The token’s index in the lexer.
+	/// Param type: The {TokenType} to test against.
+	/// Returns: True if the token matches the specified type; otherwise, false.
+	public acceptr(ref i, type)
+	{
+		if lex[i].match(type)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+	/// Summary: Determines whether the token at the specified index matches any of
+	///          the specified {TokenType}s, and if so, increments the index by 1.
+	/// Param i:  The token’s index in the lexer.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptr(ref i, t1, t2)
+	{
+		var tok = lex[i];
+		if tok.match(t1) or tok.match(t2)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+	/// Summary: Determines whether the token at the specified index matches any of
+	///          the specified {TokenType}s, and if so, increments the index by 1.
+	/// Param t1: The first {TokenType} to test against.
+	/// Param t2: The second {TokenType} to test against.
+	/// Param t3: The third {TokenType} to test against.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptr(ref i, t1, t2, t3)
+	{
+		var tok = lex[i];
+		if tok.match(t1) or tok.match(t2) or tok.match(t3)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+	/// Summary: Determines whether the token at the specified index matches any of
+	///          the specified {TokenType}s, and if so, increments the index by 1.
+	/// Param i:     The token’s index in the lexer.
+	/// Param types: A List, Iterable or Iterator of {TokenType}s to test against. This
+	///              object must support the `any` method.
+	/// Returns: True if the token matches any of the specified types; otherwise, false.
+	public acceptrAny(ref i, types)
+	{
+		if types.any(lex[i].match)
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified contextual keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}.
+	/// Param i: The token’s index in the lexer.
+	/// Param keyword: The contextual keyword to look for. (String)
+	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
+	/// Remarks: The Osprey grammar allows identifiers to be escaped (with '\\'),
+	//           which prevents them from being interpreted as contextual keywords.
+	///          This method never matches escaped identifiers.
+	public acceptContextual(i, keyword)
+	{
+		var tok = lex[i];
+		if tok.match(TokenType.identifier) and not tok.escaped and tok.identifier == keyword:
+			return true;
+		return false;
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified contextual keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}. If the token matches, then the
+	///          index is incremented by 1.
+	/// Param i: (ref) The token’s index in the lexer.
+	/// Param keyword: The contextual keyword to look for. (String)
+	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
+	/// Remarks: The Osprey grammar allows identifiers to be escaped (with '\\'),
+	//           which prevents them from being interpreted as contextual keywords.
+	///          This method never matches escaped identifiers.
+	public acceptrContextual(ref i, keyword)
+	{
+		var tok = lex[i];
+		if tok.match(TokenType.identifier) and not tok.escaped and tok.identifier == keyword
+		{
+			i += 1;
+			return true;
+		}
+		return false;
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified extension keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}.
+	/// Param i: The token’s index in the lexer.
+	/// Param keyword: The extension keyword to look for. (String)
+	/// Returns: True if the token matches the specified extension keyword; otherwise, false.
+	/// Remarks: This method always returns false if the parser was initialized without the
+	///          {ParseFlags.useExtension} flag. Clases that inherit from {ParserBase} do
+	///          not need to check {useExtensions} before calling this method.
+	public acceptExtension(i, keyword)
+	{
+		return useExtensions and acceptContextual(i, keyword);
+	}
+
+	/// Summary: Determines whether the token at the specified index matches the
+	///          specified extension keyword. The parser looks for an identifier,
+	///          and compares it against {keyword}. If the token matches, then the
+	///          index is incremented by 1.
+	/// Param i: (ref) The token’s index in the lexer.
+	/// Param keyword: The extension keyword to look for. (String)
+	/// Returns: True if the token matches the specified extension keyword; otherwise, false.
+	/// Remarks: This method always returns false if the parser was initialized without the
+	///          {ParseFlags.useExtension} flag. Clases that inherit from {ParserBase} do
+	///          not need to check {useExtensions} before calling this method.
+	public acceptrExtension(ref i, keyword)
+	{
+		return useExtensions and acceptrContextual(ref i, keyword);
+	}
+
+	//</region>
+
+	//<region: Expect helpers>
+
+	/// Summary: Tries to match the token at the specified index against the specified
+	///          {TokenType}, and throws an {UnexpectedTokenError} if it does not match.
+	/// Param i:         The token’s index in the lexer.
+	/// Param type:      The {TokenType} to test against.
+	/// Param errorCode: (optional) The error code of the error that is thrown if the
+	///                  match fails.
+	/// Returns: The token at the specified index.
+	public expect(i, type, errorCode = null)
+	{
+		var tok = lex[i];
+		if not tok.match(type)
+		{
+			if errorCode is null:
+				errorCode = ErrorCode.err_UnexpectedToken;
+			// Failed expectations are never recoverable
+			throw new UnexpectedTokenError(
+				errorCode, tok, type,
+				errors.getMessage(errorCode)
+			);
+		}
+		return tok;
+	}
+	/// Summary: Tries to match the token at the specified index against the specified
+	///          {TokenType}, and throws an {UnexpectedTokenError} if it does not match,
+	///          or increments the index by 1 if it does.
+	/// Param i:         (ref) The token’s index in the lexer.
+	/// Param type:      The {TokenType} to test against.
+	/// Param errorCode: (optional) The error code of the error that is thrown if the
+	///                  match fails.
+	/// Returns: The token at the specified index.
+	public expectr(ref i, type, errorCode = null)
+	{
+		var tok = lex[i];
+		if not tok.match(type)
+		{
+			if errorCode is null:
+				errorCode = ErrorCode.err_UnexpectedToken;
+			// Failed expectations are never recoverable
+			throw new UnexpectedTokenError(
+				errorCode, tok, type,
+				errors.getMessage(errorCode)
+			);
+		}
+		i += 1;
+		return tok;
+	}
+
+	//</region>
+
+	/// Summary: Gets a {SourceLocation} for the specified range.
+	/// Param start: A {Syntax}, {SourceLocation} or Int that represents the start
+	///              of the desired source location.
+	/// Param end:   A {Syntax}, {SourceLocation} or Int that represents the end
+	///              of the desired source location.
+	/// Returns: A {SourceLocation} that encloses the specified range.
+	/// Throws TypeError:
+	///          {start} or {end} is not a {Syntax} or {SourceLocation} and could
+	///          not be converted to an Int.
+	public getLocation(start, end)
+	{
+		if start is Syntax:
+			start = start.location.startIndex;
+		else if start is SourceLocation:
+			start = start.startIndex;
+		else:
+			start = int(start);
+
+		if end is Syntax:
+			end = end.location.endIndex;
+		else if end is SourceLocation:
+			end = end.endIndex;
+		else:
+			end = int(end);
+
+		return new SourceLocation(file, start, end);
+	}
+
+	/// Summary: Throws an irrecoverable {ParseError}. This indicates a syntax error
+	///          that the parser cannot recover from.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	public overridable fatalError(source, errorCode)
+	{
+		throw new ParseError(source, errorCode, errors.getMessage(errorCode));
+	}
+	/// Summary: Throws an irrecoverable {ParseError}. This indicates a syntax error
+	///          that the parser cannot recover from.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	/// Param formatArg: An argument that is sent to {String.format} to format the error
+	///                  message.
+	public overridable fatalError(source, errorCode, formatArg)
+	{
+		throw new ParseError(source, errorCode, errors.getMessage(errorCode, formatArg));
+	}
+
+	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
+	///          situations where the parser already has a correctly parsed structure,
+	///          but there is some other semantic error, such as an invalid target of
+	///          an assignment.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	public overridable recoverableError(source, errorCode)
+	{
+		var error = new ParseError(source, errorCode, errors.getMessage(errorCode));
+		errors.addError(error);
+	}
+	/// Summary: Triggers a recoverable {ParseError}. Recoverable errors are used in
+	///          situations where the parser already has a correctly parsed structure,
+	///          but there is some other semantic error, such as an invalid target of
+	///          an assignment.
+	/// Param source:    The source location of the error, as a {Syntax}, or null.
+	/// Param errorCode: The code of the error, corresponding to one of the {ErrorCode}
+	///                  constants.
+	/// Param formatArg: An argument that is sent to {String.format} to format the error
+	///                  message.
+	public overridable recoverableError(source, errorCode, formatArg)
+	{
+		var error = new ParseError(source, errorCode, errors.getMessage(errorCode, formatArg));
+		errors.addError(error);
+	}
+}
