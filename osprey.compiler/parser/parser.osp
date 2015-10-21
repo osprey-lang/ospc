@@ -112,67 +112,67 @@ public inheritable Parser is ParserBase
 			expression is AssignmentExpression;
 	}
 
-	/* *
-	 * * In all the parse methods below, every single method that doesn't just directly
-	 * * call another method should have a description of the grammar it parses. This is
-	 * * partly for your reference as you write the method, partly for the benefit of
-	 * * anyone who has to read the code.
-	 * *
-	 * * Your comment should use the same basic structure as the Osprey grammar, with
-	 * * the following rules:
-	 * *   1. Nonterminal symbols are unquoted. Ex: qualified-name, null-or-expression,
-	 * *      statement.
-	 * *   2. Terminal symbols are quoted with single quotes. Use \ to escape embedded
-	 * *      single quotes and backslashes (should generally not be necessary). Other
-	 * *      escape-sequence-looking sequences are verbatim (e.g. '\t' means backslash
-	 * *      followed by t, not tab). Ex: 'inheritable', 'with', ':', '<=>'.
-	 * *   3. Optional symbols are followed by a question mark, not "_opt". This is
-	 * *      mainly for brevity. Do not surround optional symbols in square brackets.
-	 * *   4. Do not abbreviate nonterminal symbol names: it must be possible to search
-	 * *      the grammar document and this source code for their definitions. If you
-	 * *      must break a definition into multiple lines, indent subsequent lines by
-	 * *      two (2) spaces.
-	 * *   5. Do feel free to align terminal symbols in 'one of' definitions into neat-
-	 * *      looking tables if it improves legibility. Align with spaces, never tabs.
-	 * *   6. Define only the symbols your code parses fully. If you call `accept` only
-	 * *      to determine which kind of symbol to parse, do not define that symbol in
-	 * *      your comment. For example, if you `accept` the 'var' keyword to decide
-	 * *      whether to parse a variable declaration, do not define the syntax for the
-	 * *      variable declaration in your method, but rather in the method that parses
-	 * *      the declaration.
-	 * *
-	 * * The comment is structured and formatted as follows:
-	 * *   Syntax:                 <-- "Syntax" header, must be present
-	 * *     symbol-one:           <-- nonterminal being defined (indent 2 spaces)
-	 * *       foo 'bar' baz       <-- definition line (indent another 2 spaces)
-	 * *       one two three?
-	 * *         'four'? five      <-- wrapped defintion line (another 2 spaces)
-	 * *     symbol-two: one of    <-- definition using 'one of'
-	 * *       'p' 'a' 'n' 'd'     <-- no need to indent wrapped lines: every symbol is
-	 * *       'i' 'o'                 an expansion of the defined nonterminal
-	 * *   Additional notes/restrictions/requirements:
-	 * *     Optional plain-text description of additional notes, restrictions or
-	 * *     requirements (pick one, or a suitable synonym). This section must always be
-	 * *     present when the method deviates from the spec for some reason, such as how
-	 * *     default values of optional parameters are parsed using `parseExpression`.
-	 * *     Other comments/notes should be put in line with the code, since it usually
-	 * *     reads better.
-	 * *
-	 * * Unless otherwise necessary, prefer using 'start' for the variable that holds the
-	 * * token that represents the start of the symbol being parsed. If it is not passed
-	 * * as the first argument to `getLocation`, consider using a different name. Also
-	 * * why aren't you passing the start token as the first argument to `getLocation`?
-	 * *
-	 * * If you skip more than one token, or if you do some work in between reading a
-	 * * token and skipping it, consider adding a brief comment that explains what you
-	 * * are skipping. Something like "// skip xyz and ':'" is usually fine.
-	 * *
-	 * * The Osprey grammar is context-free. Therefore, your parse methods should not
-	 * * require more than one parameter, the token index, always called `i`. It may be
-	 * * okay to accept a `Modifiers` instance if you're parsing a member declaration,
-	 * * but make it optional. If you need additional state, you're writing a helper
-	 * * method: make it private.
-	 * */
+	/*\
+	|*| In all the parse methods below, every single method that doesn't just directly
+	|*| call another method should have a description of the grammar it parses. This is
+	|*| partly for your reference as you write the method, partly for the benefit of
+	|*| anyone who has to read the code.
+	|*|
+	|*| Your comment should use the same basic structure as the Osprey grammar, with
+	|*| the following rules:
+	|*|   1. Nonterminal symbols are unquoted. Ex: qualified-name, null-or-expression,
+	|*|      statement.
+	|*|   2. Terminal symbols are quoted with single quotes. Use \ to escape embedded
+	|*|      single quotes and backslashes (should generally not be necessary). Other
+	|*|      escape-sequence-looking sequences are verbatim (e.g. '\t' means backslash
+	|*|      followed by t, not tab). Ex: 'inheritable', 'with', ':', '<=>'.
+	|*|   3. Optional symbols are followed by a question mark, not "_opt". This is
+	|*|      mainly for brevity. Do not surround optional symbols in square brackets.
+	|*|   4. Do not abbreviate nonterminal symbol names: it must be possible to search
+	|*|      the grammar document and this source code for their definitions. If you
+	|*|      must break a definition into multiple lines, indent subsequent lines by
+	|*|      two (2) spaces.
+	|*|   5. Do feel free to align terminal symbols in 'one of' definitions into neat-
+	|*|      looking tables if it improves legibility. Align with spaces, never tabs.
+	|*|   6. Define only the symbols your code parses fully. If you call `accept` only
+	|*|      to determine which kind of symbol to parse, do not define that symbol in
+	|*|      your comment. For example, if you `accept` the 'var' keyword to decide
+	|*|      whether to parse a variable declaration, do not define the syntax for the
+	|*|      variable declaration in your method, but rather in the method that parses
+	|*|      the declaration.
+	|*|
+	|*| The comment is structured and formatted as follows:
+	|*|   Syntax:                 <-- "Syntax" header, must be present
+	|*|     symbol-one:           <-- nonterminal being defined (indent 2 spaces)
+	|*|       foo 'bar' baz       <-- definition line (indent another 2 spaces)
+	|*|       one two three?
+	|*|         'four'? five      <-- wrapped defintion line (another 2 spaces)
+	|*|     symbol-two: one of    <-- definition using 'one of'
+	|*|       'p' 'a' 'n' 'd'     <-- no need to indent wrapped lines: every symbol is
+	|*|       'i' 'o'                 an expansion of the defined nonterminal
+	|*|   Additional notes/restrictions/requirements:
+	|*|     Optional plain-text description of additional notes, restrictions or
+	|*|     requirements (pick one, or a suitable synonym). This section must always be
+	|*|     present when the method deviates from the spec for some reason, such as how
+	|*|     default values of optional parameters are parsed using `parseExpression`.
+	|*|     Other comments/notes should be put in line with the code, since it usually
+	|*|     reads better.
+	|*|
+	|*| Unless otherwise necessary, prefer using 'start' for the variable that holds the
+	|*| token that represents the start of the symbol being parsed. If it is not passed
+	|*| as the first argument to `getLocation`, consider using a different name. Also
+	|*| why aren't you passing the start token as the first argument to `getLocation`?
+	|*|
+	|*| If you skip more than one token, or if you do some work in between reading a
+	|*| token and skipping it, consider adding a brief comment that explains what you
+	|*| are skipping. Something like "// skip xyz and ':'" is usually fine.
+	|*|
+	|*| The Osprey grammar is context-free. Therefore, your parse methods should not
+	|*| require more than one parameter, the token index, always called `i`. It may be
+	|*| okay to accept a `Modifiers` instance if you're parsing a member declaration,
+	|*| but make it optional. If you need additional context, you're writing a helper
+	|*| method: make it private.
+	\*/
 
 	/// Summary: Parses an entire source file, starting at token index 0.
 	/// Returns: A {Document} instance representing a parse tree for the source file.
