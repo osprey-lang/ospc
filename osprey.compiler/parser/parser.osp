@@ -165,7 +165,7 @@ public inheritable Parser is ParserBase
 	|*|
 	|*| If you skip more than one token, or if you do some work in between reading a
 	|*| token and skipping it, consider adding a brief comment that explains what you
-	|*| are skipping. Something like "// skip xyz and ':'" is usually fine.
+	|*| are skipping. Something like `// skip name and ':'` is usually fine.
 	|*|
 	|*| The Osprey grammar is context-free. Therefore, your parse methods should not
 	|*| require more than one parameter, the token index, always called `i`. It may be
