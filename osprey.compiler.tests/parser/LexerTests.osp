@@ -1,6 +1,7 @@
 use namespace aves;
 use namespace testing.unit;
 use namespace osprey.compiler.tests;
+use TT = osprey.compiler.parser.TokenType; // For brevity in some long lists
 
 namespace osprey.compiler.parser.tests;
 
@@ -105,17 +106,20 @@ public class LexerTests is TestFixture
 	private assertTokenMatches(token, type)
 	{
 		Assert.areEqual(token.type, type);
+		return true;
 	}
 
 	private assertTokenMatches(token, type, value)
 	{
 		Assert.areEqual(token.type, type);
 		Assert.areEqual(token.value, value);
+		return true;
 	}
 
 	private assertIsEOF(token)
 	{
 		assertTokenMatches(token, TokenType.eof);
+		return true;
 	}
 
 	public test_LineComment1()
@@ -150,5 +154,78 @@ public class LexerTests is TestFixture
 		// The lexer DOES include all the lines of a doc comment, verbatim.
 		assertTokenMatches(lexer[0], TokenType.comment, source);
 		assertIsEOF(lexer[1]);
+	}
+
+	public test_PunctuationGeneral()
+	{
+		var source = r".  ,  :  ;  @  ...  ?.  !";
+		var lexer = lex(source);
+
+		var tokens = [
+			TT.dot, TT.comma,
+			TT.colon, TT.semicolon,
+			TT.at, TT.splat,
+			TT.safeAccess, TT.exclam,
+		];
+
+		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
+	}
+
+	public test_PunctuationBrackets()
+	{
+		var source = r"{  }  [  ]  (  )  ?(  ?[";
+		var lexer = lex(source);
+
+		// Same order as the source, of course. Sorry it's a bit hard to read.
+		var tokens = [
+			TT.curlyOpen, TT.curlyClose,
+			TT.squareOpen, TT.squareClose,
+			TT.parenOpen, TT.parenClose,
+			TT.parenOpenSafe, TT.squareOpenSafe,
+		];
+
+		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
+	}
+
+	public test_PunctuationOperators()
+	{
+		var source = r"
+			~   <   <=  >  >=  ==   !=  ?  ??  ?!
+			->  +   -   |  *   /    %   &  ^   ::
+			<<  >>  **  #  $   <=>
+		";
+		var lexer = lex(source);
+
+		// Same order as the source, of course. Sorry it's a bit hard to read.
+		var tokens = [
+			TT.tilde,
+			TT.less, TT.lessEqual, TT.greater, TT.greaterEqual,
+			TT.doubleEqual, TT.notEqual, TT.question,
+			TT.nullCoalescing, TT.nullOr,
+			TT.funcApplication, TT.plus, TT.minus, TT.pipe,
+			TT.multiply, TT.divide, TT.modulo, TT.ampersand,
+			TT.caret, TT.concatenate, TT.shiftLeft, TT.shiftRight,
+			TT.power, TT.hash, TT.dollar, TT.compare,
+		];
+
+		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
+	}
+
+	public test_PunctuationAssignOperators()
+	{
+		var source = r"=  +=  -=  |=  *=  /=  %=  &=  ^=  ::=  <<=  >>=  **=  #=  $=";
+		var lexer = lex(source);
+
+		// Same order as the source, of course. Sorry it's a bit hard to read.
+		var tokens = [
+			TT.assign,
+			TT.plusAssign, TT.minusAssign, TT.pipeAssign,
+			TT.mulAssign, TT.divAssign, TT.modAssign, TT.ampAssign,
+			TT.caretAssign, TT.concatAssign,
+			TT.shiftLeftAssign, TT.shiftRightAssign,
+			TT.powerAssign, TT.hashAssign, TT.dollarAssign,
+		];
+
+		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
 	}
 }
