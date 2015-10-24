@@ -13,12 +13,12 @@ public class CompilerErrorManager is ErrorManager
 	private printErrors = true;
 	private printWarnings = true;
 
-	private errors = null;
-	private warnings = null;
+	private errors = [];
+	private warnings = [];
 
-	override get hasErrors = not (errors?.isEmpty ?? true);
+	override get hasErrors = not errors.isEmpty;
 
-	override get hasWarnings = not (warnings?.isEmpty ?? true);
+	override get hasWarnings = not warnings.isEmpty;
 
 	private printMessage(kind, message)
 	{
@@ -46,8 +46,6 @@ public class CompilerErrorManager is ErrorManager
 
 	override addErrorInner(source, error)
 	{
-		if errors is null:
-			errors = [];
 		errors.add(error);
 		if printErrors:
 			printMessage("error", error);
@@ -55,18 +53,16 @@ public class CompilerErrorManager is ErrorManager
 
 	override getAllErrors()
 	{
-		return errors?.slice(0);
+		return errors.slice(0);
 	}
 
 	override clearErrors()
 	{
-		errors = null;
+		errors.clear();
 	}
 
 	override addWarningInner(warning)
 	{
-		if warnings is null:
-			warnings = [];
 		warnings.add(warning);
 		if printWarnings:
 			printMessage("warn", warning);
@@ -74,12 +70,12 @@ public class CompilerErrorManager is ErrorManager
 
 	override getAllWarnings()
 	{
-		return warnings?.slice(0);
+		return warnings.slice(0);
 	}
 
 	override clearWarnings()
 	{
-		warnings = null;
+		warnings.clear();
 	}
 
 	private const messageFormat = "[{0} \"{1}\":{2}:{3}+{4}] OSP{5}: {6}";
