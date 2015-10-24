@@ -38,9 +38,10 @@ public class ParseTreeWrapper is ParseTreeVisitor
 	override visitDocument(document, arg)
 	{
 		var useDirectives = wrapNodeList(document.useDirectives);
+		var globalAnnotations = wrapNodeList(document.globalAnnotations);
 		var members = wrapNodeList(document.members);
 		var statements = wrapNodeList(document.statements);
-		return new WrappedDocument(document, useDirectives, members, statements);
+		return new WrappedDocument(document, useDirectives, globalAnnotations, members, statements);
 	}
 
 	override visitUseAliasDirective(directive, arg)

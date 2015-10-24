@@ -4,13 +4,14 @@ namespace osprey.compiler.syntax.wrapped;
 
 public class WrappedDocument is WrappedNode
 {
-	public new(wrappedNode, useDirectives, members, statements)
+	public new(wrappedNode, useDirectives, globalAnnotations, members, statements)
 	{
 		new base(wrappedNode);
 
-		this.useDirectives = claimAll(useDirectives);
-		this.members       = claimAll(members);
-		this.statements    = claimAll(statements);
+		this.useDirectives     = claimAll(useDirectives);
+		this.globalAnnotations = claimAll(globalAnnotations);
+		this.members           = claimAll(members);
+		this.statements        = claimAll(statements);
 	}
 
 	/// Summary: Gets the {VersionSpecifier} of this compilation unit,
@@ -23,6 +24,10 @@ public class WrappedDocument is WrappedNode
 	/// Summary: A {NodeList} containing the {WrappedUseDirective}s in
 	///          this compilation unit.
 	public useDirectives;
+
+	/// Summary: A {NodeList} containing the {Annotation}s targeted at
+	///          the module.
+	public globalAnnotations;
 
 	/// Summary: Gets a {QualifiedName} containing the file namespace
 	///          name of this compilation unit.

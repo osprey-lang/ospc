@@ -16,6 +16,7 @@ public abstract class ParseTreeVisitor
 	{
 		document.version?.accept(this, arg);
 		document.useDirectives.acceptAll(this, arg);
+		document.globalAnnotations.acceptAll(this, arg);
 		document.members.acceptAll(this, arg);
 		document.statements.acceptAll(this, arg);
 		return null;

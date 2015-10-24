@@ -192,10 +192,8 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   compilation-unit:
-		 *     version-specifier? use-directives? file-namespace-declaration? top-level-members?
-		 *   use-directives:
-		 *     use-directive
-		 *     use-directives use-directive
+		 *     version-specifier? use-directives? global-annotations?
+		 *       file-namespace-declaration? top-level-members?
 		 *   file-namespace-declaration:
 		 *     'namespace' qualified-name ';'
 		 *   top-level-members:
@@ -222,13 +220,12 @@ public inheritable Parser is ParserBase
 
 		// use-directives
 		var uses;
-		if accept(i, TokenType.\use)
-		{
-			uses = new List(2);
-			while accept(i, TokenType.\use):
-				uses.add(parseUseDirective(ref i));
-			uses = new NodeList(uses);
-		}
+		if accept(i, TokenType.\use):
+			uses = parseUseDirectives(ref i);
+
+		var globalAnnotations;
+		if accept(i, TokenType.exclam):
+			globalAnnotations = parseGlobalAnnotations(ref i);
 
 		// file-namespace-declaration
 		var fileNamespace;
@@ -317,6 +314,7 @@ public inheritable Parser is ParserBase
 			getLocation(start, end),
 			version,
 			uses,
+			globalAnnotations,
 			fileNamespace,
 			members,
 			statements
@@ -361,6 +359,21 @@ public inheritable Parser is ParserBase
 			getLocation(start, end),
 			major, minor, build, revision
 		);
+	}
+
+	private parseUseDirectives(ref i)
+	{
+		/* Syntax:
+		 *   use-directives:
+		 *     use-directive
+		 *     use-directives use-directive
+		 */
+		var uses = new List(2);
+
+		while accept(i, TokenType.\use):
+			uses.add(parseUseDirective(ref i));
+
+		return new NodeList(uses);
 	}
 
 	/// Summary: Parses a `use` directive at the specified token index.
@@ -4142,6 +4155,34 @@ public inheritable Parser is ParserBase
 		return modifiers;
 	}
 
+	/// Summary: Parses zero or more global annotations at the specified index.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {NodeList} of {Annotation} instances from the tokens at the starting
+	///          index.
+	public parseGlobalAnnotations(ref i)
+	{
+		/* Syntax:
+		 *   global-annotations:
+		 *     global-annotation
+		 *     global-annotations global-annotation
+		 */
+		if not accept(i, TokenType.exclam):
+			return EmptyLists.node;
+
+		var annotations = new List(1);
+		while accept(i, TokenType.exclam) and
+			accept(i + 1, TokenType.\global) and
+			accept(i + 2, TokenType.colon)
+		{
+			var annotation = parseAnnotationHelper(ref i, true);
+			annotations.add(annotation);
+		}
+		annotations = new NodeList(annotations);
+
+		return annotations;
+	}
+
 	/// Summary: Parses zero or more annotations at the specified index.
 	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
 	///          the index of the token that immediately follows the returned parse tree.
@@ -4156,14 +4197,8 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   annotations:
-		 *     annotation
-		 *     annotations annotation
-		 *   annotation:
-		 *     '!' type annotation-argument-list?
-		 *   annotation-arguments-list:
-		 *     '(' positional-annotation-arguments? ')'
-		 *     '(' named-annotation-arguments ')'
-		 *     '(' positional-annotation-arguments ',' named-annotation-arguments ')'
+		 *     member-annotation
+		 *     annotations member-annotation
 		 */
 		if not accept(i, TokenType.exclam):
 			return EmptyLists.node;
@@ -4171,27 +4206,55 @@ public inheritable Parser is ParserBase
 		var annotations = new List(1);
 		while accept(i, TokenType.exclam)
 		{
-			var start = lex[i];
-			i += 1;
-
-			var type = parseTypeName(ref i);
-
-			var positionalArguments = EmptyLists.argument;
-			var namedArguments = EmptyLists.node;
-
-			if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose):
-				parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments);
-
-			annotations.add(
-				new Annotation(
-					getLocation(start, lex[i - 1]),
-					type, positionalArguments, namedArguments
-				)
-			);
+			var annotation = parseAnnotationHelper(ref i, false);
+			annotations.add(annotation);
 		}
 		annotations = new NodeList(annotations);
 
 		return annotations;
+	}
+
+	private parseAnnotationHelper(ref i, isGlobal)
+	{
+		/* Syntax:
+		 *   member-annotation:
+		 *     '!' type annotation-argument-list?
+		 *   global-annotation:
+		 *     '!' 'global' ':' type annotation-argument-list?
+		 *   annotation-arguments-list:
+		 *     '(' positional-annotation-arguments? ')'
+		 *     '(' named-annotation-arguments ')'
+		 *     '(' positional-annotation-arguments ',' named-annotation-arguments ')'
+		 * Additional notes:
+		 *   This method parses both member-annotation and global-annotation, depending on
+		 *   whether isGlobal is true or false.
+		 */
+		var start = expectr(ref i, TokenType.exclam);
+
+		if isGlobal
+		{
+			expectr(ref i, TokenType.\global);
+			expectr(ref i, TokenType.colon);
+		}
+
+		var type = parseTypeName(ref i);
+
+		var positionalArguments = EmptyLists.argument;
+		var namedArguments = EmptyLists.node;
+
+		if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose)
+		{
+			parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments);
+			expectr(ref i, TokenType.parenClose);
+		}
+
+		return new Annotation(
+			getLocation(start, lex[i - 1]),
+			isGlobal,
+			type,
+			positionalArguments,
+			namedArguments
+		);
 	}
 
 	private parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments)
@@ -4239,8 +4302,6 @@ public inheritable Parser is ParserBase
 			else:
 				_positionalArguments.add(argument);
 		} while acceptr(ref i, TokenType.comma);
-
-		expectr(ref i, TokenType.parenClose);
 
 		positionalArguments = new ArgumentList(_positionalArguments);
 		namedArguments = new NodeList(_namedArguments);

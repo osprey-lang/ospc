@@ -4,12 +4,13 @@ namespace osprey.compiler.syntax;
 
 public class Document is ParseNode
 {
-	public new(location, version, useDirectives, fileNamespaceName, members, statements)
+	public new(location, version, useDirectives, globalAnnotations, fileNamespaceName, members, statements)
 	{
 		new base(location);
 
 		this._version           = claim(version);
 		this._useDirectives     = claimAll(useDirectives ?? EmptyLists.node);
+		this._globalAnnotations = claimAll(globalAnnotations ?? EmptyLists.node);
 		this._fileNamespaceName = fileNamespaceName;
 		this._members           = claimAll(members ?? EmptyLists.node);
 		this._statements        = claimAll(statements ?? EmptyLists.node);
@@ -24,6 +25,11 @@ public class Document is ParseNode
 	/// Summary: Gets a {NodeList} containing the {UseDirective}s in
 	///          this compilation unit.
 	public get useDirectives = _useDirectives;
+
+	private _globalAnnotations;
+	/// Summary: Gets a {NodeList} containing the {Annotation}s targeted
+	///          at the module.
+	public get globalAnnotations = _globalAnnotations;
 
 	private _fileNamespaceName;
 	/// Summary: Gets a {QualifiedName} containing the file namespace

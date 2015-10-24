@@ -546,6 +546,10 @@ public class WrappedAnnotation is WrappedNode
 		this.namedArguments = claimAll(namedArguments);
 	}
 
+	/// Summary: Determines whether the annotation is targeted at the module, rather
+	///          than at a member.
+	public get isGlobal = wrappedNode.isGlobal;
+
 	/// Summary: The {WrappedTypeName} of the annotation type.
 	public type;
 

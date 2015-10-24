@@ -692,14 +692,20 @@ public class GlobalVariableDeclaration is LocalDeclaration
 
 public class Annotation is ParseNode
 {
-	public new(location, type, positionalArguments, namedArguments)
+	public new(location, isGlobal, type, positionalArguments, namedArguments)
 	{
 		new base(location);
 
+		this._isGlobal = isGlobal;
 		this._type = claim(type);
 		this._positionalArguments = claimAll(positionalArguments);
 		this._namedArguments = claimAll(namedArguments);
 	}
+
+	private _isGlobal;
+	/// Summary: Determines whether the annotation is targeted at the module, rather
+	///          than at a member.
+	public get isGlobal = _isGlobal;
 
 	private _type;
 	/// Summary: Gets the {TypeName} of the annotation type.
