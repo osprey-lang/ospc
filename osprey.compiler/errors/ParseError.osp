@@ -3,18 +3,47 @@ use namespace osprey.compiler.syntax;
 
 namespace osprey.compiler.parser;
 
-/// Summary: An error that occurs during parsing (as
-///          opposed to later stages of compilation).
+/// Summary: Represents an error that occurs during parsing.
 public inheritable ParseError is CompileTimeError
 {
+	/// Summary: Creates a new {ParseError} with the specified source and error
+	///          code.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode)
 	{
 		new this(source, errorCode, defaultMessage, null);
 	}
+	/// Summary: Creates a new {ParseError} with the specified source, error code
+	///          and message.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param message: The error message.
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode, message)
 	{
 		new this(source, errorCode, message ?? defaultMessage, null);
 	}
+	/// Summary: Creatse a new {ParseError} with the specified source, error code,
+	///          message and inner error.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param message: The error message.
+	/// Param innerError: The {Error} that caused this error.
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode, message, innerError)
 	{
 		new base(source, errorCode, message ?? defaultMessage, innerError);
@@ -24,26 +53,50 @@ public inheritable ParseError is CompileTimeError
 		ErrorCode.getMessage(ErrorCode.err_Syntax);
 }
 
+/// Summary: Represents an error that occurs when an unexpected token is encountered.
+///          This indicates that the code is syntactically invalid.
 public inheritable UnexpectedTokenError is ParseError
 {
+	/// Summary: Creates a new {UnexpectedTokenError} with the specified error code,
+	///          actual token and expected token type. The actual token is used as
+	///          the source of the error.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param actualToken: The {Token} that caused the error.
+	/// Param expectedType: The {TokenType} that the parser expected.
 	public new(errorCode, actualToken, expectedType)
 	{
 		new this(errorCode, actualToken, expectedType, defaultMessage, null);
 	}
+	/// Summary: Creates a new {UnexpectedTokenError} with the specified error code,
+	///          actual token, expected token type and message. The actual token is
+	///          used as the source of the error.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param actualToken: The {Token} that caused the error.
+	/// Param expectedType: The {TokenType} that the parser expected.
+	/// Param message: The error message.
 	public new(errorCode, actualToken, expectedType, message)
 	{
 		new this(errorCode, actualToken, expectedType, message ?? defaultMessage, null);
 	}
+	/// Summary: Creates a new {UnexpectedTokenError} with the specified error code,
+	///          actual token, expected token type, message and inner error. The actual
+	///          token is used as the source of the error.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param actualToken: The {Token} that caused the error.
+	/// Param expectedType: The {TokenType} that the parser expected.
+	/// Param message: The error message.
+	/// Param innerError: The {Error} that caused this error.
 	public new(errorCode, actualToken, expectedType, message, innerError)
 	{
 		new base(actualToken, errorCode, message ?? defaultMessage, innerError);
 
-		_expectedType = expectedType;
+		this._actualToken = actualToken;
+		this._expectedType = expectedType;
 	}
 
-	/// Summary: Gets the {Token} that was actually encountered.
-	///          This is the same as {CompileTimeError.source}.
-	public get actualToken = source;
+	private _actualToken;
+	/// Summary: Gets the {Token} that was encountered in the token stream.
+	public get actualToken = _actualToken;
 
 	private _expectedType;
 	/// Summary: Gets the {TokenType} that was expected.
@@ -51,7 +104,7 @@ public inheritable UnexpectedTokenError is ParseError
 
 	overridable override get message
 	{
-		return base.message :: getExpectation(source, expectedType);
+		return base.message :: getExpectation(actualToken, expectedType);
 	}
 
 	private static get defaultMessage =

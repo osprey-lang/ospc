@@ -64,99 +64,64 @@ public abstract class ErrorManager
 	}
 
 	/// Summary: Signals that an error has occurred.
-	/// Param error: A {CompileTimeError} that encapsulates the error, or an error message.
+	/// Param error: An {Error} that encapsulates the error. If this is not an
+	///              instance of {CompileTimeError}, it will be wrapped in one,
+	///              with the error code {ErrorCode.err_Unspecified} and no
+	///              source location.
+	/// Throws ArgumentError:
+	///          {error} is not an {Error}.
+	/// Throws ArgumentNullError:
+	///          {error} is null.
 	public overridable addError(error)
 	{
-		var source = null;
+		if error is null:
+			throw new ArgumentNullError("error");
+		if error is not Error:
+			throw new ArgumentError("error must be an instance of aves.Error.", "error");
 		if error is not CompileTimeError:
-			// Error without a source
-			error = new CompileTimeError(null, ErrorCode.err_Unspecified, error);
-		else:
-			source = error.source;
-
-		addErrorInner(source, error);
-	}
-
-	/// Summary: Signals that an error has occurred at the specified source.
-	/// Param source: A {Syntax} that represents the source of the error, or null.
-	/// Param error:  The {CompileTimeError} that occurred, or an error message.
-	/// Throws ArgumentError:
-	///          {source} is not null and is not a {Syntax}.
-	///
-	///          {error} is a {CompileTimeError} and its `source` is not the same
-	///          reference as {source}.
-	public overridable addError(source, error)
-	{
-		if source is not null and source is not Syntax:
-			throw new ArgumentError(
-				"source must be null or an osprey.compiler.syntax.Syntax.",
-				"source"
+			error = new CompileTimeError(
+				null, // No meaningful source location
+				ErrorCode.err_Unspecified,
+				getMessage(ErrorCode.err_Unspecified),
+				error // innerError
 			);
 
-		if error.source not refeq source:
-			throw new ArgumentError(
-				"error’s source must be the same reference as the source parameter.",
-				"error"
-			);
-
-		addErrorInner(source, error);
+		addErrorInner(error);
 	}
 
 	/// Summary: Implements the actual error managing behaviour.
-	/// Param source: A {Syntax} that is the source of the error, which may be null.
-	/// Param error:  A {CompileTimeError} that encapsulates the error.
-	protected abstract addErrorInner(source, error);
+	/// Param error: A {CompileTimeError} that encapsulates the error.
+	/// Remarks: The public method {addError} only performs argument validation, and
+	///          then passes the error directly to this method.
+	protected abstract addErrorInner(error);
 
-	/// Summary: Gets a collection of all errors that have occurred so far. This
-	///          method may return null if there are no errors.
-	/// Returns: A collection of all errors that have occurred, or null if there
-	///          are none.
+	/// Summary: Gets a collection of all errors that have occurred so far.
+	/// Returns: An {Iterable} containing all errors that have occurred.
 	public abstract getAllErrors();
 
 	/// Summary: Removes all errors from the error manager.
 	public abstract clearErrors();
 
-	/// Summary: Adds a warning with the specified source and error code.
-	/// Param source:    A {Syntax} that is the source of the warning, or null.
-	/// Param errorCode: The error code of the warning, corresponding to one of the
-	///                  {ErrorCode} constants.
-	public overridable addWarning(source, errorCode)
-	{
-		addWarningInner(new Warning(source, errorCode, ErrorCode.getMessage(errorCode)));
-	}
-	/// Summary: Adds a warning with the specified source, error code and message.
-	/// Param source:    A {Syntax} that is the source of the warning, or null.
-	/// Param errorCode: The error code of the warning, corresponding to one of the
-	///                  {ErrorCode} constants.
-	/// Param message:   The warning message.
+	/// Summary: Reports a warning.
+	/// Param warning: The {Warning} to report.
 	/// Throws ArgumentError:
-	///          {source} is not null and is not a {Syntax}.
-	public overridable addWarning(source, errorCode, message)
+	///          {warning} is not a {Warning}.
+	/// Throws ArgumentNullError:
+	///          {warning} is null.
+	public overridable addWarning(warning)
 	{
-		if message is null:
-			message = ErrorCode.getMessage(errorCode);
-		addWarningInner(new Warning(source, errorCode, message));
-	}
-	/// Summary: Adds a warning with the specified source, error code and message,
-	///          which is formatted with the specified format argument.
-	/// Param source:    A {Syntax} that is the source of the warning, or null.
-	/// Param errorCode: The error code of the warning, corresponding to one of the
-	///                  {ErrorCode} constants.
-	/// Param message:   The warning message.
-	/// Param formatArg:
-	///               An argument that is passed to {String.format}, with the
-	///               warning message being the format string. (List or Hash)
-	/// Throws ArgumentError:
-	///          {source} is not null and is not a {Syntax}.
-	public overridable addWarning(source, errorCode, message, formatArg)
-	{
-		if message is null:
-			message = ErrorCode.getMessage(errorCode, formatArg);
-		addWarningInner(new Warning(source, errorCode, message));
+		if warning is null:
+			throw new ArgumentNullError("warning");
+		if warning is not Warning:
+			throw new ArgumentError("warning must be an osprey.compiler.Warning.", "warning");
+
+		addWarningInner(warning);
 	}
 
 	/// Summary: Implements the actual warning managing behaviour.
 	/// Param warning: The {Warning} that was reported.
+	/// Remarks: The public method {addWarning} only performs argument validation, and
+	///          then passes the warning directly to this method.
 	protected abstract addWarningInner(warning);
 
 	/// Summary: Gets a collection of all the warnings that have been reported so far.
@@ -174,58 +139,5 @@ public abstract class ErrorManager
 	{
 		clearErrors();
 		clearWarnings();
-	}
-}
-
-/// Summary: Represents a single compiler warning.
-public class Warning
-{
-	/// Summary: Creates a new {Warning} with the specified source and message.
-	/// Param source:    A {Syntax} that is the source of the warning, or null.
-	/// Param errorCode: The error code of the warning, corresponding to one of the
-	///                  {ErrorCode} constants.
-	/// Param message:   The warning message.
-	/// Throws ArgumentError:
-	///          {source} is not null and is not a {Syntax}.
-	/// Throws TypeError:
-	///          {message} could not be converted to a string.
-	public new(source, errorCode, message)
-	{
-		if source is not null and source is not Syntax:
-			throw new ArgumentError(
-				"source must be null or an osprey.compiler.syntax.Syntax.",
-				"source"
-			);
-		errorCode = int(errorCode);
-		message = string(message);
-
-		this._source    = source;
-		this._errorCode = errorCode;
-		this._message   = message;
-	}
-
-	private _source;
-	/// Summary: Gets a {Syntax} that is the source of the warning, or null.
-	public get source = _source;
-
-	private _errorCode;
-	/// Summary: Gets the error code associated with the warning. This corresponds
-	///          to one of the {ErrorCode} constants.
-	public get errorCode = _errorCode;
-
-	private _message;
-	/// Summary: Gets a string containing the warning message.
-	public get message = _message;
-
-	override toString()
-	{
-		if source
-		{
-			var column;
-			var line = source.getLineNumber(1, ref column);
-			return "Warning in {0} (ln {1}, col {2}): {3}"
-				.format([source.sourceFile.fileName, line, column, message]);
-		}
-		return "Warning: " :: message;
 	}
 }

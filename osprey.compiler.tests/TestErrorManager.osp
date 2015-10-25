@@ -13,7 +13,7 @@ public class TestErrorManager is ErrorManager
 
 	override get hasWarnings = not warnings.isEmpty;
 
-	override addErrorInner(source, error)
+	override addErrorInner(error)
 	{
 		errors.add(error);
 	}

@@ -25,7 +25,7 @@ public class CompilerErrorManager is ErrorManager
 		var code = message.errorCode.toString("D4");
 		if message.source
 		{
-			var loc = message.source.location;
+			var loc = message.source;
 			var col;
 			var line = loc.getLineNumber(1, ref col);
 			print(messageFormat.format([
@@ -44,7 +44,7 @@ public class CompilerErrorManager is ErrorManager
 		}
 	}
 
-	override addErrorInner(source, error)
+	override addErrorInner(error)
 	{
 		errors.add(error);
 		if printErrors:

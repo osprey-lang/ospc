@@ -3,33 +3,76 @@ use namespace osprey.compiler.syntax;
 
 namespace osprey.compiler;
 
+/// Summary: Represents an error that occurs during compile-time. Errors of this
+///          kind can occur during parsing (see {ParseError}), semantic analysis,
+///          constant folding, code generation, and other phases.
+///
+///          {CompileTimeError} instances may contain a {SourceLocation} that can
+///          be used to determine what part of the code caused the error. There
+///          is also an associated {errorCode}, whose value is usually one of the
+///          {ErrorCode} constants, or a user-defined error code.
 public inheritable CompileTimeError is Error
 {
+	/// Summary: Creates a new {CompileTimeError} with the specified source and
+	///          error code.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode)
 	{
 		new this(source, errorCode, defaultMessage, null);
 	}
+	/// Summary: Creates a new {CompileTimeError} with the specified source, error
+	///          code and message.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param message: The error message.
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode, message)
 	{
 		new this(source, errorCode, message ?? defaultMessage, null);
 	}
+	/// Summary: Creates a new {CompileTimeError} with the specified source, error
+	///          code, message and inner error.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param message: The error message.
+	/// Param innerError: The {Error} that caused this error.
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode, message, innerError)
 	{
 		new base(message ?? defaultMessage, innerError);
 
-		if source is not null and source is not Syntax:
-			throw new ArgumentError(
-				"source must be null or an osprey.compiler.syntax.Syntax",
-				"source"
-			);
+		if source is not null
+		{
+			if source is Syntax:
+				source = source.location;
+			else if source is not SourceLocation:
+				throw new ArgumentError(
+					"source must be null, an osprey.compiler.SourceLocation, or an osprey.compiler.syntax.Syntax.",
+					"source"
+				);
+		}
 
 		this._source = source;
 		this._errorCode = errorCode;
 	}
 
 	private _source;
-	/// Summary: Gets the {Syntax} that is the source of the error, or null if
-	///          the error has no specified source.
+	/// Summary: Gets the {SourceLocation} that is the source of the error, or null
+	///          if the error has no meaningful source.
 	public get source = _source;
 
 	private _errorCode;

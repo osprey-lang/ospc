@@ -1,7 +1,11 @@
-// Error management
+/***********************************************************
+ * This directory contains classes related to compile-time *
+ * errors and warnings.                                    *
+ ***********************************************************/
+
+use "CompileTimeError.osp";
 use "ErrorCode.osp";
 use "ErrorManager.osp";
-// Error types
-use "CompileTimeError.osp";
 use "NameError.osp";
 use "ParseError.osp";
+use "Warning.osp";

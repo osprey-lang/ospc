@@ -1,34 +1,64 @@
 use namespace aves;
+use namespace osprey.compiler.parser;
+use namespace osprey.compiler.syntax;
 
 namespace osprey.compiler;
 
-/// Summary: The base class of all errors caused by a single name. Prefer throwing
-///          derivatives of this class, such as {UndefinedNameError} or {DuplicateNameError},
-///          as they are more specific. This class only provides a {name} property
-///          and overrides {message} to append the name.
+/// Summary: Represents an error caused by a name, either a simple identifier or a qualified
+///          (dotted) name. Prefer derivatives of this class, such as {UndefinedNameError} or
+///          {DuplicateNameError}, as they are more specific.
 public inheritable NameError is CompileTimeError
 {
+	/// Summary: Creates a new {NameError} with the specified source and error code.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	public new(source, errorCode)
 	{
 		new this(source, errorCode, null, getDefaultMessage(null), null);
 	}
+	/// Summary: Creates a new {NameError} with the specified source, error code and
+	///          name.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
 	public new(source, errorCode, name)
 	{
 		new this(source, errorCode, name, getDefaultMessage(name), null);
 	}
+	/// Summary: Creates a new {NameError} with the specified source, error code, name
+	///          and message.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	/// Param message: The error message.
 	public new(source, errorCode, name, message)
 	{
 		new this(source, errorCode, name, message ?? getDefaultMessage(name), null);
 	}
+	/// Summary: Creates a new {NameError} with the specified source, error code, name,
+	///          message and inner error.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	/// Param message: The error message.
+	/// Param innerError: The {Error} that caused this error.
 	public new(source, errorCode, name, message, innerError)
 	{
 		new base(source, errorCode, message ?? getDefaultMessage(name), innerError);
 
-		this._name = name;
+		this._name = formatName(name);
 	}
 
 	private _name;
-	/// Summary: Gets the name that caused the error.
+	/// Summary: Gets the name that caused the error. If the name is not available,
+	///          returns null.
 	public get name = _name;
 
 	overridable override get message
@@ -40,26 +70,76 @@ public inheritable NameError is CompileTimeError
 
 	private static getDefaultMessage(name)
 	{
+		name = formatName(name);
 		return name is null ?
 			ErrorCode.getMessage(ErrorCode.err_NameErrorWithoutName) :
 			ErrorCode.getMessage(ErrorCode.err_NameError, [name]);
 	}
+
+	/// Summary: Formats a name for use in an error message or the {name} property.
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name
+	///             to format, or null if the name is unavailable.
+	/// Returns: If {name} is null, null. Otherwise, a string representation of {name}.
+	///          If {name} is a {QualifiedName}, its parts are joined with `.`; if
+	///          {name} is an {Identifier}, its {Identifier.identifier} property is
+	///          used; and in all other cases, {name} is converted to a String.
+	protected static formatName(name)
+	{
+		if name is Identifier:
+			return name.identifier;
+		if name is QualifiedName:
+			return name.join(".");
+		if name is not null:
+			return string(name);
+		return null;
+	}
 }
 
+/// Summary: Represents an error that occurs when an undefined name is referred
+///          to in code.
 public inheritable UndefinedNameError is NameError
 {
+	/// Summary: Creates a new {UndefinedNameError} with the specified source and error
+	///          code.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	public new(source, errorCode)
 	{
 		new this(source, errorCode, null, getDefaultMessage(null), null);
 	}
+	/// Summary: Creates a new {UndefinedNameError} with the specified source, error code
+	///          and name.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
 	public new(source, errorCode, name)
 	{
 		new this(source, errorCode, name, getDefaultMessage(name), null);
 	}
+	/// Summary: Creates a new {UndefinedNameError} with the specified source, error code,
+	///          name and message.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	/// Param message: The error message.
 	public new(source, errorCode, name, message)
 	{
 		new this(source, errorCode, name, message ?? getDefaultMessage(name), null);
 	}
+	/// Summary: Creates a new {UndefinedNameError} with the specified source, error code,
+	///          name, message and inner error.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	/// Param message: The error message.
+	/// Param innerError: The {Error} that caused this error.
 	public new(source, errorCode, name, message, innerError)
 	{
 		new base(source, errorCode, name, message ?? getDefaultMessage(name), innerError);
@@ -67,33 +147,66 @@ public inheritable UndefinedNameError is NameError
 
 	private static getDefaultMessage(name)
 	{
+		name = formatName(name);
 		return name is null ?
 			ErrorCode.getMessage(ErrorCode.err_UndefinedNameWithoutName) :
 			ErrorCode.getMessage(ErrorCode.err_UndefinedName, [name]);
 	}
 }
 
+/// Summary: Represents an error that occurs when attempt is made to declare the
+///          same multiple times.
 public inheritable DuplicateNameError is NameError
 {
-	public new(source)
+	/// Summary: Creates a new {DuplicateNameError} with the specified source and error
+	///          code.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	public new(source, errorCode)
 	{
-		new this(source, null, getDefaultMessage(null), null);
+		new this(source, errorCode, null, getDefaultMessage(null), null);
 	}
-	public new(source, name)
+	/// Summary: Creates a new {DuplicateNameError} with the specified source, error code
+	///          and name.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	public new(source, errorCode, name)
 	{
-		new this(source, name, getDefaultMessage(name), null);
+		new this(source, errorCode, name, getDefaultMessage(name), null);
 	}
-	public new(source, name, message)
+	/// Summary: Creates a new {DuplicateNameError} with the specified source, error code,
+	///          name and message.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	/// Param message: The error message.
+	public new(source, errorCode, name, message)
 	{
-		new this(source, name, message ?? getDefaultMessage(name), null);
+		new this(source, errorCode, name, message ?? getDefaultMessage(name), null);
 	}
-	public new(source, name, message, innerError)
+	/// Summary: Creates a new {DuplicateNameError} with the specified source, error code,
+	///          name, message and inner error.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
+	/// Param name: An {Identifier}, {QualifiedName} or String containing the name that
+	///             caused the error. If the name is not available, specify null.
+	/// Param message: The error message.
+	/// Param innerError: The {Error} that caused this error.
+	public new(source, errorCode, name, message, innerError)
 	{
-		new base(source, name, message ?? getDefaultMessage(name), innerError);
+		new base(source, errorCode, name, message ?? getDefaultMessage(name), innerError);
 	}
 
 	private static getDefaultMessage(name)
 	{
+		name = formatName(name);
 		return name is null ?
 			ErrorCode.getMessage(ErrorCode.err_DuplicateNameWithoutName) :
 			ErrorCode.getMessage(ErrorCode.err_DuplicateName, [name]);

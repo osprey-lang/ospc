@@ -1,0 +1,72 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler;
+
+/// Summary: Represents a single compiler warning. A warning contains a location,
+///          in the form of a {SourceLocation}, an error code, and a message.
+/// Remarks: Warnings are used for things that may indicate a problem. They are
+///          always non-fatal; that is, the compiler can proceed just fine despite
+///          a warning. Do not use warnings as a kind of “soft error”. If something
+///          is definitely wrong, use a {CompileTimeError} instead of a warning.
+public inheritable Warning
+{
+	/// Summary: Creates a new {Warning} with the specified source, error code and
+	///          message.
+	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
+	///               null if there is no meaningful error source.
+	/// Param errorCode: The error code associated with the warning, usually corresponding
+	///                  to one of the {ErrorCode} constants.
+	/// Param message:   The warning message.
+	/// Throws ArgumentError:
+	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
+	/// Throws TypeError:
+	///          {errorCode} could not be converted to an Int.
+	///
+	///          {message} could not be converted to a string.
+	public new(source, errorCode, message)
+	{
+		if source is not null
+		{
+			if source is Syntax:
+				source = source.location;
+			else if source is not SourceLocation:
+				throw new ArgumentError(
+					"source must be null, an osprey.compiler.SourceLocation, or an osprey.compiler.syntax.Syntax.",
+					"source"
+				);
+		}
+		errorCode = int(errorCode);
+		message = string(message);
+
+		this._source    = source;
+		this._errorCode = errorCode;
+		this._message   = message;
+	}
+
+	private _source;
+	/// Summary: Gets a {SourceLocation} that is the source of the warning, or null
+	///          if the warning has no meaningful source.
+	public get source = _source;
+
+	private _errorCode;
+	/// Summary: Gets the error code associated with the warning, usually corresponding
+	///          to one of the {ErrorCode} constants.
+	public get errorCode = _errorCode;
+
+	private _message;
+	/// Summary: Gets a string containing the warning message.
+	public get message = _message;
+
+	override toString()
+	{
+		if source
+		{
+			var column;
+			var line = source.getLineNumber(1, ref column);
+			return "Warning in {0} (ln {1}, col {2}): {3}"
+				.format([source.sourceFile.fileName, line, column, message]);
+		}
+		return "Warning: " :: message;
+	}
+}
