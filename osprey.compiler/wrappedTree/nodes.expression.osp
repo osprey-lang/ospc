@@ -659,7 +659,7 @@ public class WrappedObjectCreationExpression is WrappedExpression
 	}
 }
 
-public abstract class WrappedInitializer is ParseNode
+public abstract class WrappedInitializer is WrappedNode
 {
 	public new(wrappedNode)
 	{
