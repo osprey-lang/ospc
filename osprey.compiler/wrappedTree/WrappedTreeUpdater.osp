@@ -5,29 +5,36 @@ namespace osprey.compiler.syntax.wrapped;
 
 public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 {
+	private isNotNull = @node = node is not null;
+
+	private mapList(list, arg)
+	{
+		return list.map(@.accept(this, arg))
+			.filter(isNotNull);
+	}
+
 	public overridable updateNodeList(list, arg)
 	{
-		if not list.isEmpty
-		{
-			for i in [0 to list.length - 1]
-			{
-				var item = list[i];
-				var newItem = item.accept(this, arg);
-				if item not refeq newItem:
-					list.setItem(i, item);
-			}
-		}
+		return new NodeList(mapList(list, arg));
+	}
 
-		return list;
+	public overridable updateArgumentList(list, arg)
+	{
+		return new ArgumentList(mapList(list, arg));
+	}
+
+	public overridable updateParameterList(list, arg)
+	{
+		return new ParameterList(mapList(list, arg));
 	}
 
 	// Document
 
 	overridable override visitDocument(document, arg)
 	{
-		updateNodeList(document.useDirectives, arg);
-		updateNodeList(document.members, arg);
-		updateNodeList(document.statements, arg);
+		document.useDirectives = updateNodeList(document.useDirectives, arg);
+		document.members = updateNodeList(document.members, arg);
+		document.statements = updateNodeList(document.statements, arg);
 		return document;
 	}
 
@@ -55,24 +62,24 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitClassConstantDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.constants, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.constants = updateNodeList(decl.constants, arg);
 		return decl;
 	}
 
 	overridable override visitClassDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
 		if decl.baseType is TypeName:
 			decl.baseType = visitTypeName(decl.baseType, arg);
-		updateNodeList(decl.members, arg);
+		decl.members = updateNodeList(decl.members, arg);
 		return decl;
 	}
 
 	overridable override visitConstructorDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.parameters, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body?.accept(this, arg);
 		return decl;
 	}
@@ -85,14 +92,14 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitEnumDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.members, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.members = updateNodeList(decl.members, arg);
 		return decl;
 	}
 
 	overridable override visitEnumMember(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
 		decl.value = decl.value?.accept(this, arg);
 		return decl;
 	}
@@ -106,22 +113,22 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitFieldDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.fields, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.fields = updateNodeList(decl.fields, arg);
 		return decl;
 	}
 
 	overridable override visitGlobalConstantDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.constants, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.constants = updateNodeList(decl.constants, arg);
 		return decl;
 	}
 
 	overridable override visitGlobalFunctionDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.parameters, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body.accept(this, arg);
 		return decl;
 	}
@@ -134,15 +141,15 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitPropertyDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
 		decl.body = decl.body?.accept(this, arg);
 		return decl;
 	}
 
 	overridable override visitIndexerDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.parameters, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body?.accept(this, arg);
 		return decl;
 	}
@@ -150,15 +157,15 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 	overridable override visitAnnotation(annotation, arg)
 	{
 		annotation.type = visitTypeName(annotation.type, arg);
-		updateNodeList(annotation.positionalArguments, arg);
-		updateNodeList(annotation.namedArguments, arg);
+		annotation.positionalArguments = updateArgumentList(annotation.positionalArguments, arg);
+		annotation.namedArguments = updateArgumentList(annotation.namedArguments, arg);
 		return annotation;
 	}
 
 	overridable override visitMethodDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.parameters, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body?.accept(this, arg);
 		return decl;
 	}
@@ -171,36 +178,36 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitInvocatorDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.parameters, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body?.accept(this, arg);
 		return decl;
 	}
 
 	overridable override visitIteratorDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
 		decl.body = decl.body.accept(this, arg);
 		return decl;
 	}
 
 	overridable override visitNamespaceDeclaration(decl, arg)
 	{
-		updateNodeList(decl.members, arg);
+		decl.members = updateNodeList(decl.members, arg);
 		return decl;
 	}
 
 	overridable override visitOperatorDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
-		updateNodeList(decl.parameters, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body.accept(this, arg);
 		return decl;
 	}
 
 	overridable override visitStaticConstructorDeclaration(decl, arg)
 	{
-		updateNodeList(decl.annotations, arg);
+		decl.annotations = updateNodeList(decl.annotations, arg);
 		decl.body = decl.body.accept(this, arg);
 		return decl;
 	}
@@ -215,13 +222,13 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitBlock(block, arg)
 	{
-		updateNodeList(block.statements, arg);
+		block.statements = updateNodeList(block.statements, arg);
 		return block;
 	}
 
 	overridable override visitBaseConstructorCall(stmt, arg)
 	{
-		updateNodeList(stmt.arguments, arg);
+		stmt.statements = updateArgumentList(stmt.arguments, arg);
 		return stmt;
 	}
 
@@ -273,20 +280,20 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitLocalConstantDeclaration(decl, arg)
 	{
-		updateNodeList(decl.constants, arg);
+		decl.constants = updateNodeList(decl.constants, arg);
 		return decl;
 	}
 
 	overridable override visitLocalFunctionDeclaration(decl, arg)
 	{
-		updateNodeList(decl.parameters, arg);
+		decl.parameters = updateParameterList(decl.parameters, arg);
 		decl.body = decl.body.accept(this, arg);
 		return decl;
 	}
 
 	overridable override visitLocalVariableDeclaration(decl, arg)
 	{
-		updateNodeList(decl.variables, arg);
+		decl.variables = updateNodeList(decl.variables, arg);
 		return decl;
 	}
 
@@ -297,8 +304,8 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitParallelAssignment(stmt, arg)
 	{
-		updateNodeList(stmt.targets, arg);
-		updateNodeList(stmt.values, arg);
+		stmt.targets = updateNodeList(stmt.targets, arg);
+		stmt.values = updateNodeList(stmt.values, arg);
 		return stmt;
 	}
 
@@ -310,13 +317,13 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitReturnStatement(stmt, arg)
 	{
-		updateNodeList(stmt.returnValues, arg);
+		stmt.returnValues = updateNodeList(stmt.returnValues, arg);
 		return stmt;
 	}
 
 	overridable override visitThisConstructorCall(stmt, arg)
 	{
-		updateNodeList(stmt.arguments, arg);
+		stmt.arguments = updateNodeList(stmt.arguments, arg);
 		return stmt;
 	}
 
@@ -329,7 +336,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 	overridable override visitTryStatement(stmt, arg)
 	{
 		stmt.tryClause = visitTryClause(stmt.tryClause, arg);
-		updateNodeList(stmt.catchClauses, arg);
+		stmt.catchClauses = updateNodeList(stmt.catchClauses, arg);
 		if stmt.finallyClause is not null:
 			stmt.finallyClause = visitFinallyClause(stmt.finallyClause, arg);
 		return stmt;
@@ -337,26 +344,26 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitTryClause(clause, arg)
 	{
-		updateNodeList(clause.statements, arg);
+		clause.statements = updateNodeList(clause.statements, arg);
 		return clause;
 	}
 
 	overridable override visitGenericCatchClause(clause, arg)
 	{
-		updateNodeList(clause.statements, arg);
+		clause.statements = updateNodeList(clause.statements, arg);
 		return clause;
 	}
 
 	overridable override visitSpecificCatchClause(clause, arg)
 	{
 		clause.caughtType = visitTypeName(clause.caughtType, arg);
-		updateNodeList(clause.statements, arg);
+		clause.statements = updateNodeList(clause.statements, arg);
 		return clause;
 	}
 
 	overridable override visitFinallyClause(clause, arg)
 	{
-		updateNodeList(clause.statements, arg);
+		clause.statements = updateNodeList(clause.statements, arg);
 		return clause;
 	}
 
@@ -376,7 +383,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitYieldStatement(stmt, arg)
 	{
-		updateNodeList(stmt.returnValues, arg);
+		stmt.returnValues = updateNodeList(stmt.returnValues, arg);
 		return stmt;
 	}
 
@@ -472,7 +479,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitHashCreationExpression(expr, arg)
 	{
-		updateNodeList(expr.members, arg);
+		expr.members = updateNodeList(expr.members, arg);
 		return expr;
 	}
 
@@ -486,14 +493,14 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 	overridable override visitIndexerAccess(expr, arg)
 	{
 		expr.inner = expr.inner.accept(this, arg);
-		updateNodeList(expr.arguments, arg);
+		expr.arguments = updateArgumentList(expr.arguments, arg);
 		return expr;
 	}
 
 	overridable override visitInvocationExpression(expr, arg)
 	{
 		expr.inner = expr.inner.accept(this, arg);
-		updateNodeList(expr.arguments, arg);
+		expr.arguments = updateArgumentList(expr.arguments, arg);
 		return expr;
 	}
 
@@ -505,7 +512,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitLambdaMemberExpression(expr, arg)
 	{
-		updateNodeList(expr.members, arg);
+		expr.members = updateNodeList(expr.members, arg);
 		return expr;
 	}
 
@@ -516,8 +523,8 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitListComprehension(expr, arg)
 	{
-		updateNodeList(expr.comprehenders, arg);
-		updateNodeList(expr.values, arg);
+		expr.comprehenders = updateNodeList(expr.comprehenders, arg);
+		expr.values = updateNodeList(expr.values, arg);
 		return expr;
 	}
 
@@ -535,7 +542,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitListCreationExpression(expr, arg)
 	{
-		updateNodeList(expr.values, arg);
+		expr.values = updateNodeList(expr.values, arg);
 		return expr;
 	}
 
@@ -567,14 +574,14 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 	overridable override visitObjectCreationExpression(expr, arg)
 	{
 		expr.type = visitTypeName(expr.type, arg);
-		updateNodeList(expr.arguments, arg);
+		expr.arguments = updateArgumentList(expr.arguments, arg);
 		expr.initializer = expr.initializer?.accept(this, arg);
 		return expr;
 	}
 
 	overridable override visitObjectInitializer(initializer, arg)
 	{
-		updateNodeList(initializer.members, arg);
+		initializer.members = updateNodeList(initializer.members, arg);
 		return initializer;
 	}
 
@@ -586,20 +593,20 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitCollectionInitializer(initializer, arg)
 	{
-		updateNodeList(initializer.elements, arg);
+		initializer.elements = updateNodeList(initializer.elements, arg);
 		return initializer;
 	}
 
 	overridable override visitComprehensionInitializer(initializer, arg)
 	{
-		updateNodeList(initializer.elements, arg);
-		updateNodeList(initializer.comprehenders, arg);
+		initializer.elements = updateNodeList(initializer.elements, arg);
+		initializer.comprehenders = updateNodeList(initializer.comprehenders, arg);
 		return initializer;
 	}
 
 	overridable override visitElementInitializer(initializer, arg)
 	{
-		updateNodeList(initializer.arguments, arg);
+		initializer.arguments = updateArgumentList(initializer.arguments, arg);
 		return initializer;
 	}
 
@@ -626,19 +633,19 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 	overridable override visitSafeAccess(expr, arg)
 	{
 		expr.inner = expr.inner.accept(this, arg);
-		updateNodeList(expr.chain, arg);
+		expr.chain = updateNodeList(expr.chain, arg);
 		return expr;
 	}
 
 	overridable override visitSafeIndexerAccess(node, arg)
 	{
-		updateNodeList(node.arguments, arg);
+		node.arguments = updateArgumentList(node.arguments, arg);
 		return node;
 	}
 
 	overridable override visitSafeInvocation(node, arg)
 	{
-		updateNodeList(node.arguments, arg);
+		node.arguments = updateArgumentList(node.arguments, arg);
 		return node;
 	}
 
@@ -654,7 +661,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitSimpleLambdaExpression(expr, arg)
 	{
-		updateNodeList(expr.parameters, arg);
+		expr.parameters = updateParameterList(expr.parameters, arg);
 		expr.body = expr.body.accept(this, arg);
 		return expr;
 	}
@@ -691,7 +698,7 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitUseInExpression(expr, arg)
 	{
-		updateNodeList(expr.variables, arg);
+		expr.variables = updateNodeList(expr.variables, arg);
 		expr.expression = expr.expression.accept(this, arg);
 		return expr;
 	}

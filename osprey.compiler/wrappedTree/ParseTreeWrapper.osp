@@ -14,23 +14,23 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	public wrapNodeList(list)
 	{
-		if list.length == 0:
-			return EmptyLists.node;
-		return new WrappedNodeList(list.map(wrapListItem));
+		if list.isEmpty:
+			return list;
+		return new NodeList(list.map(wrapListItem));
 	}
 
 	public wrapArgumentList(list)
 	{
-		if list.length == 0:
-			return WrappedArgumentList.emptyList;
-		return new WrappedArgumentList(list.map(wrapListItem));
+		if list.isEmpty:
+			return list;
+		return new ArgumentList(list.map(wrapListItem));
 	}
 
 	public wrapParameterList(list)
 	{
-		if list.length == 0:
-			return WrappedParameterList.emptyList;
-		return new WrappedParameterList(list.map(wrapListItem));
+		if list.isEmpty:
+			return list;
+		return new ParameterList(list.map(wrapListItem));
 	}
 
 	// Document

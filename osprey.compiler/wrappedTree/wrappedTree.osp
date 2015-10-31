@@ -20,12 +20,9 @@
  * as well as the likelihood for error.                     *
  ************************************************************/
 
-use "ArgumentList.osp";
 use "Document.osp";
 use "Expression.osp";
 use "ExternBody.osp";
-use "NodeList.osp";
-use "ParameterList.osp";
 use "ParseTreeWrapper.osp";
 use "Statement.osp";
 use "TypeName.osp";
