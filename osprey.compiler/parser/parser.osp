@@ -1201,8 +1201,11 @@ public inheritable Parser is ParserBase
 		}
 
 		expectr(ref i, TokenType.parenOpen);
-		var parameters = parseParameterList(ref i,
-			/*endToken=*/ TokenType.parenClose, /*allowEmpty=*/ false);
+		var parameters = parseParameterList(
+			ref i,
+			/*endToken=*/ TokenType.parenClose,
+			/*allowEmpty=*/ false
+		);
 		expectr(ref i, TokenType.parenClose);
 
 		if parameters.hasOptionalParameters:
@@ -3990,8 +3993,8 @@ public inheritable Parser is ParserBase
 		return new ParameterList(
 			parameters,
 			optionalCount,
-			hasVariadicParam,
-			null
+			null, // refParameterCount
+			hasVariadicParam
 		);
 	}
 
@@ -4093,7 +4096,7 @@ public inheritable Parser is ParserBase
 		return new ParameterList(
 			parameters,
 			optionalCount,
-			null,
+			null, // refParameterCount
 			hasVariadicParam
 		);
 	}
