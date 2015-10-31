@@ -25,6 +25,7 @@ use "NodeList.osp";
 use "ParameterList.osp";
 use "ParseNode.osp";
 use "ParseTreeVisitor.osp";
+use "ParseTreeWalker.osp";
 use "QualifiedName.osp";
 use "Statement.osp";
 use "SyntaxList.osp";

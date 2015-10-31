@@ -64,6 +64,11 @@ public class ParseTreeWrapper is ParseTreeVisitor
 		return new WrappedUseNamespaceDirective(directive);
 	}
 
+	override visitVersionSpecifier(version, arg)
+	{
+		throw new NotSupportedError();
+	}
+
 	// Declarations
 
 	override visitClassConstantDeclaration(decl, arg)
