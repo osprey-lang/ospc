@@ -183,6 +183,7 @@ public class ClassDeclaration is TypeDeclaration
 
 	private static _primitive = new Object();
 	/// Summary: Gets an object that represents the base type specifier `__primitive`.
+	///          This is a non-standard extension.
 	public static get primitive = _primitive;
 
 	override accept(visitor, arg)
