@@ -48,6 +48,25 @@ public abstract class ParseNode is Syntax
 		return nodes;
 	}
 
+	/// Summary: Finds the nearest ancestor node that matches the specified predicate,
+	///          by walking up the {parent} chain and returning the first ancestor
+	///          that matches the predicate.
+	/// Param predicate: An invokable value that takes one argument (the current node)
+	///          and returns a truthy value if the node matches a condition.
+	/// Returns: The nearest ancestor for which {predicate} returned true, or null
+	///          if none could be found.
+	public findNearest(predicate)
+	{
+		var ancestor = _parent;
+		while ancestor is not null
+		{
+			if predicate(ancestor):
+				return ancestor;
+			ancestor = ancestor._parent;
+		}
+		return null;
+	}
+
 	/// Summary: Finds the nearest ancestor of the specified type, by walking
 	///          up the {parent} chain and returning the first ancestor that
 	///          is of the specified type.
