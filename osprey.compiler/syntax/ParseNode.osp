@@ -55,7 +55,7 @@ public abstract class ParseNode is Syntax
 	///             sought-after type.
 	/// Returns: The nearest ancestor of type {type}, or null if none could
 	///          be found.
-	public findAncestor(type)
+	public findNearestOfType(type)
 	{
 		var ancestor = _parent;
 		while ancestor is not null
