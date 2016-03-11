@@ -4417,10 +4417,12 @@ public inheritable Parser is ParserBase
 		TokenType.plus:         BinaryOperator.addition,
 		TokenType.minus:        BinaryOperator.subtraction,
 		TokenType.pipe:         BinaryOperator.bitwiseOr,
+		TokenType.caret:        BinaryOperator.bitwiseXor,
 		TokenType.multiply:     BinaryOperator.multiplication,
 		TokenType.divide:       BinaryOperator.division,
 		TokenType.modulo:       BinaryOperator.modulo,
 		TokenType.ampersand:    BinaryOperator.bitwiseAnd,
+		TokenType.power:        BinaryOperator.exponentiation,
 		// Compound assignment operators
 		TokenType.plusAssign:       BinaryOperator.addition,
 		TokenType.minusAssign:      BinaryOperator.subtraction,
