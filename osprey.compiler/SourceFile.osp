@@ -114,10 +114,18 @@ public class SourceFile
 	///                This is used when calculating the column number.
 	/// Param column:  (ref) Receives the 1-based column number of the syntax element.
 	/// Returns: The 1-based line number of the specified index within the file source.
+	/// Throws ArgumentRangeError:
+	///          {index} is less than zero or greater than the length of {source}.
+	///
+	///          {tabSize} is less than zero.
 	public getLineNumber(index, tabSize, ref column)
 	{
 		index = int(index);
+		if index < 0 or index >= source.length:
+			throw new ArgumentRangeError("index");
 		tabSize = int(tabSize);
+		if tabSize <= 0:
+			throw new ArgumentRangeError("tabSize");
 
 		var nearestLine = getNearestLine(index);
 
