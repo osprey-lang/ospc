@@ -215,7 +215,7 @@ public inheritable Parser is ParserBase
 
 		// version-specifier
 		var version;
-		if acceptContextual(i, "version") and
+		if acceptContextual(i, ContextualType.version) and
 			accept(i + 1, TokenType.int):
 			version = parseVersionSpecifier(ref i);
 
@@ -655,13 +655,13 @@ public inheritable Parser is ParserBase
 		var baseType;
 		if acceptr(ref i, TokenType.\is):
 			baseType = parseTypeName(ref i);
-		else if acceptrExtension(ref i, "__primitive"):
+		else if acceptrExtension(ref i, ContextualType.primitive):
 			baseType = ClassDeclaration.primitive;
 
 		expectr(ref i, TokenType.curlyOpen);
 
 		var typeIniter;
-		if acceptrExtension(ref i, "__init_type")
+		if acceptrExtension(ref i, ContextualType.initType)
 		{
 			expectr(ref i, TokenType.parenOpen);
 			typeIniter = expectr(ref i, TokenType.string);
@@ -1352,7 +1352,7 @@ public inheritable Parser is ParserBase
 		 *     block
 		 *     extern-body
 		 */
-		if acceptExtension(i, "__extern"):
+		if acceptExtension(i, ContextualType.extern):
 			return parseExternBody(ref i);
 		return parseBlock(ref i);
 	}
@@ -1376,7 +1376,7 @@ public inheritable Parser is ParserBase
 		 *   The only extern-parameters so far are "stack" and "locals".
 		 */
 		var start = lex[i];
-		if not acceptExtension(i, "__extern"):
+		if not acceptExtension(i, ContextualType.extern):
 			fatalError(start, ErrorCode.err_x_ExpectedExternKeyword);
 		i += 1;
 
@@ -3134,9 +3134,9 @@ public inheritable Parser is ParserBase
 		{
 			if useExtensions and not start.escaped
 			{
-				if start.identifier == "__named_const":
+				if start.contextualType == ContextualType.namedConst:
 					return parseNamedConstantExpression(ref i);
-				if start.identifier == "__get_argc":
+				if start.contextualType == ContextualType.getArgc:
 					return new GetArgumentCountExpression(start.location);
 			}
 			return new SimpleNameExpression(start.location, start);
@@ -3440,7 +3440,7 @@ public inheritable Parser is ParserBase
 		if not endsWithComma
 		{
 			// Could it be a range expression?
-			if values.length == 1 and acceptrContextual(ref i, "to")
+			if values.length == 1 and acceptrContextual(ref i, ContextualType.to)
 			{
 				var highExpr = parseExpression(ref i);
 
@@ -3487,7 +3487,7 @@ public inheritable Parser is ParserBase
 
 	private acceptStartOfListComprehensionPart(i)
 	{
-		return accept(i, TokenType.\for) or acceptContextual(i, "where");
+		return accept(i, TokenType.\for) or acceptContextual(i, ContextualType.where);
 	}
 
 	private parseListComprehensionPart(ref i)
@@ -3502,7 +3502,7 @@ public inheritable Parser is ParserBase
 		 *     'where' expression
 		 */
 		var start = lex[i];
-		if acceptrContextual(ref i, "where")
+		if acceptrContextual(ref i, ContextualType.where)
 		{
 			var condition = parseExpression(ref i);
 			return new ListComprehensionCondition(

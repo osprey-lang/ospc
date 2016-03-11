@@ -227,7 +227,7 @@ public abstract class ParserBase
 	///          specified contextual keyword. The parser looks for an identifier,
 	///          and compares it against {keyword}.
 	/// Param i: The token’s index in the lexer.
-	/// Param keyword: The contextual keyword to look for. (String)
+	/// Param keyword: The contextual keyword to look for. (ContextualType)
 	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
 	/// Remarks: The Osprey grammar allows identifiers to be escaped (with '\\'),
 	//           which prevents them from being interpreted as contextual keywords.
@@ -235,7 +235,7 @@ public abstract class ParserBase
 	public acceptContextual(i, keyword)
 	{
 		var tok = lex[i];
-		if tok.match(TokenType.identifier) and not tok.escaped and tok.identifier == keyword:
+		if tok.match(TokenType.identifier) and tok.contextualType == keyword:
 			return true;
 		return false;
 	}
@@ -245,7 +245,7 @@ public abstract class ParserBase
 	///          and compares it against {keyword}. If the token matches, then the
 	///          index is incremented by 1.
 	/// Param i: (ref) The token’s index in the lexer.
-	/// Param keyword: The contextual keyword to look for. (String)
+	/// Param keyword: The contextual keyword to look for. (ContextualType)
 	/// Returns: True if the token matches the specified contextual keyword; otherwise, false.
 	/// Remarks: The Osprey grammar allows identifiers to be escaped (with '\\'),
 	//           which prevents them from being interpreted as contextual keywords.
@@ -253,7 +253,7 @@ public abstract class ParserBase
 	public acceptrContextual(ref i, keyword)
 	{
 		var tok = lex[i];
-		if tok.match(TokenType.identifier) and not tok.escaped and tok.identifier == keyword
+		if tok.match(TokenType.identifier) and tok.contextualType == keyword
 		{
 			i += 1;
 			return true;
@@ -265,11 +265,14 @@ public abstract class ParserBase
 	///          specified extension keyword. The parser looks for an identifier,
 	///          and compares it against {keyword}.
 	/// Param i: The token’s index in the lexer.
-	/// Param keyword: The extension keyword to look for. (String)
+	/// Param keyword: The extension keyword to look for. (ContextualType)
 	/// Returns: True if the token matches the specified extension keyword; otherwise, false.
 	/// Remarks: This method always returns false if the parser was initialized without the
-	///          {ParseFlags.useExtension} flag. Clases that inherit from {ParserBase} do
+	///          {ParseFlags.useExtension} flag. Classes that inherit from {ParserBase} do
 	///          not need to check {useExtensions} before calling this method.
+	///
+	///          Extension keywords are implemented as contextual keywords. Hence why this
+	///          method takes a {ContextualType}.
 	public acceptExtension(i, keyword)
 	{
 		return useExtensions and acceptContextual(i, keyword);
@@ -280,11 +283,14 @@ public abstract class ParserBase
 	///          and compares it against {keyword}. If the token matches, then the
 	///          index is incremented by 1.
 	/// Param i: (ref) The token’s index in the lexer.
-	/// Param keyword: The extension keyword to look for. (String)
+	/// Param keyword: The extension keyword to look for. (ContextualType)
 	/// Returns: True if the token matches the specified extension keyword; otherwise, false.
 	/// Remarks: This method always returns false if the parser was initialized without the
-	///          {ParseFlags.useExtension} flag. Clases that inherit from {ParserBase} do
+	///          {ParseFlags.useExtension} flag. Classes that inherit from {ParserBase} do
 	///          not need to check {useExtensions} before calling this method.
+	///
+	///          Extension keywords are implemented as contextual keywords. Hence why this
+	///          method takes a {ContextualType}.
 	public acceptrExtension(ref i, keyword)
 	{
 		return useExtensions and acceptrContextual(ref i, keyword);
