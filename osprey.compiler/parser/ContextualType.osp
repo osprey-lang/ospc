@@ -1,0 +1,25 @@
+use namespace aves;
+
+namespace osprey.compiler.parser;
+
+public enum ContextualType
+{
+	/// Summary: The token is not a keyword in any context.
+	none = 0,
+	/// Summary: to
+	to = 1,
+	/// Summary: where
+	where = 2,
+	/// Summary: version
+	version = 3,
+	/// Summary: __primitive (non-standard extension)
+	primitive = 4,
+	/// Summary: __init_type (non-standard extension)
+	initType = 5,
+	/// Summary: __extern (non-standard extension)
+	extern = 6,
+	/// Summary: __named_const (non-standard extension)
+	namedConst = 7,
+	/// Summary: __get_argc (non-standard extension)
+	getArgc = 8,
+}

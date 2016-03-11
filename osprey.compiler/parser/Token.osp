@@ -111,16 +111,19 @@ public class Identifier is Token
 {
 	public new(location, identifier)
 	{
-		new base(location, TokenType.identifier, null);
-
-		this._identifier = identifier;
+		new this(location, identifier, false, ContextualType.none);
 	}
 	public new(location, identifier, escaped)
+	{
+		new this(location, identifier, escaped, ContextualType.none);
+	}
+	public new(location, identifier, escaped, contextualType)
 	{
 		new base(location, TokenType.identifier, null);
 
 		this._identifier = identifier;
-		this._escaped  = escaped;
+		this._escaped = escaped;
+		this._contextualType = contextualType;
 	}
 
 	private _identifier;
@@ -129,7 +132,6 @@ public class Identifier is Token
 	public get identifier = _identifier;
 
 	private _escaped;
-
 	/// Summary: Determines whether the identifier is escaped; that is, the source text
 	///          begins with a backslash (`\`).
 	public get escaped
@@ -138,6 +140,11 @@ public class Identifier is Token
 			_escaped = value[0] == '\\';
 		return _escaped;
 	}
+
+	private _contextualType;
+	/// Summary: Gets the contextual keyword type of this identifier, if it could be
+	///          used as a contextual keyword.
+	public get contextualType = _contextualType;
 
 	override toString()
 	{

@@ -903,10 +903,17 @@ public class Lexer
 			return new Token(location, keywordType, null);
 		}
 
+		// If the identifier is not escaped, it might be a contextual keyword.
+		// As the name suggests, contextual keywords are only treated as such
+		// in certain context; elsewhere, they're just regular identifiers.
+		var contextualType = ContextualType.none;
+		if not escaped and ident.length <= longestContextualLength:
+			contextualToType.tryGet(ident, ref contextualType);
+
 		if normalizeIdents:
 			ident = normalizeIdentifier(ident, hasFormatChars);
 
-		return new Identifier(location, ident.intern());
+		return new Identifier(location, ident.intern(), escaped, contextualType);
 	}
 
 	private scanPunctuation(ref i)
@@ -1175,8 +1182,11 @@ public class Lexer
 		"xor":         TokenType.\xor,
 		"yield":       TokenType.\yield,
 	};
-	// Mapping from TokenType to keyword string. Assigned to by static constructor.
+	// Mapping from TokenType to keyword string. Assigned by static constructor.
 	private static typeToKeyword;
+
+	// Receives the length of the longest keyword. Assigned by static constructor.
+	private static longestKeywordLength;
 
 	// Mapping from literal keyword type to corresponding literal value.
 	private static literalKeywordTypes = {
@@ -1185,8 +1195,22 @@ public class Lexer
 		TokenType.\null:  null,
 	};
 
-	// Receives the length of the longest keyword. Assigned to by static constructor.
-	private static longestKeywordLength;
+	private static contextualToType = {
+		"to":            ContextualType.to,
+		"where":         ContextualType.where,
+		"version":       ContextualType.version,
+		"__primitive":   ContextualType.primitive,
+		"__init_type":   ContextualType.initType,
+		"__extern":      ContextualType.extern,
+		"__named_const": ContextualType.namedConst,
+		"__get_argc":    ContextualType.getArgc,
+	};
+
+	// Mapping from ContextualType to keyword string. Assigned by static constructor.
+	private static typeToContextual;
+
+	// Receives the length of the longest contextual keyword. Assigned by static constructor.
+	private static longestContextualLength;
 
 	/* Syntax:
 	 *   hex-digit: one of
@@ -1354,22 +1378,38 @@ public class Lexer
 
 	static new()
 	{
-		var longestKw = 0;
+		var longestKeyword = 0;
 		typeToKeyword = new Hash(keywordToType.length);
 		for kw, type in keywordToType
 		{
 			typeToKeyword.add(type, kw);
-			if kw.length > longestKw:
-				longestKw = kw.length;
+			longestKeyword = math.max(longestKeyword, kw.length);
 		}
 
-		longestKeywordLength = longestKw;
+		longestKeywordLength = longestKeyword;
+
+		var longestContextual = 0;
+		typeToContextual = new Hash(contextualToType.length);
+		for kw, type in contextualToType
+		{
+			typeToContextual.add(type, kw);
+			longestContextual = math.max(longestContextual, kw.length);
+		}
+
+		longestContextualLength = longestContextual;
 	}
 
 	public static getKeywordFromTokenType(type)
 	{
 		var kw;
 		typeToKeyword.tryGet(type, ref kw);
+		return kw;
+	}
+
+	public static getContextualKeywordFromContextualType(type)
+	{
+		var kw;
+		typeToContextual.tryGet(type, ref kw);
 		return kw;
 	}
 

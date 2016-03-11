@@ -2,6 +2,7 @@
  * This directory contains the parser and tokenizer code.   *
  ************************************************************/
 
+use "ContextualType.osp";
 use "Lexer.osp";
 use "LexerFlags.osp";
 use "Modifiers.osp";
