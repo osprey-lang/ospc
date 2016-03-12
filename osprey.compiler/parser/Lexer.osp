@@ -1118,16 +1118,16 @@ public class Lexer
 
 	/* Syntax:
 	 *   keyword: one of
-	 *     'abstract'  'and'      'async'      'base'    'break'
-	 *     'catch'     'class'    'const'      'do'      'else'
-	 *     'enum'      'false'    'finally'    'for'     'function'
-	 *     'get'       'global'   'if'         'in'      'inheritable'
-	 *     'is'        'iter'     'namespace'  'new'     'next'
-	 *     'not'       'null'     'operator'   'or'      'overridable'
-	 *     'override'  'private'  'protected'  'public'  'ref'
-	 *     'refeq'     'return'   'set'        'static'  'this'
-	 *     'throw'     'true'     'try'        'typeof'  'use'
-	 *     'var'       'while'    'with'       'xor'     'yield'
+	 *     'abstract'  'and'        'async'    'base'         'break'
+	 *     'catch'     'class'      'const'    'do'           'else'
+	 *     'enum'      'false'      'finally'  'for'          'function'
+	 *     'global'    'if'         'in'       'inheritable'  'is'
+	 *     'iter'      'namespace'  'new'      'next'         'not'
+	 *     'null'      'operator'   'or'       'overridable'  'override'
+	 *     'private'   'protected'  'public'   'ref'          'refeq'
+	 *     'return'    'static'     'this'     'throw'        'true'
+	 *     'try'       'typeof'     'use'      'var'          'while'
+	 *     'with'      'xor'        'yield'
 	 * Mapping from keyword string to corresponding TokenType.
 	 */
 	private static keywordToType = {
@@ -1146,7 +1146,6 @@ public class Lexer
 		"finally":     TokenType.\finally,
 		"for":         TokenType.\for,
 		"function":    TokenType.\function,
-		"get":         TokenType.\get,
 		"global":      TokenType.\global,
 		"if":          TokenType.\if,
 		"in":          TokenType.\in,
@@ -1168,7 +1167,6 @@ public class Lexer
 		"ref":         TokenType.\ref,
 		"refeq":       TokenType.\refeq,
 		"return":      TokenType.\return,
-		"set":         TokenType.\set,
 		"static":      TokenType.\static,
 		"this":        TokenType.\this,
 		"throw":       TokenType.\throw,
@@ -1196,6 +1194,8 @@ public class Lexer
 	};
 
 	private static contextualToType = {
+		"get":           ContextualType.get,
+		"set":           ContextualType.set,
 		"to":            ContextualType.to,
 		"where":         ContextualType.where,
 		"version":       ContextualType.version,

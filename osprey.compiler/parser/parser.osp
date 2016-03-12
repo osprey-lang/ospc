@@ -712,7 +712,9 @@ public inheritable Parser is ParserBase
 			{
 				member = parseConstructorDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\get, TokenType.\set)
+			else if token.type == TokenType.identifier and
+				(token.contextualType == ContextualType.get or token.contextualType == ContextualType.set) and
+				accept(i + 1, TokenType.identifier, TokenType.\this)
 			{
 				member = parsePropertyOrIndexerDeclaration(ref i, modifiers);
 			}
@@ -865,11 +867,13 @@ public inheritable Parser is ParserBase
 		if modifiers is null:
 			modifiers = parseModifiers(ref i);
 
-		var start = lex[i];
+		var start = expectr(ref i, TokenType.identifier);
 
-		var isSetter = acceptr(ref i, TokenType.\set);
-		if not isSetter:
-			expectr(ref i, TokenType.\get);
+		var isSetter = false;
+		if start.contextualType == ContextualType.set:
+			isSetter = true;
+		else if start.contextualType != ContextualType.get:
+			fatalError(start, ErrorCode.err_UnexpectedToken);
 
 		// name is null for indexer; indexerParams is null for property
 		var name, indexerParams;
@@ -1295,7 +1299,13 @@ public inheritable Parser is ParserBase
 		modifiers.verifyForEnum(this);
 
 		var start = expectr(ref i, TokenType.\enum);
-		var isSet = acceptr(ref i, TokenType.\set);
+		var isSet = false;
+		if acceptContextual(i, ContextualType.set) and
+			accept(i + 1, TokenType.identifier)
+		{
+			i += 1; // Skip 'set'
+			isSet = true;
+		}
 
 		var typeName = expectr(ref i, TokenType.identifier);
 

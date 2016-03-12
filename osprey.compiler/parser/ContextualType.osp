@@ -6,20 +6,24 @@ public enum ContextualType
 {
 	/// Summary: The token is not a keyword in any context.
 	none = 0,
+	/// Summary: get
+	get = 1,
+	/// Summary: set
+	set = 2,
 	/// Summary: to
-	to = 1,
+	to = 3,
 	/// Summary: where
-	where = 2,
+	where = 4,
 	/// Summary: version
-	version = 3,
+	version = 5,
 	/// Summary: __primitive (non-standard extension)
-	primitive = 4,
+	primitive = 6,
 	/// Summary: __init_type (non-standard extension)
-	initType = 5,
+	initType = 7,
 	/// Summary: __extern (non-standard extension)
-	extern = 6,
+	extern = 8,
 	/// Summary: __named_const (non-standard extension)
-	namedConst = 7,
+	namedConst = 9,
 	/// Summary: __get_argc (non-standard extension)
-	getArgc = 8,
+	getArgc = 10,
 }

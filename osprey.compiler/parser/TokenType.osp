@@ -72,76 +72,72 @@ public enum set TokenType
 	\for = 14 | keyword,
 	/// Summary: function
 	\function = 15 | keyword,
-	/// Summary: get
-	\get = 16 | keyword,
 	/// Summary: global
-	\global = 17 | keyword,
+	\global = 16 | keyword,
 	/// Summary: if
-	\if = 18 | keyword,
+	\if = 17 | keyword,
 	/// Summary: in
-	\in = 19 | keyword,
+	\in = 18 | keyword,
 	/// Summary: inheritable
-	\inheritable = 20 | keyword | memberModifier,
+	\inheritable = 19 | keyword | memberModifier,
 	/// Summary: is
-	\is = 21 | keyword,
+	\is = 20 | keyword,
 	/// Summary: iter
-	\iter = 22 | keyword,
+	\iter = 21 | keyword,
 	/// Summary: namespace
-	\namespace = 23 | keyword,
+	\namespace = 22 | keyword,
 	/// Summary: new
-	\new = 24 | keyword,
+	\new = 23 | keyword,
 	/// Summary: next
-	\next = 25 | keyword,
+	\next = 24 | keyword,
 	/// Summary: not
-	\not = 26 | keyword | lambdaOperator,
+	\not = 25 | keyword | lambdaOperator,
 	/// Summary: null
-	\null = 27 | keyword | literal,
+	\null = 26 | keyword | literal,
 	/// Summary: operator
-	\operator = 28 | keyword,
+	\operator = 27 | keyword,
 	/// Summary: or
-	\or = 29 | keyword | lambdaOperator,
+	\or = 28 | keyword | lambdaOperator,
 	/// Summary: overridable
-	\overridable = 30 | keyword | memberModifier,
+	\overridable = 29 | keyword | memberModifier,
 	/// Summary: override
-	\override = 31 | keyword | memberModifier,
+	\override = 30 | keyword | memberModifier,
 	/// Summary: private
-	\private = 32 | keyword | memberModifier,
+	\private = 31 | keyword | memberModifier,
 	/// Summary: protected
-	\protected = 33 | keyword | memberModifier,
+	\protected = 32 | keyword | memberModifier,
 	/// Summary: public
-	\public = 34 | keyword | memberModifier,
+	\public = 33 | keyword | memberModifier,
 	/// Summary: ref
-	\ref = 35 | keyword,
+	\ref = 34 | keyword,
 	/// Summary: refeq
-	\refeq = 36 | keyword,
+	\refeq = 35 | keyword,
 	/// Summary: return
-	\return = 37 | keyword,
-	/// Summary: set
-	\set = 38 | keyword,
+	\return = 36 | keyword,
 	/// Summary: static
-	\static = 39 | keyword | memberModifier,
+	\static = 37 | keyword | memberModifier,
 	/// Summary: this
-	\this = 40 | keyword,
+	\this = 38 | keyword,
 	/// Summary: throw
-	\throw = 41 | keyword,
+	\throw = 39 | keyword,
 	/// Summary: true
-	\true = 42 | keyword | literal,
+	\true = 40 | keyword | literal,
 	/// Summary: try
-	\try = 43 | keyword,
+	\try = 41 | keyword,
 	/// Summary: typeof
-	\typeof = 44 | keyword,
+	\typeof = 42 | keyword,
 	/// Summary: use
-	\use = 45 | keyword,
+	\use = 43 | keyword,
 	/// Summary: var
-	\var = 46 | keyword,
+	\var = 44 | keyword,
 	/// Summary: with
-	\with = 47 | keyword,
+	\with = 45 | keyword,
 	/// Summary: while
-	\while = 48 | keyword,
+	\while = 46 | keyword,
 	/// Summary: xor
-	\xor = 49 | keyword | lambdaOperator,
+	\xor = 47 | keyword | lambdaOperator,
 	/// Summary: yield
-	\yield = 50 | keyword,
+	\yield = 48 | keyword,
 
 	/** Literals **/
 
