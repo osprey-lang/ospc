@@ -193,7 +193,7 @@ public class LexerTests is TestFixture
 		var source = r"
 			~   <   <=  >  >=  ==   !=  ?  ??  ?!
 			->  +   -   |  *   /    %   &  ^   ::
-			<<  >>  **  #  $   <=>
+			<<  >>  **   <=>
 		";
 		var lexer = lex(source);
 
@@ -206,7 +206,7 @@ public class LexerTests is TestFixture
 			TT.funcApplication, TT.plus, TT.minus, TT.pipe,
 			TT.multiply, TT.divide, TT.modulo, TT.ampersand,
 			TT.caret, TT.concatenate, TT.shiftLeft, TT.shiftRight,
-			TT.power, TT.hash, TT.dollar, TT.compare,
+			TT.power, TT.compare,
 		];
 
 		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
@@ -214,7 +214,7 @@ public class LexerTests is TestFixture
 
 	public test_PunctuationAssignOperators()
 	{
-		var source = r"=  +=  -=  |=  *=  /=  %=  &=  ^=  ::=  <<=  >>=  **=  #=  $=";
+		var source = r"=  +=  -=  |=  *=  /=  %=  &=  ^=  ::=  <<=  >>=  **=";
 		var lexer = lex(source);
 
 		// Same order as the source, of course. Sorry it's a bit hard to read.
@@ -224,7 +224,7 @@ public class LexerTests is TestFixture
 			TT.mulAssign, TT.divAssign, TT.modAssign, TT.ampAssign,
 			TT.caretAssign, TT.concatAssign,
 			TT.shiftLeftAssign, TT.shiftRightAssign,
-			TT.powerAssign, TT.hashAssign, TT.dollarAssign,
+			TT.powerAssign,
 		];
 
 		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
