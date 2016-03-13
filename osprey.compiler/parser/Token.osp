@@ -25,6 +25,10 @@ public inheritable Token is Syntax
 	/// Summary: Gets the type of the token.
 	public get type = _type;
 
+	/// Summary: Gets the contextual type of this token, if it could be used as a
+	///          contextual keyword.
+	public overridable get contextualType = ContextualType.none;
+
 	private _value;
 	/// Summary: Gets a string representation of the token.
 	public get value
@@ -142,9 +146,7 @@ public class Identifier is Token
 	}
 
 	private _contextualType;
-	/// Summary: Gets the contextual keyword type of this identifier, if it could be
-	///          used as a contextual keyword.
-	public get contextualType = _contextualType;
+	override get contextualType = _contextualType;
 
 	override toString()
 	{

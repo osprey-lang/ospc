@@ -712,8 +712,7 @@ public inheritable Parser is ParserBase
 			{
 				member = parseConstructorDeclaration(ref i, modifiers);
 			}
-			else if token.type == TokenType.identifier and
-				(token.contextualType == ContextualType.get or token.contextualType == ContextualType.set) and
+			else if (token.contextualType == ContextualType.get or token.contextualType == ContextualType.set) and
 				accept(i + 1, TokenType.identifier, TokenType.\this)
 			{
 				member = parsePropertyOrIndexerDeclaration(ref i, modifiers);

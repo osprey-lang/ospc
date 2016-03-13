@@ -234,8 +234,7 @@ public abstract class ParserBase
 	///          This method never matches escaped identifiers.
 	public acceptContextual(i, keyword)
 	{
-		var tok = lex[i];
-		if tok.match(TokenType.identifier) and tok.contextualType == keyword:
+		if lex[i].contextualType == keyword:
 			return true;
 		return false;
 	}
@@ -252,8 +251,7 @@ public abstract class ParserBase
 	///          This method never matches escaped identifiers.
 	public acceptrContextual(ref i, keyword)
 	{
-		var tok = lex[i];
-		if tok.match(TokenType.identifier) and tok.contextualType == keyword
+		if lex[i].contextualType == keyword
 		{
 			i += 1;
 			return true;
