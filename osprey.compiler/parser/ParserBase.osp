@@ -9,7 +9,7 @@ namespace osprey.compiler.parser;
 ///
 ///          A parser can produce both fatal and recoverable parse errors. Fatal errors are
 ///          typically the result of a grammatically invalid token stream, such as a missing
-///          semicolon at the end of a statement, or having a closing bracket too many. The
+///          semicolon at the end of a statement, or having one closing bracket too many. The
 ///          parser can usually not continue after such an error. Recoverable errors usually
 ///          indicate semantic problems, for instance duplicate accessibility modifiers, or
 ///          required parameters after optional parameters. Although the parse tree after a
@@ -45,7 +45,7 @@ public abstract class ParserBase
 	///                     manager, which throws all errors.
 	/// Remarks: The {ErrorManager} only receives recoverable errors. Fatal parse errors,
 	///          such as invalid syntax, are always thrown. The {ErrorManager} is passed
-	///          on to the lexer that the parse creates if {source} is a {SourceFile}. If
+	///          on to the lexer that the parser creates if {source} is a {SourceFile}. If
 	///          {source} is already a {Lexer}, its error manager is used as-is.
 	/// Throws ArgumentError:
 	///          {source} is not a {SourceFile} or {Lexer}.
