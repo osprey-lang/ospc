@@ -33,10 +33,6 @@ public enum BinaryOperator
 	greaterEqual,
 	/// Summary: <=>
 	comparison,
-	/// Summary: #
-	hash,
-	/// Summary: $
-	dollar,
 	/// Summary: <<
 	shiftLeft,
 	/// Summary: >>
@@ -101,10 +97,6 @@ public enum LambdaOperator
 	greaterEqual,
 	/// Summary: @<=>
 	comparison,
-	/// Summary: @#
-	hash,
-	/// Summary: @$
-	dollar,
 	/// Summary: @<<
 	shiftLeft,
 	/// Summary: @>>

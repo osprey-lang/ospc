@@ -224,52 +224,44 @@ public enum set TokenType
 	shiftRight = 32 | punctuation | overloadableBinaryOperator | lambdaOperator,
 	/// Summary: **
 	power = 33 | punctuation | overloadableBinaryOperator | lambdaOperator,
-	/// Summary: #
-	hash = 34 | punctuation | overloadableBinaryOperator | lambdaOperator,
-	/// Summary: $
-	dollar = 35 | punctuation | overloadableBinaryOperator | lambdaOperator,
 	/// Summary: =
-	assign = 36 | punctuation,
+	assign = 34 | punctuation,
 	/// Summary: +=
-	plusAssign = 37 | punctuation | compoundAssign,
+	plusAssign = 35 | punctuation | compoundAssign,
 	/// Summary: -=
-	minusAssign = 38 | punctuation | compoundAssign,
+	minusAssign = 36 | punctuation | compoundAssign,
 	/// Summary: |=
-	pipeAssign = 39 | punctuation | compoundAssign,
+	pipeAssign = 37 | punctuation | compoundAssign,
 	/// Summary: *=
-	mulAssign = 40 | punctuation | compoundAssign,
+	mulAssign = 38 | punctuation | compoundAssign,
 	/// Summary: /=
-	divAssign = 41 | punctuation | compoundAssign,
+	divAssign = 39 | punctuation | compoundAssign,
 	/// Summary: %=
-	modAssign = 42 | punctuation | compoundAssign,
+	modAssign = 40 | punctuation | compoundAssign,
 	/// Summary: &=
-	ampAssign = 43 | punctuation | compoundAssign,
+	ampAssign = 41 | punctuation | compoundAssign,
 	/// Summary: ^=
-	caretAssign = 44 | punctuation | compoundAssign,
+	caretAssign = 42 | punctuation | compoundAssign,
 	/// Summary: ::=
-	concatAssign = 45 | punctuation | compoundAssign,
+	concatAssign = 43 | punctuation | compoundAssign,
 	/// Summary: <<=
-	shiftLeftAssign = 46 | punctuation | compoundAssign,
+	shiftLeftAssign = 44 | punctuation | compoundAssign,
 	/// Summary: >>=
-	shiftRightAssign = 47 | punctuation | compoundAssign,
+	shiftRightAssign = 45 | punctuation | compoundAssign,
 	/// Summary: **=
-	powerAssign = 48 | punctuation | compoundAssign,
-	/// Summary: #=
-	hashAssign = 49 | punctuation | compoundAssign,
-	/// Summary: $=
-	dollarAssign = 50 | punctuation | compoundAssign,
+	powerAssign = 46 | punctuation | compoundAssign,
 	/// Summary: @
-	at = 51 | punctuation,
+	at = 47 | punctuation,
 	/// Summary: ...
-	splat = 52 | punctuation,
+	splat = 48 | punctuation,
 	/// Summary: ?.
-	safeAccess = 53 | punctuation,
+	safeAccess = 49 | punctuation,
 	/// Summary: <=>
-	compare = 54 | punctuation | overloadableBinaryOperator | lambdaOperator,
+	compare = 50 | punctuation | overloadableBinaryOperator | lambdaOperator,
 	/// Summary: ?(
-	parenOpenSafe = 55 | punctuation,
+	parenOpenSafe = 51 | punctuation,
 	/// Summary: ?[
-	squareOpenSafe = 56 | punctuation,
+	squareOpenSafe = 52 | punctuation,
 	/// Summary: !
-	exclam = 57 | punctuation,
+	exclam = 53 | punctuation,
 }

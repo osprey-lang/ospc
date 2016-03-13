@@ -1173,7 +1173,7 @@ public inheritable Parser is ParserBase
 		 *     overloadable-binary-operator '(' identifier ',' identifier ')'
 		 *   overloadable-binary-operator: one of
 		 *     '+'  '-'  '|'   '^'   '*'   '/'    '%'  '&'  '**'
-		 *     '#'  '$'  '<<'  '>>'  '=='  '<=>'
+		 *     '<<'  '>>'  '=='  '<=>'
 		 * Additional notes:
 		 *   When extensions are enabled, the body can also be an `__extern` body.
 		 *
@@ -2261,7 +2261,7 @@ public inheritable Parser is ParserBase
 		 *     primary-expression compound-assignment-operator expression ';'
 		 *   compound-assignment-operator: one of
 		 *     '+='  '-='   '|='   '*='   '/='   '%='  '&='
-		 *     '^='  '::='  '<<='  '>>='  '**='  '#='  '$='
+		 *     '^='  '::='  '<<='  '>>='  '**='
 		 */
 		ensureAssignable(target);
 
@@ -2668,47 +2668,16 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   relational-expression:
-		 *     unreserved-expression
-		 *     relational-expression < unreserved-expression
-		 *     relational-expression > unreserved-expression
-		 *     relational-expression <= unreserved-expression
-		 *     relational-expression >= unreserved-expression
-		 *     relational-expression <=> unreserved-expression
-		 */
-		var left = parseUnreservedExpression(ref i);
-
-		while acceptAny(i, relationalOperators)
-		{
-			var op = typeToBinaryOperator[lex[i].type];
-			i += 1;
-
-			var right = parseUnreservedExpression(ref i);
-
-			left = new BinaryExpression(
-				getLocation(left, right),
-				left, op, right
-			);
-		}
-
-		return left;
-	}
-
-	/// Summary: Parses an unreserved expression at the specified token index.
-	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
-	///          the index of the token that immediately follows the returned parse tree.
-	/// Returns: An {Expression} from the tokens at the starting index.
-	/// Remarks: This method parses the grammar of the 'unreserved-expression' nonterminal.
-	public parseUnreservedExpression(ref i)
-	{
-		/* Syntax:
-		 *   unreserved-expression:
 		 *     shift-expression
-		 *     unreserved-expression '#' shift-expression
-		 *     unreserved-expression '$' shift-expression
+		 *     relational-expression < shift-expression
+		 *     relational-expression > shift-expression
+		 *     relational-expression <= shift-expression
+		 *     relational-expression >= shift-expression
+		 *     relational-expression <=> shift-expression
 		 */
 		var left = parseShiftExpression(ref i);
 
-		while accept(i, TokenType.hash, TokenType.dollar)
+		while acceptAny(i, relationalOperators)
 		{
 			var op = typeToBinaryOperator[lex[i].type];
 			i += 1;
@@ -3620,9 +3589,9 @@ public inheritable Parser is ParserBase
 		 *   lambda-operator-expression:
 		 *     '@' lambda-operator
 		 *   lambda-operator: one of
-		 *     '+'	'-'   '|'   '^'    '*'   '/'    '%'  '&'  '**'  '#'
-		 *     '$'	'<<'  '>>'  '=='   '!='  '<=>'  '<'  '>'  '<='  '>='
-		 *     '~'	'->'  '::'  'not'  'or'  'xor'  'and'
+		 *     '+'  '-'   '|'   '^'    '*'    '/'    '%'    '&'   '**'
+		 *     '<<' '>>'  '=='  '!='   '<=>'  '<'    '>'    '<='  '>='
+		 *     '~'  '->'  '::'  'not'  'or'   'xor'  'and'
 		 * Additional notes:
 		 *   The lambda-operator symbol is represented by the TokenType.lambdaOperator
 		 *   category.
@@ -4420,8 +4389,6 @@ public inheritable Parser is ParserBase
 		TokenType.lessEqual:    BinaryOperator.lessEqual,
 		TokenType.greaterEqual: BinaryOperator.greaterEqual,
 		TokenType.compare:      BinaryOperator.comparison,
-		TokenType.dollar:       BinaryOperator.dollar,
-		TokenType.hash:         BinaryOperator.hash,
 		TokenType.shiftLeft:    BinaryOperator.shiftLeft,
 		TokenType.shiftRight:   BinaryOperator.shiftRight,
 		TokenType.plus:         BinaryOperator.addition,
@@ -4446,8 +4413,6 @@ public inheritable Parser is ParserBase
 		TokenType.shiftLeftAssign:  BinaryOperator.shiftLeft,
 		TokenType.shiftRightAssign: BinaryOperator.shiftRight,
 		TokenType.powerAssign:      BinaryOperator.exponentiation,
-		TokenType.hashAssign:       BinaryOperator.hash,
-		TokenType.dollarAssign:     BinaryOperator.dollar,
 	};
 
 	private static typeToUnaryOperator = {
@@ -4468,8 +4433,6 @@ public inheritable Parser is ParserBase
 		TokenType.greater:         LambdaOperator.greater,
 		TokenType.greaterEqual:    LambdaOperator.greaterEqual,
 		TokenType.compare:         LambdaOperator.comparison,
-		TokenType.hash:            LambdaOperator.hash,
-		TokenType.dollar:          LambdaOperator.dollar,
 		TokenType.shiftLeft:       LambdaOperator.shiftLeft,
 		TokenType.shiftRight:      LambdaOperator.shiftRight,
 		TokenType.plus:            LambdaOperator.plus,
