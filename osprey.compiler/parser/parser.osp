@@ -339,7 +339,7 @@ public inheritable Parser is ParserBase
 		 *     ':' integer-literal
 		 */
 		var start = expectr(ref i, TokenType.identifier);
-		if start.escaped or start.identifier != "version":
+		if start.contextualType != ContextualType.version:
 			fatalError(start, ErrorCode.err_UnexpectedToken);
 
 		var major, minor, build, revision;
@@ -3111,7 +3111,7 @@ public inheritable Parser is ParserBase
 			return literalFuncs[type](start);
 		if type == TokenType.identifier
 		{
-			if useExtensions and not start.escaped
+			if useExtensions
 			{
 				if start.contextualType == ContextualType.namedConst:
 					return parseNamedConstantExpression(ref i);
