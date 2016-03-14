@@ -5,6 +5,7 @@
 use "ContextualType.osp";
 use "Lexer.osp";
 use "LexerFlags.osp";
+use "LexicalFacts.osp";
 use "Modifiers.osp";
 use "ParserErrorManager.osp";
 use "ParseFlags.osp";

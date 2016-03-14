@@ -1,0 +1,296 @@
+use namespace aves;
+use namespace osprey.compiler.syntax;
+
+namespace osprey.compiler.parser;
+
+private static class LexicalFacts
+{
+	/* Syntax:
+	 *   keyword: one of
+	 *     'abstract'  'and'        'async'    'base'         'break'
+	 *     'catch'     'class'      'const'    'do'           'else'
+	 *     'enum'      'false'      'finally'  'for'          'function'
+	 *     'global'    'if'         'in'       'inheritable'  'is'
+	 *     'iter'      'namespace'  'new'      'next'         'not'
+	 *     'null'      'operator'   'or'       'overridable'  'override'
+	 *     'private'   'protected'  'public'   'ref'          'refeq'
+	 *     'return'    'static'     'this'     'throw'        'true'
+	 *     'try'       'typeof'     'use'      'var'          'while'
+	 *     'with'      'xor'        'yield'
+	 * Mapping from keyword string to corresponding TokenType.
+	 */
+	public static keywordToType = {
+		"abstract":    TokenType.\abstract,
+		"and":         TokenType.\and,
+		"async":       TokenType.\async,
+		"base":        TokenType.\base,
+		"break":       TokenType.\break,
+		"catch":       TokenType.\catch,
+		"class":       TokenType.\class,
+		"const":       TokenType.\const,
+		"do":          TokenType.\do,
+		"else":        TokenType.\else,
+		"enum":        TokenType.\enum,
+		"false":       TokenType.\false,
+		"finally":     TokenType.\finally,
+		"for":         TokenType.\for,
+		"function":    TokenType.\function,
+		"global":      TokenType.\global,
+		"if":          TokenType.\if,
+		"in":          TokenType.\in,
+		"inheritable": TokenType.\inheritable,
+		"is":          TokenType.\is,
+		"iter":        TokenType.\iter,
+		"namespace":   TokenType.\namespace,
+		"new":         TokenType.\new,
+		"next":        TokenType.\next,
+		"not":         TokenType.\not,
+		"null":        TokenType.\null,
+		"operator":    TokenType.\operator,
+		"or":          TokenType.\or,
+		"overridable": TokenType.\overridable,
+		"override":    TokenType.\override,
+		"private":     TokenType.\private,
+		"protected":   TokenType.\protected,
+		"public":      TokenType.\public,
+		"ref":         TokenType.\ref,
+		"refeq":       TokenType.\refeq,
+		"return":      TokenType.\return,
+		"static":      TokenType.\static,
+		"this":        TokenType.\this,
+		"throw":       TokenType.\throw,
+		"true":        TokenType.\true,
+		"try":         TokenType.\try,
+		"typeof":      TokenType.\typeof,
+		"use":         TokenType.\use,
+		"var":         TokenType.\var,
+		"while":       TokenType.\while,
+		"with":        TokenType.\with,
+		"xor":         TokenType.\xor,
+		"yield":       TokenType.\yield,
+	};
+
+	// Mapping from TokenType to keyword string. Assigned by static constructor.
+	public static typeToKeyword;
+
+	// Receives the length of the longest keyword. Assigned by static constructor.
+	public static longestKeywordLength;
+
+	// Mapping from literal keyword type to corresponding literal value.
+	public static literalKeywordTypes = {
+		TokenType.\true:  true,
+		TokenType.\false: false,
+		TokenType.\null:  null,
+	};
+
+	public static contextualToType = {
+		"get":           ContextualType.get,
+		"set":           ContextualType.set,
+		"to":            ContextualType.to,
+		"where":         ContextualType.where,
+		"version":       ContextualType.version,
+		"__primitive":   ContextualType.primitive,
+		"__init_type":   ContextualType.initType,
+		"__extern":      ContextualType.extern,
+		"__named_const": ContextualType.namedConst,
+		"__get_argc":    ContextualType.getArgc,
+	};
+
+	// Mapping from ContextualType to keyword string. Assigned by static constructor.
+	public static typeToContextual;
+
+	// Receives the length of the longest contextual keyword. Assigned by static constructor.
+	public static longestContextualLength;
+
+	/* Syntax:
+	 *   hex-digit: one of
+	 *     '0'  '1'  '2'  '3'  '4'  '5'  '6'  '7'
+	 *     '8'  '9'  'A'  'B'  'C'  'D'  'E'  'F'
+	 *     'a'  'b'  'c'  'd'  'e'  'f'
+	 * Mapping from hex-digit to corresponding value (as a UInt).
+	 */
+	public static hexDigits = {
+		'0': 0u,  '1': 1u,  '2': 2u,  '3': 3u,
+		'4': 4u,  '5': 5u,  '6': 6u,  '7': 7u,
+		'8': 8u,  '9': 9u,  'a': 10u, 'b': 11u,
+		'c': 12u, 'd': 13u, 'e': 14u, 'f': 15u,
+		'A': 10u, 'B': 11u, 'C': 12u, 'D': 13u,
+		'E': 14u, 'F': 15u,
+	};
+
+	/* Syntax:
+	 *   multiplier-suffix: one of
+	 *     'k'  'K'  'm'  'M'  'g'  'G'  't'  'T'
+	 * Mapping from multiplier-suffix to corresponding value (as an Int).
+	 */
+	public static multipliers = {
+		'k':             1_024, 'K':             1_024,
+		'm':         1_048_576, 'M':         1_048_576,
+		'g':     1_073_741_824, 'G':     1_073_741_824,
+		't': 1_099_511_627_776, 'T': 1_099_511_627_776,
+	};
+
+	/* Syntax:
+	 *   punctuation-token: one of
+	 *     '{'   '}'    '['    ']'    '('    ')'    '.'    ','    ':'   ';'
+	 *     '~'   '<'    '<='   '>'    '>='   '=='   '!='   '?'    '??'  '?!'
+	 *     '->'  '+'    '-'    '|'    '*'    '/'    '%'    '&'    '^'   '::'
+	 *     '<<'  '>>'   '**'   '='    '+='   '-='   '|='   '*='   '/='  '%='
+	 *     '&='  '^='   '::='  '<<='  '>>='  '**='  '@'    '...'  '?.'  '?('
+	 *     '?['  '<=>'  '!'
+	 */
+	public static punctuation = new PunctInfo(null, {
+		// Always single: { } [ ] ( ) , ; ~ @
+		'{': TokenType.curlyOpen,
+		'}': TokenType.curlyClose,
+		'[': TokenType.squareOpen,
+		']': TokenType.squareClose,
+		'(': TokenType.parenOpen,
+		')': TokenType.parenClose,
+		',': TokenType.comma,
+		';': TokenType.semicolon,
+		'~': TokenType.tilde,
+		'@': TokenType.at,
+		'.': new PunctInfo(TokenType.dot, {
+			// .. – error
+			'.': new PunctInfo(null, {
+				// ...
+				'.': TokenType.splat,
+			}),
+		}),
+		'<': new PunctInfo(TokenType.less, {
+			// <=
+			'=': new PunctInfo(TokenType.lessEqual, {
+				// <=>
+				'>': TokenType.compare,
+			}),
+			// <<
+			'<': PunctInfo.acceptEqual(TokenType.shiftLeft,
+				// <<=
+				TokenType.shiftLeftAssign),
+		}),
+		'>': new PunctInfo(TokenType.greater, {
+			// >=
+			'=': TokenType.greaterEqual,
+			// >>
+			'>': PunctInfo.acceptEqual(TokenType.shiftRight,
+				// >>=
+				TokenType.shiftRightAssign),
+		}),
+		'*': new PunctInfo(TokenType.multiply, {
+			// *=
+			'=': TokenType.mulAssign,
+			// **
+			'*': PunctInfo.acceptEqual(TokenType.power,
+				// **=
+				TokenType.powerAssign),
+		}),
+		':': new PunctInfo(TokenType.colon, {
+			// ::
+			':': PunctInfo.acceptEqual(TokenType.concatenate,
+				// ::=
+				TokenType.concatAssign),
+		}),
+		'-': new PunctInfo(TokenType.minus, {
+			// ->
+			'>': TokenType.funcApplication,
+			// -=
+			'=': TokenType.minusAssign,
+		}),
+		'+': PunctInfo.acceptEqual(TokenType.plus,
+			// +=
+			TokenType.plusAssign),
+		'|': PunctInfo.acceptEqual(TokenType.pipe,
+			// |=
+			TokenType.pipeAssign),
+		'/': PunctInfo.acceptEqual(TokenType.divide,
+			// /=
+			TokenType.divAssign),
+		'%': PunctInfo.acceptEqual(TokenType.modulo,
+			// %=
+			TokenType.modAssign),
+		'&': PunctInfo.acceptEqual(TokenType.ampersand,
+			// &=
+			TokenType.ampAssign),
+		'^': PunctInfo.acceptEqual(TokenType.caret,
+			// ^=
+			TokenType.caretAssign),
+		'=': PunctInfo.acceptEqual(TokenType.assign,
+			// ==
+			TokenType.doubleEqual),
+		'!': PunctInfo.acceptEqual(TokenType.exclam,
+			// !=
+			TokenType.notEqual),
+		'?': new PunctInfo(TokenType.question, {
+			// ?.
+			'.': TokenType.safeAccess,
+			// ?(
+			'(': TokenType.parenOpenSafe,
+			// ?[
+			'[': TokenType.squareOpenSafe,
+			// ??
+			'?': TokenType.nullCoalescing,
+			// ?!
+			'!': TokenType.nullOr,
+		})
+	});
+
+	static new()
+	{
+		var longestKeyword = 0;
+		typeToKeyword = new Hash(keywordToType.length);
+		for kw, type in keywordToType
+		{
+			typeToKeyword.add(type, kw);
+			longestKeyword = math.max(longestKeyword, kw.length);
+		}
+
+		longestKeywordLength = longestKeyword;
+
+		var longestContextual = 0;
+		typeToContextual = new Hash(contextualToType.length);
+		for kw, type in contextualToType
+		{
+			typeToContextual.add(type, kw);
+			longestContextual = math.max(longestContextual, kw.length);
+		}
+
+		longestContextualLength = longestContextual;
+	}
+}
+
+// Contains information about a punctuation token. Instances of this class
+// may have a base TokenType, and may have zero or more characters that can
+// follow the token to create other tokens.
+// Examples:
+//   * '<' has TokenType.less, can be followed by '<' to make TokenType.shiftLeft,
+//     or by '=' to make TokenType.lessEqual, which in turn can be followed by '>'
+///    to make TokenType.compare.
+//   * '.' has TokenType.dot, can be followed by '.' which has no base token type, which
+//     can be followed by another '.' to make TokenType.splat.
+//   * '*' has TokenType.multiply, and can be followed by '=' to make TokenType.mulAssign
+//     or by '*' to make TokenType.power.
+//
+// When a PunctInfo has no base type, it means the particular sequence of characters that
+// led to the PunctInfo are invalid without another character following.
+private class PunctInfo
+{
+	public new(this._baseType, this._nextChars);
+
+	private _baseType;
+	// The base TokenType of the punctuation token, or null if it must
+	// be followed by something.
+	public get baseType = _baseType;
+
+	private _nextChars;
+
+	public accepts(nextChar, ref nextType)
+	{
+		return _nextChars.tryGet(nextChar, ref nextType);
+	}
+
+	public static acceptEqual(baseType, equalType)
+	{
+		return new PunctInfo(baseType, {'=': equalType});
+	}
+}
