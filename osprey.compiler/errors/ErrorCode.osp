@@ -68,7 +68,9 @@ public static class ErrorCode
 	public const err_OperatorCannotHaveOptionalParameters = 1671;
 	public const err_OperatorCannotHaveVariadicParameter = 1672;
 	public const err_OperatorCannotHaveRefParameters = 1673;
-	public const err_WrongParameterCountForOperator = 1674;
+	public const err_WrongParameterCountForUnaryOperator = 1674;
+	public const err_WrongParameterCountForBinaryOperator = 1675;
+	public const err_WrongParameterCountForUnaryOrBinaryOperator = 1676;
 	public const err_VariadicParameterCannotBeOptional = 1701;
 	public const err_VariadicMustBeLastParameter = 1702;
 	public const err_CannotMixVariadicAndOptionalParameters = 1703;

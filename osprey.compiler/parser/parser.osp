@@ -1228,8 +1228,8 @@ public inheritable Parser is ParserBase
 		{
 			if parameters.length != 1:
 				recoverableError(
-					opToken, ErrorCode.err_WrongParameterCountForOperator,
-					[1, parameters.length]
+					opToken, ErrorCode.err_WrongParameterCountForUnaryOperator,
+					[parameters.length]
 				);
 		}
 		else if op == BinaryOperator.addition or op == BinaryOperator.subtraction
@@ -1240,16 +1240,16 @@ public inheritable Parser is ParserBase
 					UnaryOperator.negation;
 			else if parameters.length != 2:
 				recoverableError(
-					opToken, ErrorCode.err_WrongParameterCountForOperator,
-					["1–2", parameters.length]
+					opToken, ErrorCode.err_WrongParameterCountForUnaryOrBinaryOperator,
+					[parameters.length]
 				);
 		}
 		else
 		{
 			if parameters.length != 2:
 				recoverableError(
-					opToken, ErrorCode.err_WrongParameterCountForOperator,
-					[2, parameters.length]
+					opToken, ErrorCode.err_WrongParameterCountForBinaryOperator,
+					[parameters.length]
 				);
 		}
 

@@ -86,7 +86,9 @@
 1671 err_OperatorCannotHaveOptionalParameters = "An operator declaration cannot have optional parameters.";
 1672 err_OperatorCannotHaveVariadicParameter = "An operator declaration cannot have a variadic parameter";
 1673 err_OperatorCannotHaveRefParameters = "An operator declaration cannot have pass-by-reference parameters.";
-1674 err_WrongParameterCountForOperator = "Wrong parameter count for operator overload (expected {0}, got {1}).";
+1674 err_WrongParameterCountForUnaryOperator = "Wrong parameter count for unary operator overload (expected 1, got {0}).";
+1675 err_WrongParameterCountForBinaryOperator = "Wrong parameter count for binary operator overload (expected 2, got {0}).";
+1676 err_WrongParameterCountForUnaryOrBinaryOperator = "Wrong parameter count for operator overload (expected 1 or 2, got {0}).";
 
 // Parameter list errors
 1701 err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";
