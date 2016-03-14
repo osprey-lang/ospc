@@ -95,7 +95,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 
 	overridable override visitExternBody(node, arg)
 	{
-		node.maxStack?.accept(this, arg);
 		node.locals?.accept(this, arg);
 		return null;
 	}

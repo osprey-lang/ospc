@@ -4,23 +4,17 @@ namespace osprey.compiler.syntax;
 
 public class ExternBody is ParseNode
 {
-	public new(location, externName, maxStack, locals)
+	public new(location, externName, locals)
 	{
 		new base(location);
 
 		this._externName = externName;
-		this._maxStack   = claim(maxStack);
 		this._locals     = claim(locals);
 	}
 
 	private _externName;
 	/// Summary: Gets a string {LiteralToken} containing the name of the extern method.
 	public get externName = _externName;
-
-	private _maxStack;
-	/// Summary: Gets the {Expression} that represents the `stack` parameter, or null
-	///          if unspecified.
-	public get maxStack = _maxStack;
 
 	private _locals;
 	/// Summary: Gets the {Expression} that represents the `locals` parameter, or null

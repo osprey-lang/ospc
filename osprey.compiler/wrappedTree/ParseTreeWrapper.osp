@@ -118,9 +118,8 @@ public class ParseTreeWrapper is ParseTreeVisitor
 
 	override visitExternBody(node, arg)
 	{
-		var maxStack = node.maxStack?.accept(this, null);
 		var locals = node.locals?.accept(this, null);
-		return new WrappedExternBody(node, maxStack, locals);
+		return new WrappedExternBody(node, locals);
 	}
 
 	override visitFieldDeclaration(decl, arg)

@@ -106,7 +106,6 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 
 	overridable override visitExternBody(node, arg)
 	{
-		node.maxStack = node.maxStack?.accept(this, arg);
 		node.locals = node.locals?.accept(this, arg);
 		return node;
 	}

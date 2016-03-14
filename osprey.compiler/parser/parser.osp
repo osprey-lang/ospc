@@ -1383,7 +1383,7 @@ public inheritable Parser is ParserBase
 		 *   extern-parameter:
 		 *     identifier '=' constant-expression
 		 * Additional notes:
-		 *   The only extern-parameters so far are "stack" and "locals".
+		 *   The only extern-parameter so far is "locals".
 		 */
 		var start = lex[i];
 		if not acceptExtension(i, ContextualType.extern):
@@ -1393,7 +1393,7 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.parenOpen);
 		var externName = expectr(ref i, TokenType.string);
 
-		var maxStack, locals;
+		var locals;
 		while acceptr(ref i, TokenType.comma)
 		{
 			var param = expectr(ref i, TokenType.identifier);
@@ -1401,9 +1401,7 @@ public inheritable Parser is ParserBase
 			var value = parseExpression(ref i);
 
 			var paramName = param.identifier;
-			if paramName == "stack":
-				maxStack = value;
-			else if paramName == "locals":
+			if paramName == "locals":
 				locals = value;
 			else:
 				fatalError(param, ErrorCode.err_x_UnknownExternParameter, [paramName]);
@@ -1414,7 +1412,7 @@ public inheritable Parser is ParserBase
 
 		return new ExternBody(
 			getLocation(start, end),
-			externName, maxStack, locals
+			externName, locals
 		);
 	}
 

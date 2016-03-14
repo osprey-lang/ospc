@@ -4,20 +4,15 @@ namespace osprey.compiler.syntax.wrapped;
 
 public class WrappedExternBody is WrappedNode
 {
-	public new(wrappedNode, maxStack, locals)
+	public new(wrappedNode, locals)
 	{
 		new base(wrappedNode);
 
-		this.maxStack = claim(maxStack);
-		this.locals   = claim(locals);
+		this.locals = claim(locals);
 	}
 
 	/// Summary: Gets a string {LiteralToken} containing the name of the extern method.
 	public get externName = wrappedNode.externName;
-
-	/// Summary: The {WrappedExpression} that represents the `stack` parameter,
-	///          or null if unspecified.
-	public maxStack;
 
 	/// Summary: The {WrappedExpression} that represents the `locals` parameter,
 	///          or null if unspecified.
