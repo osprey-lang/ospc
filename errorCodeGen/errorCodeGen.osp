@@ -59,8 +59,8 @@ function readMessages(file)
 	var i = 0;
 	while not parser.accept(i, TokenType.eof)
 	{
-		var code = parser.expectr(ref i, TokenType.int).value;
-		var name = parser.expectr(ref i, TokenType.identifier).value;
+		var code = parser.expectr(ref i, TokenType.int).sourceText;
+		var name = parser.expectr(ref i, TokenType.identifier).sourceText;
 
 		parser.expectr(ref i, TokenType.assign);
 		parser.expectr(ref i, TokenType.string);

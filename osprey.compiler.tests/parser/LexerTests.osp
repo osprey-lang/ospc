@@ -110,10 +110,10 @@ public class LexerTests is TestFixture
 		return true;
 	}
 
-	private assertTokenMatches(token, type, value)
+	private assertTokenMatches(token, type, sourceText)
 	{
 		Assert.areEqual(token.type, type);
-		Assert.areEqual(token.value, value);
+		Assert.areEqual(token.sourceText, sourceText);
 		return true;
 	}
 

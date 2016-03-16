@@ -10,7 +10,7 @@ public inheritable Token is Syntax
 	{
 		new this(location, type, null);
 	}
-	public new(location, type, value)
+	public new(location, type, sourceText)
 	{
 		new base(location);
 
@@ -18,7 +18,7 @@ public inheritable Token is Syntax
 			throw new TypeError();
 
 		_type = type;
-		_value = value;
+		_sourceText = sourceText;
 	}
 
 	private _type;
@@ -29,13 +29,13 @@ public inheritable Token is Syntax
 	///          contextual keyword.
 	public overridable get contextualType = ContextualType.none;
 
-	private _value;
+	private _sourceText;
 	/// Summary: Gets a string representation of the token.
-	public get value
+	public get sourceText
 	{
-		if _value is null:
-			_value = location.getText();
-		return _value;
+		if _sourceText is null:
+			_sourceText = location.getText();
+		return _sourceText;
 	}
 
 	private _documentation;
@@ -77,9 +77,9 @@ public inheritable Token is Syntax
 			return "end of file";
 
 		if type & TokenType.keyword == TokenType.keyword:
-			return "keyword '{0}'".format([value]);
+			return "keyword '{0}'".format([sourceText]);
 
-		return "'{0}' ({1})".format([value, type]);
+		return "'{0}' ({1})".format([sourceText, type]);
 	}
 }
 
@@ -103,7 +103,7 @@ public inheritable LiteralToken is Token
 
 	overridable override toString()
 	{
-		return "literal '{0}' ({1})".format([value, type]);
+		return "literal '{0}' ({1})".format([sourceText, type]);
 	}
 
 	private static _invalidValue = new Object();
@@ -132,7 +132,8 @@ public class Identifier is Token
 
 	private _identifier;
 	/// Summary: Gets the identifier represented by the {Identifier}. This may differ
-	///          from the token’s {value} if the identifier has been normalized.
+	///          from the token’s {sourceText} if the identifier has been normalized
+	///          or is escaped.
 	public get identifier = _identifier;
 
 	private _escaped;
@@ -141,7 +142,7 @@ public class Identifier is Token
 	public get escaped
 	{
 		if _escaped is null:
-			_escaped = value[0] == '\\';
+			_escaped = sourceText[0] == '\\';
 		return _escaped;
 	}
 
@@ -150,6 +151,6 @@ public class Identifier is Token
 
 	override toString()
 	{
-		return "identifier '{0}'".format([value]);
+		return "identifier '{0}'".format([sourceText]);
 	}
 }
