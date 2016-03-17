@@ -1,2 +1,1 @@
-use osprey.compiler;
 use "main.osp";
