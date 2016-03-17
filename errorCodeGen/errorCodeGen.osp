@@ -1,7 +1,7 @@
-use namespace aves;
-use namespace io;
-use namespace osprey.compiler;
-use namespace osprey.compiler.parser;
+use aves;
+use io;
+use osprey.compiler;
+use osprey.compiler.parser;
 
 namespace osprey.errorCodeGen;
 

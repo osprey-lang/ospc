@@ -1,5 +1,5 @@
-use namespace aves;
-use namespace osprey.compiler.parser;
+use aves;
+use osprey.compiler.parser;
 
 namespace osprey.compiler.syntax.wrapped;
 
