@@ -19,8 +19,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitUseFileDirective(directive, arg);
 
-	public abstract visitUseModuleDirective(directive, arg);
-
 	public abstract visitUseNamespaceDirective(directive, arg);
 
 	public abstract visitVersionSpecifier(version, arg);

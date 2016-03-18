@@ -48,11 +48,6 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 		return directive;
 	}
 
-	overridable override visitUseModuleDirective(directive, arg)
-	{
-		return directive;
-	}
-
 	overridable override visitUseNamespaceDirective(directive, arg)
 	{
 		return directive;

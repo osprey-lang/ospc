@@ -32,26 +32,6 @@ public class UseFileDirective is UseDirective
 	}
 }
 
-public class UseModuleDirective is UseDirective
-{
-	public new(location, name)
-	{
-		new base(location);
-
-		this._name = name;
-	}
-
-	private _name;
-	/// Summary: Gets the {QualifiedName} of the module that is imported
-	///          by this directive.
-	public get name = _name;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitUseModuleDirective(this, arg);
-	}
-}
-
 public class UseNamespaceDirective is UseDirective
 {
 	public new(location, name)

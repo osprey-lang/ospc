@@ -29,23 +29,6 @@ public class WrappedUseFileDirective is WrappedUseDirective
 	}
 }
 
-public class WrappedUseModuleDirective is WrappedUseDirective
-{
-	public new(wrappedNode)
-	{
-		new base(wrappedNode);
-	}
-
-	/// Summary: Gets the {QualifiedName} of the module that is imported
-	///          by this directive.
-	public get name = wrappedNode.name;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitUseModuleDirective(this, arg);
-	}
-}
-
 public class WrappedUseNamespaceDirective is WrappedUseDirective
 {
 	public new(wrappedNode)

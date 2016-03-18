@@ -54,11 +54,6 @@ public class ParseTreeWrapper is ParseTreeVisitor
 		return new WrappedUseFileDirective(directive);
 	}
 
-	override visitUseModuleDirective(directive, arg)
-	{
-		return new WrappedUseModuleDirective(directive);
-	}
-
 	override visitUseNamespaceDirective(directive, arg)
 	{
 		return new WrappedUseNamespaceDirective(directive);

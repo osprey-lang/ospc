@@ -387,9 +387,14 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   use-directive:
+		 *     use-namespace-directive
+		 *     use-file-directive
+		 *     use-alias-directive
+		 *   use-namespace-directive:
 		 *     'use' qualified-name ';'
+		 *   use-file-directive:
 		 *     'use' string-literal ';'
-		 *     'use' 'namespace' qualified-name ';'
+		 *   use-alias-directive:
 		 *     'use' identifier '=' qualified-name ';'
 		 */
 		var start = expectr(ref i, TokenType.\use);
@@ -405,9 +410,9 @@ public inheritable Parser is ParserBase
 
 		if accept(i, TokenType.identifier)
 		{
-			// UseModuleDirective or UseAliasDirective: if we find an '=' after
+			// UseNamespaceDirective or UseAliasDirective: if we find an '=' after
 			// the identifier, it must be a member alias; otherwise, we parse it
-			// as a UseModuleDirective.
+			// as a UseNamespaceDirective.
 			if accept(i + 1, TokenType.assign)
 			{
 				// UseAliasDirective
@@ -419,21 +424,14 @@ public inheritable Parser is ParserBase
 			}
 			else
 			{
-				// UseModuleDirective
+				// UseNamespaceDirective
 				var name = parseQualifiedName(ref i);
 				var end = expectr(ref i, TokenType.semicolon);
-				return new UseModuleDirective(getLocation(start, end), name);
+				return new UseNamespaceDirective(getLocation(start, end), name);
 			}
 		}
 
-		// UseNamespaceDirective
-		do
-		{
-			expectr(ref i, TokenType.\namespace);
-			var name = parseQualifiedName(ref i);
-			var end = expectr(ref i, TokenType.semicolon);
-			return new UseNamespaceDirective(getLocation(start, end), name);
-		};
+		fatalError(lex[i], ErrorCode.err_UnexpectedToken);
 	}
 
 	//<region: Member declarations>
