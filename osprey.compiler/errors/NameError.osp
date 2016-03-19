@@ -1,6 +1,6 @@
-use namespace aves;
-use namespace osprey.compiler.parser;
-use namespace osprey.compiler.syntax;
+use aves;
+use osprey.compiler.parser;
+use osprey.compiler.syntax;
 
 namespace osprey.compiler;
 

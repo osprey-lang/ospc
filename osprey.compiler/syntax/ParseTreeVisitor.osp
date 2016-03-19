@@ -1,5 +1,5 @@
-use namespace aves;
-use namespace osprey.compiler.parser;
+use aves;
+use osprey.compiler.parser;
 
 namespace osprey.compiler.syntax;
 
@@ -18,8 +18,6 @@ public abstract class ParseTreeVisitor
 	public abstract visitUseAliasDirective(directive, arg);
 
 	public abstract visitUseFileDirective(directive, arg);
-
-	public abstract visitUseModuleDirective(directive, arg);
 
 	public abstract visitUseNamespaceDirective(directive, arg);
 

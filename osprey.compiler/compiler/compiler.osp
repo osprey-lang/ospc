@@ -16,7 +16,7 @@ use "CompilerErrorManager.osp";
 
 // We can't put osprey.compiler.Compiler in its own file, because of Windows.
 
-use namespace aves;
+use aves;
 
 namespace osprey.compiler;
 

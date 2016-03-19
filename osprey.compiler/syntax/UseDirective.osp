@@ -1,4 +1,4 @@
-use namespace aves;
+use aves;
 
 namespace osprey.compiler.syntax;
 
@@ -29,26 +29,6 @@ public class UseFileDirective is UseDirective
 	override accept(visitor, arg)
 	{
 		return visitor.visitUseFileDirective(this, arg);
-	}
-}
-
-public class UseModuleDirective is UseDirective
-{
-	public new(location, name)
-	{
-		new base(location);
-
-		this._name = name;
-	}
-
-	private _name;
-	/// Summary: Gets the {QualifiedName} of the module that is imported
-	///          by this directive.
-	public get name = _name;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitUseModuleDirective(this, arg);
 	}
 }
 

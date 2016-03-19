@@ -1,4 +1,4 @@
-use namespace aves;
+use aves;
 
 namespace osprey.compiler.syntax.wrapped;
 
@@ -26,23 +26,6 @@ public class WrappedUseFileDirective is WrappedUseDirective
 	override accept(visitor, arg)
 	{
 		return visitor.visitUseFileDirective(this, arg);
-	}
-}
-
-public class WrappedUseModuleDirective is WrappedUseDirective
-{
-	public new(wrappedNode)
-	{
-		new base(wrappedNode);
-	}
-
-	/// Summary: Gets the {QualifiedName} of the module that is imported
-	///          by this directive.
-	public get name = wrappedNode.name;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitUseModuleDirective(this, arg);
 	}
 }
 

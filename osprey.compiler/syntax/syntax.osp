@@ -39,7 +39,7 @@ use "nodes.statement.osp";
 
 // We can't put osprey.compiler.syntax.Syntax in its own file, because of Windows.
 
-use namespace aves;
+use aves;
 
 namespace osprey.compiler.syntax;
 

@@ -23,5 +23,5 @@ xcopy /Y /I osprey.compiler\errors\messages.txt "%LIB%\osprey.compiler"
 if %ERRORLEVEL%==0 (
 	echo.
 	echo [!] Compiling ospc...
-	%OSPC% /libpath "%LIB%" /verbose /main osprey.compiler.main /out bin\ospc.ovm /name ospc /doc bin\ospc.ovm.json /formatjson ospc\ospc.osp
+	%OSPC% /libpath "%LIB%" /import osprey.compiler /verbose /main osprey.compiler.main /out bin\ospc.ovm /name ospc /doc bin\ospc.ovm.json /formatjson ospc\ospc.osp
 )

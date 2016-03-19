@@ -1,5 +1,5 @@
-use namespace aves;
-use namespace osprey.compiler.parser;
+use aves;
+use osprey.compiler.parser;
 
 namespace osprey.compiler.syntax;
 
@@ -28,11 +28,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	}
 
 	overridable override visitUseFileDirective(directive, arg)
-	{
-		return null;
-	}
-
-	overridable override visitUseModuleDirective(directive, arg)
 	{
 		return null;
 	}

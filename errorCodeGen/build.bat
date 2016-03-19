@@ -3,4 +3,4 @@
 set OSPC="%OSP%\Osprey\bin\Release\Osprey.exe"
 set LIB=%OSP%\lib
 
-%OSPC% /libpath "%LIB%" /verbose /main osprey.errorCodeGen.main errorCodeGen.osp
+%OSPC% /libpath "%LIB%" /import osprey.compiler /verbose /main osprey.errorCodeGen.main errorCodeGen.osp

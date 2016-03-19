@@ -1,5 +1,5 @@
-use namespace aves;
-use namespace osprey.compiler.parser;
+use aves;
+use osprey.compiler.parser;
 
 namespace osprey.compiler.syntax.wrapped;
 
@@ -52,11 +52,6 @@ public class ParseTreeWrapper is ParseTreeVisitor
 	override visitUseFileDirective(directive, arg)
 	{
 		return new WrappedUseFileDirective(directive);
-	}
-
-	override visitUseModuleDirective(directive, arg)
-	{
-		return new WrappedUseModuleDirective(directive);
 	}
 
 	override visitUseNamespaceDirective(directive, arg)
