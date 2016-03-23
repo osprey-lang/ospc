@@ -210,7 +210,7 @@ private static class SyntaxPrinter
 		writeTypeName(type);
 		Console.writeLine();
 
-		const publicInstance = MemberSearchFlags.isPublic	| MemberSearchFlags.isInstance;
+		const publicInstance = MemberSearchFlags.\public | MemberSearchFlags.\instance;
 		var members = type.getProperties(publicInstance) :: type.getFields(publicInstance);
 		members.sort(@(a, b) = a.name <=> b.name);
 
