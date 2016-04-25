@@ -29,7 +29,7 @@ public class LexerTests is TestFixture
 
 	public test_Constructor1WithInvalidFile()
 	{
-		Assert.throws(typeof(ArgumentError), @= new Lexer(""));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer(""));
 		Assert.throws(typeof(ArgumentNullError), @= new Lexer(null));
 	}
 
@@ -43,15 +43,15 @@ public class LexerTests is TestFixture
 
 	public test_Constructor2WithInvalidFile()
 	{
-		Assert.throws(typeof(ArgumentError), @= new Lexer("", LexerFlags.none));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer("", LexerFlags.none));
 		Assert.throws(typeof(ArgumentNullError), @= new Lexer(null, LexerFlags.none));
 	}
 
 	public test_Constructor2WithInvalidFlags()
 	{
 		var file = SourceFile.createAnon("");
-		Assert.throws(typeof(ArgumentError), @= new Lexer(file, 0));
-		Assert.throws(typeof(ArgumentError), @= new Lexer(file, "none"));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer(file, 0));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer(file, "none"));
 	}
 
 	public test_Constructor3()
@@ -77,7 +77,7 @@ public class LexerTests is TestFixture
 	public test_Constructor3WithInvalidFile()
 	{
 		var errors = new TestErrorManager();
-		Assert.throws(typeof(ArgumentError), @= new Lexer("", LexerFlags.none, errors));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer("", LexerFlags.none, errors));
 		Assert.throws(typeof(ArgumentNullError), @= new Lexer(null, LexerFlags.none, errors));
 	}
 
@@ -85,14 +85,14 @@ public class LexerTests is TestFixture
 	{
 		var file = SourceFile.createAnon("");
 		var errors = new TestErrorManager();
-		Assert.throws(typeof(ArgumentError), @= new Lexer(file, 0, errors));
-		Assert.throws(typeof(ArgumentError), @= new Lexer(file, "none", errors));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer(file, 0, errors));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer(file, "none", errors));
 	}
 
 	public test_Constructor3WithInvalidErrorManager()
 	{
 		var file = SourceFile.createAnon("");
-		Assert.throws(typeof(ArgumentError), @= new Lexer(file, LexerFlags.none, "Not an ErrorManager"));
+		Assert.throws(typeof(ArgumentTypeError), @= new Lexer(file, LexerFlags.none, "Not an ErrorManager"));
 	}
 
 	// Actual lexing tests!

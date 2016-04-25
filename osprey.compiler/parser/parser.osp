@@ -29,7 +29,7 @@ public inheritable Parser is ParserBase
 {
 	/// Summary: Creates a new {Parser} with the specified source file and default flags.
 	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	public new(source)
 	{
@@ -38,7 +38,7 @@ public inheritable Parser is ParserBase
 	/// Summary: Creates a new {Parser} with the specified source file and flags.
 	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
 	/// Param flags:  A {ParseFlags} value that specifies parser options.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	///
 	///          {flags} is not a {ParseFlags}.
@@ -57,7 +57,7 @@ public inheritable Parser is ParserBase
 	///          such as invalid syntax, are always thrown. The {ErrorManager} is passed
 	///          on to the lexer that the parse creates if {source} is a {SourceFile}. If
 	///          {source} is already a {Lexer}, its error manager is used as-is.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	///
 	///          {flags} is not a {ParseFlags}.

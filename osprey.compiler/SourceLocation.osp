@@ -7,7 +7,7 @@ public class SourceLocation
 	public new(sourceFile, startIndex, endIndex)
 	{
 		if sourceFile is not SourceFile:
-			throw new ArgumentError("sourceFile must be an osprey.compiler.SourceFile.", "sourceFile");
+			throw new ArgumentTypeError("sourceFile", typeof(SourceFile));
 
 		this._sourceFile = sourceFile;
 		this._startIndex = int(startIndex);

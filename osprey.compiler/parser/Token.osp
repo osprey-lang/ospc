@@ -15,7 +15,7 @@ public inheritable Token is Syntax
 		new base(location);
 
 		if type is not TokenType:
-			throw new TypeError();
+			throw new ArgumentTypeError("type", typeof(TokenType));
 
 		_type = type;
 		_sourceText = sourceText;

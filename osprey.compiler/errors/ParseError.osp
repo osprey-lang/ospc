@@ -11,7 +11,7 @@ public inheritable ParseError is CompileTimeError
 	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
 	///               null if there is no meaningful error source.
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.
@@ -25,7 +25,7 @@ public inheritable ParseError is CompileTimeError
 	///               null if there is no meaningful error source.
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	/// Param message: The error message.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.
@@ -40,7 +40,7 @@ public inheritable ParseError is CompileTimeError
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	/// Param message: The error message.
 	/// Param innerError: The {Error} that caused this error.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.

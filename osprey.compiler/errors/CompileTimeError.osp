@@ -18,7 +18,7 @@ public inheritable CompileTimeError is Error
 	/// Param source: The {Syntax} or {SourceLocation} that caused the error, or
 	///               null if there is no meaningful error source.
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.
@@ -32,7 +32,7 @@ public inheritable CompileTimeError is Error
 	///               null if there is no meaningful error source.
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	/// Param message: The error message.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.
@@ -47,7 +47,7 @@ public inheritable CompileTimeError is Error
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	/// Param message: The error message.
 	/// Param innerError: The {Error} that caused this error.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.
@@ -60,10 +60,7 @@ public inheritable CompileTimeError is Error
 			if source is Syntax:
 				source = source.location;
 			else if source is not SourceLocation:
-				throw new ArgumentError(
-					"source must be null, an osprey.compiler.SourceLocation, or an osprey.compiler.syntax.Syntax.",
-					"source"
-				);
+				throw new ArgumentTypeError("source", [typeof(SourceLocation), typeof(Syntax)]);
 		}
 
 		this._source = source;

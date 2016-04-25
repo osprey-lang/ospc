@@ -21,7 +21,7 @@ public class Lexer
 	/// Param sourceFile: The {SourceFile} to lex.
 	/// Throws ArgumentNullError:
 	///          {sourceFile} is null.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {sourceFile} is not a {SourceFile}.
 	public new(sourceFile)
 	{
@@ -33,7 +33,7 @@ public class Lexer
 	/// Param flags:      A {LexerFlags} that specifies lexer options.
 	/// Throws ArgumentNullError:
 	///          {sourceFile} is null.
-	/// Throws ArgumentError:
+	/// Throws ArgumentNullError:
 	///          {sourceFile} is not a {SourceFile}.
 	///
 	///          {flags} is not a {LexerFlags}.
@@ -50,7 +50,7 @@ public class Lexer
 	///                     default error manager that throws all errors it receives.
 	/// Throws ArgumentNullError:
 	///          {sourceFile} is null.
-	/// Throws ArgumentError:
+	/// Throws ArgumentNullError:
 	///          {sourceFile} is not a {SourceFile}.
 	///
 	///          {flags} is not a {LexerFlags}.
@@ -61,13 +61,13 @@ public class Lexer
 		if sourceFile is null:
 			throw new ArgumentNullError("sourceFile");
 		if sourceFile is not SourceFile:
-			throw new ArgumentError("sourceFile must be a SourceFile.", "sourceFile");
+			throw new ArgumentTypeError("sourceFile", typeof(SourceFile));
 		if flags is not LexerFlags:
-			throw new ArgumentError("flags must be a LexerFlags.", "flags");
+			throw new ArgumentTypeError("flags", typeof(LexerFlags));
 		if errorManager is null:
 			errorManager = new ParserErrorManager();
 		else if errorManager is not ErrorManager:
-			throw new ArgumentError("errorManager must be an ErrorManager.", "errorManager");
+			throw new ArgumentTypeError("errorManager", typeof(ErrorManager));
 
 		this.file = sourceFile;
 		this.source = sourceFile.source;

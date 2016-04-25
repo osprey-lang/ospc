@@ -18,7 +18,7 @@ public inheritable Warning
 	/// Param errorCode: The error code associated with the warning, usually corresponding
 	///                  to one of the {ErrorCode} constants.
 	/// Param message:   The warning message.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
 	/// Throws TypeError:
 	///          {errorCode} could not be converted to an Int.
@@ -31,10 +31,7 @@ public inheritable Warning
 			if source is Syntax:
 				source = source.location;
 			else if source is not SourceLocation:
-				throw new ArgumentError(
-					"source must be null, an osprey.compiler.SourceLocation, or an osprey.compiler.syntax.Syntax.",
-					"source"
-				);
+				throw new ArgumentTypeError("source", [typeof(SourceLocation), typeof(Syntax)]);
 		}
 		errorCode = int(errorCode);
 		message = string(message);

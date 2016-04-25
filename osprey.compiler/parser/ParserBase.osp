@@ -19,7 +19,7 @@ public abstract class ParserBase
 {
 	/// Summary: Creates a new {ParserBase} with the specified source file and default flags.
 	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	public new(source)
 	{
@@ -28,7 +28,7 @@ public abstract class ParserBase
 	/// Summary: Creates a new {ParserBase} with the specified source file and flags.
 	/// Param source: A {SourceFile} or {Lexer} that contains the code to parse.
 	/// Param flags:  A {ParseFlags} value that specifies parser options.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	///
 	///          {flags} is not a {ParseFlags}.
@@ -47,7 +47,7 @@ public abstract class ParserBase
 	///          such as invalid syntax, are always thrown. The {ErrorManager} is passed
 	///          on to the lexer that the parser creates if {source} is a {SourceFile}. If
 	///          {source} is already a {Lexer}, its error manager is used as-is.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {source} is not a {SourceFile} or {Lexer}.
 	///
 	///          {flags} is not a {ParseFlags}.
@@ -56,13 +56,13 @@ public abstract class ParserBase
 	public new(source, flags, errorManager)
 	{
 		if flags is not ParseFlags:
-			throw new ArgumentError("flags must be an osprey.compiler.parser.ParseFlags", "flags");
+			throw new ArgumentTypeError("flags", typeof(ParseFlags));
 
 		// Check this first so that we can initialize the lexer with a proper ErrorManager.
 		if errorManager is null:
 			errorManager = new ParserErrorManager();
 		else if errorManager is not ErrorManager:
-			throw new ArgumentError("errorManager must be an ErrorManager", "errorManager");
+			throw new ArgumentTypeError("errorManager", typeof(ErrorManager));
 
 		if source is Lexer
 		{
@@ -82,7 +82,7 @@ public abstract class ParserBase
 		}
 		else
 		{
-			throw new ArgumentError("source must be a Lexer or SourceFile", "source");
+			throw new ArgumentTypeError("source", [typeof(Lexer), typeof(SourceFile)]);
 		}
 
 		this.flags = flags;

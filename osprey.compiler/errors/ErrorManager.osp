@@ -68,7 +68,7 @@ public abstract class ErrorManager
 	///              instance of {CompileTimeError}, it will be wrapped in one,
 	///              with the error code {ErrorCode.err_Unspecified} and no
 	///              source location.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {error} is not an {Error}.
 	/// Throws ArgumentNullError:
 	///          {error} is null.
@@ -77,7 +77,7 @@ public abstract class ErrorManager
 		if error is null:
 			throw new ArgumentNullError("error");
 		if error is not Error:
-			throw new ArgumentError("error must be an instance of aves.Error.", "error");
+			throw new ArgumentTypeError("error", typeof(Error));
 		if error is not CompileTimeError:
 			error = new CompileTimeError(
 				null, // No meaningful source location
@@ -104,7 +104,7 @@ public abstract class ErrorManager
 
 	/// Summary: Reports a warning.
 	/// Param warning: The {Warning} to report.
-	/// Throws ArgumentError:
+	/// Throws ArgumentTypeError:
 	///          {warning} is not a {Warning}.
 	/// Throws ArgumentNullError:
 	///          {warning} is null.
@@ -113,7 +113,7 @@ public abstract class ErrorManager
 		if warning is null:
 			throw new ArgumentNullError("warning");
 		if warning is not Warning:
-			throw new ArgumentError("warning must be an osprey.compiler.Warning.", "warning");
+			throw new ArgumentTypeError("warning", typeof(Warning));
 
 		addWarningInner(warning);
 	}
