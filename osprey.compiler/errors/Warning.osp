@@ -20,7 +20,7 @@ public inheritable Warning
 	/// Param message:   The warning message.
 	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
-	/// Throws TypeError:
+	/// Throws TypeConversionError:
 	///          {errorCode} could not be converted to an Int.
 	///
 	///          {message} could not be converted to a string.

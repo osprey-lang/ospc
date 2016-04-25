@@ -353,7 +353,7 @@ public abstract class ParserBase
 	/// Param end:   A {Syntax}, {SourceLocation} or Int that represents the end
 	///              of the desired source location.
 	/// Returns: A {SourceLocation} that encloses the specified range.
-	/// Throws TypeError:
+	/// Throws TypeConversionError:
 	///          {start} or {end} is not a {Syntax} or {SourceLocation} and could
 	///          not be converted to an Int.
 	public getLocation(start, end)

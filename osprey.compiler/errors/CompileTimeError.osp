@@ -20,7 +20,7 @@ public inheritable CompileTimeError is Error
 	/// Param errorCode: The error code associated with the error. (Int, UInt or Real)
 	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
-	/// Throws TypeError:
+	/// Throws TypeConversionError:
 	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode)
 	{
@@ -34,7 +34,7 @@ public inheritable CompileTimeError is Error
 	/// Param message: The error message.
 	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
-	/// Throws TypeError:
+	/// Throws TypeConversionError:
 	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode, message)
 	{
@@ -49,7 +49,7 @@ public inheritable CompileTimeError is Error
 	/// Param innerError: The {Error} that caused this error.
 	/// Throws ArgumentTypeError:
 	///          {source} is not null and is not a {Syntax} or {SourceLocation}.
-	/// Throws TypeError:
+	/// Throws TypeConversionError:
 	///          {errorCode} could not be converted to an Int.
 	public new(source, errorCode, message, innerError)
 	{
