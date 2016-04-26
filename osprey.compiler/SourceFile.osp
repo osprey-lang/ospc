@@ -199,7 +199,7 @@ public class SourceFile
 					throw new IOError("The source file '{0}' must be seekable.".format([fileName]));
 
 				// TODO: SourceFile.open(fileName, true)
-				throw new ArgumentError("File hashing is not yet supported", "computeHash");
+				throw new NotImplementedError("File hashing is not yet supported.");
 			}
 		}
 		else
