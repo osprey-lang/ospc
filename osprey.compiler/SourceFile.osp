@@ -121,7 +121,7 @@ public class SourceFile
 	public getLineNumber(index, tabSize, ref column)
 	{
 		index = int(index);
-		if index < 0 or index >= source.length:
+		if index < 0 or index > source.length:
 			throw new ArgumentRangeError("index");
 		tabSize = int(tabSize);
 		if tabSize <= 0:
