@@ -211,7 +211,7 @@ private static class SyntaxPrinter
 		Console.writeLine();
 
 		const publicInstance = MemberSearchFlags.\public | MemberSearchFlags.\instance;
-		var members = type.getProperties(publicInstance) :: type.getFields(publicInstance);
+		var members = type.getProperties(publicInstance).concat(type.getFields(publicInstance));
 		members.sort(@(a, b) = a.name <=> b.name);
 
 		for member in members
