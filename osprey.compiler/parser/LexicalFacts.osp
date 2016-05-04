@@ -137,7 +137,7 @@ private static class LexicalFacts
 	 *     '->'  '+'    '-'    '|'    '*'    '/'    '%'    '&'    '^'   '::'
 	 *     '<<'  '>>'   '**'   '='    '+='   '-='   '|='   '*='   '/='  '%='
 	 *     '&='  '^='   '::='  '<<='  '>>='  '**='  '@'    '...'  '?.'  '?('
-	 *     '?['  '<=>'  '!'
+	 *     '?['  '<=>'  '!'    '=>'
 	 */
 	public static punctuation = new PunctInfo(null, {
 		// Always single: { } [ ] ( ) , ; ~ @
@@ -215,9 +215,12 @@ private static class LexicalFacts
 		'^': PunctInfo.acceptEqual(TokenType.caret,
 			// ^=
 			TokenType.caretAssign),
-		'=': PunctInfo.acceptEqual(TokenType.assign,
+		'=': new PunctInfo(TokenType.assign, {
 			// ==
-			TokenType.doubleEqual),
+			'=': TokenType.doubleEqual,
+			// =>
+			'>': TokenType.fatArrow,
+		}),
 		'!': PunctInfo.acceptEqual(TokenType.exclam,
 			// !=
 			TokenType.notEqual),

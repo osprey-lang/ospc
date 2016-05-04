@@ -257,7 +257,7 @@ public class SimpleLambdaExpression is LambdaExpression
 	/// Summary: Gets a {Statement} or {Expression} with the body of the lambda expression.
 	/// Remarks: When the body is a {Statement}, it corresponds to a lambda expression with
 	///          a `block` for its body, of the form `@x { ... }`. When it’s an {Expression},
-	///          the lambda expression is of the form `@x = ...`.
+	///          the lambda expression is of the form `@x => ...`.
 	public get body = _body;
 
 	override accept(visitor, arg)

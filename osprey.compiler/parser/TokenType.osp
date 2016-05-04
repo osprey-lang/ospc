@@ -264,4 +264,6 @@ public enum set TokenType
 	squareOpenSafe = 52 | punctuation,
 	/// Summary: !
 	exclam = 53 | punctuation,
+	/// Summary: =>
+	fatArrow = 54 | punctuation,
 }

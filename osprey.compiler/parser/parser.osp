@@ -3574,7 +3574,7 @@ public inheritable Parser is ParserBase
 		 *     lambda-member-expression
 		 *     lambda-operator-expression
 		 *   simple-lambda-expression:
-		 *     '@' lambda-parameters? '=' expression
+		 *     '@' lambda-parameters? '=>' expression
 		 *     '@' lambda-parameters? block
 		 *   lambda-member-expression:
 		 *     '@' lambda-member-access lambda-member safe-access-chain?
@@ -3623,7 +3623,7 @@ public inheritable Parser is ParserBase
 
 		// Body
 		var body;
-		if acceptr(ref i, TokenType.assign):
+		if acceptr(ref i, TokenType.fatArrow):
 			body = parseExpression(ref i);
 		else:
 			body = parseBlock(ref i);
@@ -4470,13 +4470,13 @@ public inheritable Parser is ParserBase
 	];
 
 	private static literalFuncs = {
-		TokenType.\null:  @token = new NullLiteralExpression(token.location),
-		TokenType.\false: @token = new BooleanLiteralExpression(token.location, false),
-		TokenType.\true:  @token = new BooleanLiteralExpression(token.location, true),
-		TokenType.int:    @token = new IntegerLiteralExpression(token.location, token.literalValue),
-		TokenType.real:   @token = new RealLiteralExpression(token.location, token.literalValue),
-		TokenType.string: @token = new StringLiteralExpression(token.location, token.literalValue),
-		TokenType.char:   @token = new CharLiteralExpression(token.location, token.literalValue),
+		TokenType.\null:  @token => new NullLiteralExpression(token.location),
+		TokenType.\false: @token => new BooleanLiteralExpression(token.location, false),
+		TokenType.\true:  @token => new BooleanLiteralExpression(token.location, true),
+		TokenType.int:    @token => new IntegerLiteralExpression(token.location, token.literalValue),
+		TokenType.real:   @token => new RealLiteralExpression(token.location, token.literalValue),
+		TokenType.string: @token => new StringLiteralExpression(token.location, token.literalValue),
+		TokenType.char:   @token => new CharLiteralExpression(token.location, token.literalValue),
 	};
 
 	private static primaryExpressionStarters = [

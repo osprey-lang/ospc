@@ -5,7 +5,7 @@ namespace osprey.compiler.syntax.wrapped;
 
 public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 {
-	private isNotNull = @node = node is not null;
+	private isNotNull = @node => node is not null;
 
 	private mapList(list, arg)
 	{

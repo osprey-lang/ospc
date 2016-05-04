@@ -237,7 +237,7 @@ public class WrappedSimpleLambdaExpression is WrappedLambdaExpression
 	/// Summary: A {WrappedStatement} or {WrappedExpression} with the body of the lambda expression.
 	/// Remarks: When the body is a {WrappedStatement}, it corresponds to a lambda expression with
 	///          a `block` for its body, of the form `@x { ... }`. When it’s a {WrappedExpression},
-	///          the lambda expression is of the form `@x = ...`.
+	///          the lambda expression is of the form `@x => ...`.
 	public body;
 
 	override accept(visitor, arg)
