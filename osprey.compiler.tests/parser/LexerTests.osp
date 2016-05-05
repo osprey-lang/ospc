@@ -279,11 +279,14 @@ public class LexerTests is TestFixture
 		";
 		var lexer = lex(source);
 
+		var count = 0;
 		for token in lexer
 		{
 			Assert.areEqual(token.type, TT.identifier);
 			Assert.areEqual(token.contextualType, CT.none);
+			count += 1;
 		}
+		Assert.areEqual(count, 48);
 	}
 
 	public test_ContextualKeywords()
@@ -317,11 +320,14 @@ public class LexerTests is TestFixture
 		";
 		var lexer = lex(source);
 
+		var count = 0;
 		for token in lexer
 		{
 			Assert.areEqual(token.type, TT.identifier);
 			Assert.isOfType(token, typeof(Identifier));
 			Assert.areEqual(token.contextualType, CT.none);
+			count += 1;
 		}
+		Assert.areEqual(count, 10);
 	}
 }
