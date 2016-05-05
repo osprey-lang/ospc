@@ -193,7 +193,7 @@ public class LexerTests is TestFixture
 		var source = r"
 			~   <   <=  >  >=  ==   !=  ?  ??  ?!
 			->  +   -   |  *   /    %   &  ^   ::
-			<<  >>  **   <=>
+			<<  >>  **  <=>  =>
 		";
 		var lexer = lex(source);
 
@@ -206,7 +206,7 @@ public class LexerTests is TestFixture
 			TT.funcApplication, TT.plus, TT.minus, TT.pipe,
 			TT.multiply, TT.divide, TT.modulo, TT.ampersand,
 			TT.caret, TT.concatenate, TT.shiftLeft, TT.shiftRight,
-			TT.power, TT.compare,
+			TT.power, TT.compare, TT.fatArrow,
 		];
 
 		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
