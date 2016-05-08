@@ -196,8 +196,6 @@ public inheritable Parser is ParserBase
 		 *   compilation-unit:
 		 *     version-specifier? use-directives? global-annotations?
 		 *       file-namespace-declaration? top-level-members?
-		 *   file-namespace-declaration:
-		 *     'namespace' qualified-name ';'
 		 *   top-level-members:
 		 *     top-level-member
 		 *     top-level-members top-level-member
@@ -425,6 +423,11 @@ public inheritable Parser is ParserBase
 	///          This is a helper method for {parseDocument}.
 	private tryParseFileNamespaceDeclaration(ref i)
 	{
+		/* Syntax:
+		 *   file-namespace-declaration:
+		 *     'namespace' qualified-name ';'
+		 */
+
 		// Don't modify i until we have a full file-namespace-declaration
 		var k = i;
 
