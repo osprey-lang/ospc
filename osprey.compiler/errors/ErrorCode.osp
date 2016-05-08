@@ -54,6 +54,7 @@ public static class ErrorCode
 	public const err_InvalidModifierForIterator = 1626;
 	public const err_ExpectedNamespaceMember = 1631;
 	public const err_InvalidNamespaceModifiers = 1632;
+	public const err_InvalidLocationForFileNamespace = 1633;
 	public const err_InvalidModifierForClass = 1641;
 	public const err_InvalidModifierForEnum = 1642;
 	public const err_StaticClassCannotBeAbstractOrInheritable = 1643;
@@ -71,6 +72,7 @@ public static class ErrorCode
 	public const err_WrongParameterCountForUnaryOperator = 1674;
 	public const err_WrongParameterCountForBinaryOperator = 1675;
 	public const err_WrongParameterCountForUnaryOrBinaryOperator = 1676;
+	public const err_InvalidUseDirective = 1681;
 	public const err_VariadicParameterCannotBeOptional = 1701;
 	public const err_VariadicMustBeLastParameter = 1702;
 	public const err_CannotMixVariadicAndOptionalParameters = 1703;
@@ -91,11 +93,19 @@ public static class ErrorCode
 	public const err_ExpectedParallelAssignment = 1806;
 	public const err_ParallelAssignmentWrongValueCount = 1807;
 	public const err_ExpectedStatementTerminator = 1808;
+	public const err_ConstantWithoutValue = 1809;
+	public const err_ParallelVariableDeclarationWithoutValue = 1810;
+	public const err_WithStatementVariableWithoutValue = 1811;
 	public const err_ExpectedPrimaryExpression = 1851;
 	public const err_InvalidStatementExpression = 1852;
 	public const err_ExpressionMustBeAssignable = 1853;
+	public const err_ExpectedMemberToAccess = 1854;
+	public const err_ExpectedConstructorArgumentsOrInitializer = 1855;
+	public const err_InvalidLambdaExpression = 1856;
+	public const err_UseInVariableWithoutValue = 1857;
 	public const err_x_ExpectedExternKeyword = 1901;
 	public const err_x_UnknownExternParameter = 1902;
+	public const err_x_ExpectedExternMethodName = 1903;
 	public const err_NameError = 2001;
 	public const err_NameErrorWithoutName = 2002;
 	public const err_UndefinedName = 2003;

@@ -431,7 +431,7 @@ public inheritable Parser is ParserBase
 			}
 		}
 
-		fatalError(lex[i], ErrorCode.err_UnexpectedToken);
+		fatalError(lex[i], ErrorCode.err_InvalidUseDirective);
 	}
 
 	//<region: Member declarations>
@@ -461,6 +461,8 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\namespace);
 
 		var name = parseQualifiedName(ref i);
+		if accept(i, TokenType.semicolon):
+			fatalError(lex[i], ErrorCode.err_InvalidLocationForFileNamespace);
 		expectr(ref i, TokenType.curlyOpen);
 
 		var members = new List(5);
@@ -544,7 +546,7 @@ public inheritable Parser is ParserBase
 		do
 		{
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign);
+			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
 			var value = parseExpression(ref i);
 
 			constants.add(
@@ -1098,7 +1100,7 @@ public inheritable Parser is ParserBase
 		do
 		{
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign);
+			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
 			var value = parseExpression(ref i);
 
 			constants.add(
@@ -1389,7 +1391,7 @@ public inheritable Parser is ParserBase
 		i += 1;
 
 		expectr(ref i, TokenType.parenOpen);
-		var externName = expectr(ref i, TokenType.string);
+		var externName = expectr(ref i, TokenType.string, ErrorCode.err_x_ExpectedExternMethodName);
 
 		var locals;
 		while acceptr(ref i, TokenType.comma)
@@ -1500,7 +1502,7 @@ public inheritable Parser is ParserBase
 			names = new SyntaxList(names);
 
 			expectr(ref i, TokenType.parenClose);
-			expectr(ref i, TokenType.assign);
+			expectr(ref i, TokenType.assign, ErrorCode.err_ParallelVariableDeclarationWithoutValue);
 
 			var value = parseExpression(ref i);
 
@@ -1565,7 +1567,7 @@ public inheritable Parser is ParserBase
 		do
 		{
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign);
+			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
 			var value = parseExpression(ref i);
 
 			constants.add(
@@ -2138,7 +2140,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\with);
 
 		var variable = expectr(ref i, TokenType.identifier);
-		expectr(ref i, TokenType.assign);
+		expectr(ref i, TokenType.assign, ErrorCode.err_WithStatementVariableWithoutValue);
 		var expression = parseExpression(ref i);
 
 		var body = parseControlStatement(ref i);
@@ -3002,7 +3004,7 @@ public inheritable Parser is ParserBase
 				}
 				else
 				{
-					var name = expectr(ref i, TokenType.identifier);
+					var name = expectr(ref i, TokenType.identifier, ErrorCode.err_ExpectedMemberToAccess);
 					inner = new MemberAccessExpression(
 						getLocation(inner, name),
 						inner, name
@@ -3194,7 +3196,7 @@ public inheritable Parser is ParserBase
 		else
 		{
 			arguments = EmptyLists.argument;
-			expect(i, TokenType.\with);
+			expect(i, TokenType.\with, ErrorCode.err_ExpectedConstructorArgumentsOrInitializer);
 		}
 
 		var initializer;
@@ -3616,6 +3618,9 @@ public inheritable Parser is ParserBase
 			);
 		}
 
+		if not accept(i, TokenType.identifier, TokenType.parenOpen, TokenType.fatArrow):
+			fatalError(lex[i], ErrorCode.err_InvalidLambdaExpression);
+
 		// Must be a simple-lambda-expression
 
 		// Parameters
@@ -3726,7 +3731,7 @@ public inheritable Parser is ParserBase
 				}
 				else
 				{
-					var member = expectr(ref i, TokenType.identifier);
+					var member = expectr(ref i, TokenType.identifier, ErrorCode.err_ExpectedMemberToAccess);
 					link = new SafeMemberAccess(
 						getLocation(start, member),
 						isSafe, member
@@ -3786,7 +3791,7 @@ public inheritable Parser is ParserBase
 		do
 		{
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign);
+			expectr(ref i, TokenType.assign, ErrorCode.err_UseInVariableWithoutValue);
 			var value = parseExpression(ref i);
 			variables.add(
 				new VariableDeclarator(

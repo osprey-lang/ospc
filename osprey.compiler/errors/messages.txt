@@ -64,6 +64,7 @@
 // Namespace declaration errors
 1631 err_ExpectedNamespaceMember = "Expected a declaration of a class, enum, namespace, global function or global constant.";
 1632 err_InvalidNamespaceModifiers = "Namespace declarations do not accept any modifiers.";
+1633 err_InvalidLocationForFileNamespace = "The file namespace declaration ('namespace …;') must be the first namespace declaration in the file.";
 
 // Type declaration errors
 1641 err_InvalidModifierForClass = "A class declaration cannot be marked 'protected', 'overridable' or 'override'.";
@@ -90,6 +91,9 @@
 1675 err_WrongParameterCountForBinaryOperator = "Wrong parameter count for binary operator overload (expected 2, got {0}).";
 1676 err_WrongParameterCountForUnaryOrBinaryOperator = "Wrong parameter count for operator overload (expected 1 or 2, got {0}).";
 
+// Use directive errors
+1681 err_InvalidUseDirective = "Expected an identifier (for 'use x;' or 'use alias = name;') or string (for 'use \"file.osp\";').";
+
 // Parameter list errors
 1701 err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";
 1702 err_VariadicMustBeLastParameter = "A variadic parameter must be the last declared parameter.";
@@ -115,15 +119,23 @@
 1806 err_ExpectedParallelAssignment = "Expected a parallel assignment. Use ';' if the intent was to separate statements.";
 1807 err_ParallelAssignmentWrongValueCount = "A parallel assignment must have one value or as many values as there are targets (expected {0}, got {1}).";
 1808 err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
+1809 err_ConstantWithoutValue = "Expected '=' followed by a constant value. A constant cannot be declared without a value.";
+1810 err_ParallelVariableDeclarationWithoutValue = "Expected '=' followed by an expression. A parallel variable declaration ('var (a, b) = …;') must have an initial value. Otherwise, use a regular variable declaration ('var a, b;').";
+1811 err_WithStatementVariableWithoutValue = "Expected '=' followed by an expression. A 'with' statement variable must be assigned a value.";
 
 // Expression errors
 1851 err_ExpectedPrimaryExpression = "Expected an expression; got {0}.";
 1852 err_InvalidStatementExpression = "Only invocation, function application, assignment and object creation can be used as a statement.";
 1853 err_ExpressionMustBeAssignable = "The target of an assignment must be an assignable expression.";
+1854 err_ExpectedMemberToAccess = "Expected the name of a member (an identifier) or 'iter'.";
+1855 err_ExpectedConstructorArgumentsOrInitializer = "Expected an argument list ('new T(…)') or initializer ('new T with …').";
+1856 err_InvalidLambdaExpression = "Expected a parameter list, a single identifier, '.' or '?.' followed by an identifier, '=>', '{', or an operator.";
+1857 err_UseInVariableWithoutValue = "Expected '=' followed by an expression. A 'use–in' variable must be assigned a value.";
 
 // Extension errors
 1901 err_x_ExpectedExternKeyword = "Expected the '__extern' keyword.";
 1902 err_x_UnknownExternParameter = "Unknown __extern parameter '{0}'.";
+1903 err_x_ExpectedExternMethodName = "Expected a string (the name of a native method name).";
 
 //## Compile-time errors (2000-5999) ##
 2001 err_NameError = "The name '{0}' caused an unspecified error.";
