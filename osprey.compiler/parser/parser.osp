@@ -230,30 +230,7 @@ public inheritable Parser is ParserBase
 			globalAnnotations = parseGlobalAnnotations(ref i);
 
 		// file-namespace-declaration
-		var fileNamespace;
-		if accept(i, TokenType.\namespace)
-		{
-			// Try to parse the beginning of a namespace declaration.
-			// If a curly bracket follows the qualified-name, we back
-			// up to the 'namespace' keyword and let top-level-members
-			// take care of it. Reduces code duplication.
-			// Note: the 'namespace' keyword must always be followed by
-			// a qualified-name, even in the file-namespace-declaration,
-			// so we can use parseQualifiedName here. If the name is
-			// invalid for file-namespace-declaration, it would be invalid
-			// for a regular namespace-declaration.
-			var k = i;
-			i += 1; // skip 'namespace'
-			fileNamespace = parseQualifiedName(ref i);
-			if not acceptr(ref i, TokenType.semicolon)
-			{
-				// back up and reset
-				i = k;
-				fileNamespace = null;
-				// Fall through to process it in the default manner.
-			}
-			// Otherwise, let fileNamespace be the consumed namespace name.
-		}
+		var fileNamespace = tryParseFileNamespaceDeclaration(ref i);
 
 		// top-level-members, grouped into global-statements and everything else.
 		var members = new List(5), statements = [];
@@ -432,6 +409,43 @@ public inheritable Parser is ParserBase
 		}
 
 		fatalError(lex[i], ErrorCode.err_InvalidUseDirective);
+	}
+
+	/// Summary: Tries to parse a file namespace declaration at the specified token
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {QualifiedName} if the document contains a file namespace declaration,
+	///          or null otherwise.
+	/// Remarks: This method parses the grammar of the 'file-namespace-declaration' nonterminal.
+	///
+	///          File namespace declarations are optional. If this method fails to parse a file
+	///          namespace declaration, {i} will be unchanged, so {parseNamespaceDeclaration}
+	///          can handle it correctly. This is done chiefly to reduce code duplication.
+	///
+	///          This is a helper method for {parseDocument}.
+	private tryParseFileNamespaceDeclaration(ref i)
+	{
+		// Don't modify i until we have a full file-namespace-declaration
+		var k = i;
+
+		if not acceptr(ref k, TokenType.\namespace):
+			return null;
+
+		// We have a 'namespace' keyword. Try to parse the beginning of a namespace
+		// declaration. If a curly bracket follows the qualified-name, return null
+		// and let top-level-members take care of it.
+		// Note: the 'namespace' keyword must always be followed by a qualified-name,
+		// even in the file-namespace-declaration, so we can use parseQualifiedName
+		// here. If the name is invalid for file-namespace-declaration, it would be
+		// invalid for a regular namespace-declaration.
+
+		var fileNamespace = parseQualifiedName(ref k);
+
+		if not acceptr(ref k, TokenType.semicolon):
+			return null;
+
+		i = k;
+		return fileNamespace;
 	}
 
 	//<region: Member declarations>
