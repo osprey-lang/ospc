@@ -3635,7 +3635,7 @@ public inheritable Parser is ParserBase
 			);
 		}
 
-		if not accept(i, TokenType.identifier, TokenType.parenOpen, TokenType.fatArrow):
+		if not acceptAny(i, lambdaStarters):
 			fatalError(lex[i], ErrorCode.err_InvalidLambdaExpression);
 
 		// Must be a simple-lambda-expression
@@ -4517,5 +4517,12 @@ public inheritable Parser is ParserBase
 		TokenType.safeAccess,
 		TokenType.parenOpenSafe,
 		TokenType.squareOpenSafe,
+	];
+
+	private static lambdaStarters = [
+		TokenType.identifier,
+		TokenType.parenOpen,
+		TokenType.fatArrow,
+		TokenType.curlyOpen,
 	];
 }
