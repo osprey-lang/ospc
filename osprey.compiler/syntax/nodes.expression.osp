@@ -787,25 +787,6 @@ public inheritable CollectionInitializer is Initializer
 	}
 }
 
-public class ComprehensionInitializer is CollectionInitializer
-{
-	public new(location, elements, comprehenders)
-	{
-		new base(location, elements);
-
-		this._comprehenders = claimAll(comprehenders);
-	}
-
-	private _comprehenders;
-	/// Summary: Gets a {NodeList} of {ListComprehensionPart}s belonging to the comprehension initializer.
-	public get comprehenders = _comprehenders;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitComprehensionInitializer(this, arg);
-	}
-}
-
 public class ElementInitializer is ParseNode
 {
 	public new(location, arguments)
@@ -871,85 +852,6 @@ public class RangeExpression is Expression
 	override accept(visitor, arg)
 	{
 		return visitor.visitRangeExpression(this, arg);
-	}
-}
-
-public class ListComprehensionExpression is Expression
-{
-	public new(location, values, comprehenders)
-	{
-		new base(location);
-
-		this._values        = claimAll(values);
-		this._comprehenders = claimAll(comprehenders);
-	}
-
-	private _values;
-	/// Summary: Gets a {NodeList} of {Expression}s that the comprehension generates.
-	public get values = _values;
-
-	private _comprehenders;
-	/// Summary: Gets a {NodeList} of {ListComprehensionPart}s belonging to the list comprehension.
-	public get comprehenders = _comprehenders;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitListComprehension(this, arg);
-	}
-}
-
-public abstract class ListComprehensionPart is ParseNode
-{
-	public new(location)
-	{
-		new base(location);
-	}
-
-	abstract override accept(visitor, arg);
-}
-
-public class ListComprehensionIterator is ListComprehensionPart
-{
-	public new(location, variables, expression)
-	{
-		new base(location);
-
-		this._variables  = variables;
-		this._expression = claim(expression);
-	}
-
-	private _variables;
-	/// Summary: Gets a collection of the variable names declared by this list
-	///          comprehension iterator, as a {SyntaxList} of {Identifier} tokens.
-	public get variables = _variables;
-
-	private _expression;
-	/// Summary: Gets the {Expression} that is evaluated to produce the collection
-	///          iterated over by the list comprehension iterator.
-	public get expression = _expression;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitListComprehensionIterator(this, arg);
-	}
-}
-
-public class ListComprehensionCondition is ListComprehensionPart
-{
-	public new(location, condition)
-	{
-		new base(location);
-
-		this._condition = claim(condition);
-	}
-
-	private _condition;
-	/// Summary: Gets the condition {Expression} of this list comprehension condition.
-	public get condition = _condition;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitListComprehensionCondition(this, arg);
 	}
 }
 

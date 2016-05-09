@@ -12,18 +12,16 @@ public enum ContextualType
 	set = 2,
 	/// Summary: to
 	to = 3,
-	/// Summary: where
-	where = 4,
 	/// Summary: version
-	version = 5,
+	version = 4,
 	/// Summary: __primitive (non-standard extension)
-	primitive = 6,
+	primitive = 5,
 	/// Summary: __init_type (non-standard extension)
-	initType = 7,
+	initType = 6,
 	/// Summary: __extern (non-standard extension)
-	extern = 8,
+	extern = 7,
 	/// Summary: __named_const (non-standard extension)
-	namedConst = 9,
+	namedConst = 8,
 	/// Summary: __get_argc (non-standard extension)
-	getArgc = 10,
+	getArgc = 9,
 }

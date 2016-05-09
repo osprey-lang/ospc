@@ -515,25 +515,6 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 		return expr;
 	}
 
-	overridable override visitListComprehension(expr, arg)
-	{
-		expr.comprehenders = updateNodeList(expr.comprehenders, arg);
-		expr.values = updateNodeList(expr.values, arg);
-		return expr;
-	}
-
-	overridable override visitListComprehensionCondition(node, arg)
-	{
-		node.condition = node.condition.accept(this, arg);
-		return node;
-	}
-
-	overridable override visitListComprehensionIterator(node, arg)
-	{
-		node.expression = node.expression.accept(this, arg);
-		return node;
-	}
-
 	overridable override visitListCreationExpression(expr, arg)
 	{
 		expr.values = updateNodeList(expr.values, arg);
@@ -588,13 +569,6 @@ public abstract class WrappedTreeUpdater is WrappedTreeVisitor
 	overridable override visitCollectionInitializer(initializer, arg)
 	{
 		initializer.elements = updateNodeList(initializer.elements, arg);
-		return initializer;
-	}
-
-	overridable override visitComprehensionInitializer(initializer, arg)
-	{
-		initializer.elements = updateNodeList(initializer.elements, arg);
-		initializer.comprehenders = updateNodeList(initializer.comprehenders, arg);
 		return initializer;
 	}
 

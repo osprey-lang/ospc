@@ -513,25 +513,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitListComprehension(expr, arg)
-	{
-		expr.comprehenders.acceptAll(this, arg);
-		expr.values.acceptAll(this, arg);
-		return null;
-	}
-
-	overridable override visitListComprehensionCondition(node, arg)
-	{
-		node.condition.accept(this, arg);
-		return null;
-	}
-
-	overridable override visitListComprehensionIterator(node, arg)
-	{
-		node.expression.accept(this, arg);
-		return null;
-	}
-
 	overridable override visitListCreationExpression(expr, arg)
 	{
 		expr.values.acceptAll(this, arg);
@@ -584,13 +565,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	overridable override visitCollectionInitializer(initializer, arg)
 	{
 		initializer.elements.acceptAll(this, arg);
-		return null;
-	}
-
-	overridable override visitComprehensionInitializer(initializer, arg)
-	{
-		initializer.elements.acceptAll(this, arg);
-		initializer.comprehenders.acceptAll(this, arg);
 		return null;
 	}
 

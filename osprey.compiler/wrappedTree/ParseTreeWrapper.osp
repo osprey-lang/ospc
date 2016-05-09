@@ -528,25 +528,6 @@ public class ParseTreeWrapper is ParseTreeVisitor
 		return new WrappedLambdaOperatorExpression(expr);
 	}
 
-	override visitListComprehension(expr, arg)
-	{
-		var comprehenders = wrapNodeList(expr.comprehenders);
-		var values = wrapNodeList(expr.values);
-		return new WrappedListComprehensionExpression(expr, values, comprehenders);
-	}
-
-	override visitListComprehensionCondition(node, arg)
-	{
-		var condition = node.condition.accept(this, null);
-		return new WrappedListComprehensionCondition(node, condition);
-	}
-
-	override visitListComprehensionIterator(node, arg)
-	{
-		var expression = node.expression.accept(this, null);
-		return new WrappedListComprehensionIterator(node, expression);
-	}
-
 	override visitListCreationExpression(expr, arg)
 	{
 		var values = wrapNodeList(expr.values);
@@ -602,13 +583,6 @@ public class ParseTreeWrapper is ParseTreeVisitor
 	{
 		var elements = wrapNodeList(initializer.elements);
 		return new WrappedCollectionInitializer(initializer, elements);
-	}
-
-	override visitComprehensionInitializer(initializer, arg)
-	{
-		var elements = wrapNodeList(initializer.elements);
-		var comprehenders = wrapNodeList(initializer.comprehenders);
-		return new WrappedComprehensionInitializer(initializer, elements, comprehenders);
 	}
 
 	override visitElementInitializer(initializer, arg)

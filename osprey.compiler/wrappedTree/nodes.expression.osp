@@ -728,24 +728,6 @@ public inheritable WrappedCollectionInitializer is WrappedInitializer
 	}
 }
 
-public class WrappedComprehensionInitializer is WrappedCollectionInitializer
-{
-	public new(wrappedNode, elements, comprehenders)
-	{
-		new base(wrappedNode, elements);
-
-		this.comprehenders = claimAll(comprehenders);
-	}
-
-	/// Summary: A {NodeList} of {ListComprehensionPart}s belonging to the comprehension initializer.
-	public comprehenders;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitComprehensionInitializer(this, arg);
-	}
-}
-
 public class WrappedElementInitializer is WrappedNode
 {
 	public new(wrappedNode, arguments)
@@ -806,79 +788,6 @@ public class WrappedRangeExpression is WrappedExpression
 	override accept(visitor, arg)
 	{
 		return visitor.visitRangeExpression(this, arg);
-	}
-}
-
-public class WrappedListComprehensionExpression is WrappedExpression
-{
-	public new(wrappedNode, values, comprehenders)
-	{
-		new base(wrappedNode);
-
-		this.values        = claimAll(values);
-		this.comprehenders = claimAll(comprehenders);
-	}
-
-	/// Summary: A {NodeList} of {WrappedExpression}s that the comprehension generates.
-	public values;
-
-	/// Summary: A {NodeList} of {WrappedListComprehensionPart}s belonging to the list comprehension.
-	public comprehenders;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitListComprehension(this, arg);
-	}
-}
-
-public abstract class WrappedListComprehensionPart is WrappedNode
-{
-	public new(wrappedNode)
-	{
-		new base(wrappedNode);
-	}
-
-	abstract override accept(visitor, arg);
-}
-
-public class WrappedListComprehensionIterator is WrappedListComprehensionPart
-{
-	public new(wrappedNode, expression)
-	{
-		new base(wrappedNode);
-
-		this.expression = claim(expression);
-	}
-
-	/// Summary: Gets a collection of the variable names declared by this list
-	///          comprehension iterator, as a {SyntaxList} of {Identifier} tokens.
-	public get variables = wrappedNode.variables;
-
-	/// Summary: The {WrappedExpression} that is evaluated to produce the collection
-	///          iterated over by the list comprehension iterator.
-	public expression;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitListComprehensionIterator(this, arg);
-	}
-}
-
-public class WrappedListComprehensionCondition is WrappedListComprehensionPart
-{
-	public new(wrappedNode, condition)
-	{
-		new base(wrappedNode);
-
-		this.condition = claim(condition);
-	}
-
-	/// Summary: The condition {WrappedExpression} of this list comprehension condition.
-	public condition;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitListComprehensionCondition(this, arg);
 	}
 }
 

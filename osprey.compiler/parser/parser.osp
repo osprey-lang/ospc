@@ -3235,11 +3235,9 @@ public inheritable Parser is ParserBase
 		 *   object-or-collection-initializer:
 		 *     object-initializer
 		 *     collection-initializer
-		 *     comprehension-initializer
 		 * Additional notes:
 		 *   This method is called with 'i' just past the 'with' keyword. We should therefore
-		 *   not expect it here. Also, collection-initializer and comprehension-initializer
-		 *   are both parsed by parseCollectionInitializer.
+		 *   not expect it here.
 		 */
 		if accept(i, TokenType.squareOpen):
 			return parseCollectionInitializer(ref i);
@@ -3296,36 +3294,16 @@ public inheritable Parser is ParserBase
 		 *   collection-initializer:
 		 *     'with' '[' element-initializer-list? ']'
 		 *     'with' '[' element-initializer-list ',' ']'
-		 *   comprehension-initializer:
-		 *     'with' '[' element-initializer-list list-comprehension-parts ']'
 		 * Additional notes:
 		 *   This method is called with 'i' just past the 'with' keyword. We should therefore
-		 *   not expect it here. Also, this method parses collection-initializer as well as
-		 *   comprehension-initializer, because they both start with an element-initializer-list.
+		 *   not expect it here.
 		 */
 		var start = expectr(ref i, TokenType.squareOpen);
 
 		var elements = EmptyLists.node;
 		if not accept(i, TokenType.squareClose)
 		{
-			var endsWithComma;
-			elements = parseElementInitializers(ref i, ref endsWithComma);
-
-			if not endsWithComma and acceptStartOfListComprehensionPart(i)
-			{
-				var listCompParts = new List(1);
-				do
-				{
-					listCompParts.add(parseListComprehensionPart(ref i));
-				} while acceptStartOfListComprehensionPart(i);
-				listCompParts = new NodeList(listCompParts);
-
-				var end = expectr(ref i, TokenType.squareClose);
-				return new ComprehensionInitializer(
-					getLocation(start, end),
-					elements, listCompParts
-				);
-			}
+			elements = parseElementInitializers(ref i);
 		}
 
 		do
@@ -3335,7 +3313,7 @@ public inheritable Parser is ParserBase
 		};
 	}
 
-	private parseElementInitializers(ref i, ref endsWithComma)
+	private parseElementInitializers(ref i)
 	{
 		/* Syntax:
 		 *   element-initializer-list:
@@ -3344,13 +3322,7 @@ public inheritable Parser is ParserBase
 		 *   element-initializer:
 		 *     expression
 		 *     '(' expression-list ')'
-		 * Additional notes:
-		 *   The grammar for collection-initializer allows a trailing comma. If there is
-		 *   no trailing comma, the element initializer list may have one or more list
-		 *   comprehension parts (starting with "for" or "where") following it. Hence
-		 *   the endsWithComma parameter.
 		 */
-		var _endsWithComma = false;
 		var elements = new List(2);
 		do
 		{
@@ -3378,11 +3350,9 @@ public inheritable Parser is ParserBase
 			elements.add(
 				new ElementInitializer(getLocation(argStart, argEnd), arguments)
 			);
-		} while (_endsWithComma = acceptr(ref i, TokenType.comma)) and
+		} while acceptr(ref i, TokenType.comma) and
 			not accept(i, TokenType.squareClose);
 		elements = new NodeList(elements);
-
-		endsWithComma = _endsWithComma;
 
 		return elements;
 	}
@@ -3390,8 +3360,8 @@ public inheritable Parser is ParserBase
 	/// Summary: Parses a list creation expression at the specified token index.
 	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
 	///          the index of the token that immediately follows the returned parse tree.
-	/// Returns: A {ListCreationExpression}, {RangeExpression} or {ListComprehensionExpression}
-	///          from the tokens at the starting index.
+	/// Returns: A {ListCreationExpression} or {RangeExpression} from the tokens at the starting
+	///          index.
 	/// Remarks: This method parses the grammar of the 'list-creation-expression' nonterminal.
 	public parseListCreationExpression(ref i)
 	{
@@ -3399,18 +3369,12 @@ public inheritable Parser is ParserBase
 		 *   list-creation-expression:
 		 *     simple-list-expression
 		 *     range-expression
-		 *     list-comprehension
 		 *   simple-list-expression:
 		 *     '[' expression-list? ']'
 		 *     '[' expression-list ',' ']'
 		 *   range-expression:
 		 *     '[' expression 'to' expression ']'
 		 *     '[' expression 'to' expression ',' expression ']'
-		 *   list-comprehension:
-		 *     '[' expression-list list-comprehension-parts ']'
-		 *   list-comprehension-parts:
-		 *     list-comprehension-part
-		 *     list-comprehension-parts list-comprehension-part
 		 */
 		var start = expectr(ref i, TokenType.squareOpen);
 
@@ -3431,42 +3395,22 @@ public inheritable Parser is ParserBase
 			not accept(i, TokenType.squareClose);
 		values = new NodeList(values);
 
-		if not endsWithComma
+		// Could it be a range expression?
+		if not endsWithComma and values.length == 1 and
+			acceptrContextual(ref i, ContextualType.to)
 		{
-			// Could it be a range expression?
-			if values.length == 1 and acceptrContextual(ref i, ContextualType.to)
-			{
-				var highExpr = parseExpression(ref i);
+			var highExpr = parseExpression(ref i);
 
-				var stepExpr;
-				if acceptr(ref i, TokenType.comma):
-					stepExpr = parseExpression(ref i);
+			var stepExpr;
+			if acceptr(ref i, TokenType.comma):
+				stepExpr = parseExpression(ref i);
 
-				var end = expectr(ref i, TokenType.squareClose);
+			var end = expectr(ref i, TokenType.squareClose);
 
-				return new RangeExpression(
-					getLocation(start, end),
-					values[0], highExpr, stepExpr
-				);
-			}
-
-			// Try a list comprehension!
-			if acceptStartOfListComprehensionPart(i)
-			{
-				var listCompParts = new List(1);
-				do
-				{
-					listCompParts.add(parseListComprehensionPart(ref i));
-				} while acceptStartOfListComprehensionPart(i);
-				listCompParts = new NodeList(listCompParts);
-
-				var end = expectr(ref i, TokenType.squareClose);
-
-				return new ListComprehensionExpression(
-					getLocation(start, end),
-					values, listCompParts
-				);
-			}
+			return new RangeExpression(
+				getLocation(start, end),
+				values[0], highExpr, stepExpr
+			);
 		}
 
 		do
@@ -3477,50 +3421,6 @@ public inheritable Parser is ParserBase
 				values
 			);
 		};
-	}
-
-	private acceptStartOfListComprehensionPart(i)
-	{
-		return accept(i, TokenType.\for) or acceptContextual(i, ContextualType.where);
-	}
-
-	private parseListComprehensionPart(ref i)
-	{
-		/* Syntax:
-		 *   list-comprehension-part:
-		 *     list-comprehension-iterator
-		 *     list-comprehension-condition
-		 *   list-comprehension-iterator:
-		 *     'for' identifier-list 'in' expression
-		 *   list-comprehension-condition:
-		 *     'where' expression
-		 */
-		var start = lex[i];
-		if acceptrContextual(ref i, ContextualType.where)
-		{
-			var condition = parseExpression(ref i);
-			return new ListComprehensionCondition(
-				getLocation(start, condition),
-				condition
-			);
-		}
-
-		expectr(ref i, TokenType.\for);
-		var variables = new List(1);
-		do
-		{
-			variables.add(expectr(ref i, TokenType.identifier));
-		} while acceptr(ref i, TokenType.comma);
-		variables = new SyntaxList(variables);
-
-		expectr(ref i, TokenType.\in);
-
-		var expression = parseExpression(ref i);
-
-		return new ListComprehensionIterator(
-			getLocation(start, expression),
-			variables, expression
-		);
 	}
 
 	/// Summary: Parses a hash creation expression at the specified token index.

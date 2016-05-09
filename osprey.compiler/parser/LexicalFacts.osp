@@ -87,7 +87,6 @@ private static class LexicalFacts
 		"get":           ContextualType.get,
 		"set":           ContextualType.set,
 		"to":            ContextualType.to,
-		"where":         ContextualType.where,
 		"version":       ContextualType.version,
 		"__primitive":   ContextualType.primitive,
 		"__init_type":   ContextualType.initType,

@@ -169,12 +169,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitLambdaOperatorExpression(expr, arg);
 
-	public abstract visitListComprehension(expr, arg);
-
-	public abstract visitListComprehensionCondition(node, arg);
-
-	public abstract visitListComprehensionIterator(node, arg);
-
 	public abstract visitListCreationExpression(expr, arg);
 
 	public abstract visitMemberAccess(expr, arg);
@@ -192,8 +186,6 @@ public abstract class ParseTreeVisitor
 	public abstract visitMemberInitializer(initializer, arg);
 
 	public abstract visitCollectionInitializer(initializer, arg);
-
-	public abstract visitComprehensionInitializer(initializer, arg);
 
 	public abstract visitElementInitializer(initializer, arg);
 
