@@ -443,7 +443,7 @@ public class Lexer
 
 		// Now, let's parse the value!
 		var value = source.substringTo(startIndex, literalEnd).replace("_", "");
-		var type; // TokenType
+		var tokenType;
 		if hasDecimals
 		{
 			value = Real.parse(value);
@@ -451,11 +451,11 @@ public class Lexer
 			// NaN is not possible in this situation.
 			if value.isInfinite:
 				value = null;
-			type = TokenType.real;
+			tokenType = TokenType.real;
 		}
 		else
 		{
-			type = TokenType.int;
+			tokenType = TokenType.int;
 			if isUnsigned:
 				value = UInt.parse(value);
 			else:
@@ -472,7 +472,7 @@ public class Lexer
 		// otherwise guaranteed to be in the right format.
 		if value is null
 		{
-			type = hasDecimals ? "Real" :
+			var type = hasDecimals ? "Real" :
 				isUnsigned ? "UInt" :
 				"Int";
 			recoverableError(
@@ -483,7 +483,7 @@ public class Lexer
 			value = LiteralToken.invalidValue;
 		}
 
-		return new LiteralToken(getLocation(startIndex, i), type, value);
+		return new LiteralToken(getLocation(startIndex, i), tokenType, value);
 	}
 
 	private scanHexNumber(ref i)

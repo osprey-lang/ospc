@@ -117,6 +117,22 @@ public class LexerTests is TestFixture
 		return true;
 	}
 
+	private assertErrorsMatch(errorCodes)
+	{
+		Assert.collectionsMatch(
+			errors.getAllErrors(),
+			errorCodes,
+			@(error, code) => Assert.areEqual(error.errorCode, code)
+		);
+	}
+
+	private assertThrowsParseError(source, errorCode)
+	{
+		var lexer = lex(source);
+		var error = Assert.throws(typeof(ParseError), @=> lexer[0]);
+		Assert.areEqual(error.errorCode, errorCode);
+	}
+
 	private assertIsEOF(token)
 	{
 		assertTokenMatches(token, TokenType.eof);
@@ -329,5 +345,80 @@ public class LexerTests is TestFixture
 			count += 1;
 		}
 		Assert.areEqual(count, 10);
+	}
+
+	public test_SimpleDecimalIntegerLiteral()
+	{
+		var source = r"
+			1   12345678   2147483647    9223372036854775807
+			1u  12345678u  4294967295u  18446744073709551615u
+		";
+		var lexer = lex(source);
+
+		var values = [
+			1,  12345678,  2147483647,   9223372036854775807,
+			1u, 12345678u, 4294967295u, 18446744073709551615u,
+		];
+
+		Assert.collectionsMatch(lexer, values, @(token, value)
+		{
+			assertTokenMatches(token, TT.int);
+			Assert.areSameRef(token.literalValue, value);
+			return true;
+		});
+	}
+
+	public test_DecimalIntegerLiteralWithThousandsSeparator()
+	{
+		// Thousands separator can be between any pair of digits
+		var source = r"
+			1   12_345_678   2147_483_64_7    92_23_3_72_036_8547_75807
+			1u  12_345_678u  4294_967_29_5u  184_46_7_44_073_7095_51615u
+		";
+		var lexer = lex(source);
+
+		var values = [
+			1,  12345678,  2147483647,   9223372036854775807,
+			1u, 12345678u, 4294967295u, 18446744073709551615u,
+		];
+
+		Assert.collectionsMatch(lexer, values, @(token, value)
+		{
+			assertTokenMatches(token, TT.int);
+			Assert.areSameRef(token.literalValue, value);
+			return true;
+		});
+	}
+
+	public test_SignedDecimalIntegerLiteralOutOfRange()
+	{
+		var source = r"123_456_789_012_345_678_901_234_567_890";
+		var lexer = lex(source);
+
+		// The token type should be int, but the value is invalid
+		var token = lexer[0];
+		assertTokenMatches(token, TT.int);
+		Assert.areSameRef(token.literalValue, LiteralToken.invalidValue);
+		assertErrorsMatch([ErrorCode.err_NumberOutOfRange]);
+		assertIsEOF(lexer[1]);
+	}
+
+	public test_UnsignedDecimalIntegerLiteralOutOfRange()
+	{
+		var source = r"123_456_789_012_345_678_901_234_567_890u";
+		var lexer = lex(source);
+
+		// The token type should be int, but the value is invalid
+		var token = lexer[0];
+		assertTokenMatches(token, TT.int);
+		Assert.areSameRef(token.literalValue, LiteralToken.invalidValue);
+		assertErrorsMatch([ErrorCode.err_NumberOutOfRange]);
+		assertIsEOF(lexer[1]);
+	}
+
+	public test_InvalidDecimalInteger()
+	{
+		assertThrowsParseError(r"123__456", ErrorCode.err_MultipleConsecutiveUnderscores);
+		assertThrowsParseError(r"123_", ErrorCode.err_UnderscoreWithoutDigits);
 	}
 }
