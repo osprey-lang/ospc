@@ -7,7 +7,7 @@ set LIB=%OSP%\lib
 
 if [%1]==[full] (
 	rem Generate error codes
-	cd osprey.compiler\errors
+	cd osprey.compiler\src\errors
 
 	echo [!] Generating error code list...
 	call generateErrorCodes.bat
@@ -17,11 +17,11 @@ if [%1]==[full] (
 )
 
 echo [!] Compiling osprey.compiler...
-%OSPC% /libpath "%LIB%" /verbose /type module /out "%LIB%\osprey.compiler\osprey.compiler.ovm" /name osprey.compiler /doc "%LIB%\osprey.compiler\osprey.compiler.ovm.json" /formatjson osprey.compiler\osprey.compiler.osp && ^
-xcopy /Y /I osprey.compiler\errors\messages.txt "%LIB%\osprey.compiler"
+%OSPC% /libpath "%LIB%" /verbose /type module /out "%LIB%\osprey.compiler\osprey.compiler.ovm" /name osprey.compiler /doc "%LIB%\osprey.compiler\osprey.compiler.ovm.json" /formatjson osprey.compiler\src\osprey.compiler.osp && ^
+xcopy /Y /I osprey.compiler\src\errors\messages.txt "%LIB%\osprey.compiler"
 
 if %ERRORLEVEL%==0 (
 	echo.
 	echo [!] Compiling ospc...
-	%OSPC% /libpath "%LIB%" /import osprey.compiler /verbose /main osprey.compiler.main /out bin\ospc.ovm /name ospc /doc bin\ospc.ovm.json /formatjson ospc\ospc.osp
+	%OSPC% /libpath "%LIB%" /import osprey.compiler /verbose /main osprey.compiler.main /out bin\ospc.ovm /name ospc /doc bin\ospc.ovm.json /formatjson ospc\src\ospc.osp
 )
