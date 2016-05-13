@@ -7,10 +7,13 @@ set LIB=%OSP%\lib
 
 if [%1]==[full] (
 	rem Generate error codes
-	cd osprey.compiler\src\errors
+	cd osprey.compiler\scripts
 
 	echo [!] Generating error code list...
-	call generateErrorCodes.bat
+	python generate_error_codes.py ^
+		--messages="../src/errors/messages.txt" ^
+		--template="../src/errors/ErrorCode.base.osp" ^
+		--output="../src/errors/ErrorCode.osp"
 	echo.
 
 	cd ..\..
