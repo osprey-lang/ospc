@@ -4056,6 +4056,70 @@ public inheritable Parser is ParserBase
 		return modifiers;
 	}
 
+	/// Summary: Adds a modifier to the specified {Modifiers} instance.
+	/// Param modifiers: The {Modifiers} instance to modify with the modifier.
+	/// Param token: The {Token} containing the modifier.
+	/// Param name: A string contaning the modifier’s keyword, used only if a duplicate modifier
+	///          error is needed.
+	/// Param field: (ref) The {Modifiers} field to assign the token to.
+	/// Returns: True if the modifier was added successfully; otherwise, false. This method can
+	///          fail with a duplicate modifier error.
+	/// Remarks: If {modifiers} is empty, the {Modifiers.start} token will be set as well.
+	///
+	///          To add an accessibility modifier, use {addAccessibilityModifier}, which emits an
+	///          additional error if {modifiers} already has another accessibility modifier.
+	///
+	///          This method is called indirectly through {modifierFuncs}.
+	private addModifier(modifiers, token, name, ref field)
+	{
+		if field is not null
+		{
+			recoverableError(token, ErrorCode.err_DuplicateModifier, [name]);
+			return false;
+		}
+
+		field = token;
+		if modifiers.start is null:
+			modifiers.start = token;
+
+		return true;
+	}
+
+	/// Summary: Adds an accessibility modifier to the specified {Modifiers} instance.
+	/// Param modifiers: The {Modifiers} instance to modify with the modifier.
+	/// Param token: The {Token} containing the modifier.
+	/// Param name: A string containing the modifier’s keyword, used only if a duplicate modifier
+	///          error is needed.
+	/// Param field: (ref) The {Modifiers} field to assign the token to.
+	/// Returns: True if the modifier was added successfully; otherwise, false. This method can
+	///          fail with a duplicate modifier error as well as a multiple accessibility
+	///          modifier error.
+	/// Remarks: If {modifiers} is empty, the {Modifiers.start} token will be set as well.
+	///
+	///          To add a non-accessibility modifier, use {addModifier}, which does not check
+	///          whether {modifiers} already has another accessibility modifier.
+	///
+	///          This method is called indirectly through {modifierFuncs}.
+	private addAccessibilityModifier(modifiers, token, name, ref field)
+	{
+		if field is not null
+		{
+			recoverableError(token, ErrorCode.err_DuplicateModifier, [name]);
+			return false;
+		}
+		else if modifiers.hasAccessibility
+		{
+			recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
+			return false;
+		}
+
+		field = token;
+		if modifiers.start is null:
+			modifiers.start = token;
+
+		return true;
+	}
+
 	/// Summary: Parses zero or more global annotations at the specified index.
 	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
 	///          the index of the token that immediately follows the returned parse tree.
@@ -4212,81 +4276,35 @@ public inheritable Parser is ParserBase
 	private static modifierFuncs = {
 		TokenType.\public: @(parser, modifiers, token)
 		{
-			if modifiers.\public:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["public"]);
-			else if modifiers.hasAccessibility:
-				parser.recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
-
-			modifiers.\public = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addAccessibilityModifier(modifiers, token, "public", ref modifiers.\public);
 		},
 		TokenType.\protected: @(parser, modifiers, token)
 		{
-			if modifiers.\protected:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["protected"]);
-			else if modifiers.hasAccessibility:
-				parser.recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
-
-			modifiers.\protected = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addAccessibilityModifier(modifiers, token, "protected", ref modifiers.\protected);
 		},
 		TokenType.\private: @(parser, modifiers, token)
 		{
-			if modifiers.\private:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["private"]);
-			else if modifiers.hasAccessibility:
-				parser.recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
-
-			modifiers.\private = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addAccessibilityModifier(modifiers, token, "private", ref modifiers.\private);
 		},
 		TokenType.\static: @(parser, modifiers, token)
 		{
-			if modifiers.\static:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["static"]);
-
-			modifiers.\static = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addModifier(modifiers, token, "static", ref modifiers.\static);
 		},
 		TokenType.\abstract: @(parser, modifiers, token)
 		{
-			if modifiers.\abstract:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["abstract"]);
-
-			modifiers.\abstract = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addModifier(modifiers, token, "abstract", ref modifiers.\abstract);
 		},
 		TokenType.\inheritable: @(parser, modifiers, token)
 		{
-			if modifiers.\inheritable:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["inheritable"]);
-
-			modifiers.\inheritable = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addModifier(modifiers, token, "inheritable", ref modifiers.\inheritable);
 		},
 		TokenType.\overridable: @(parser, modifiers, token)
 		{
-			if modifiers.\overridable:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["overridable"]);
-
-			modifiers.\overridable = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addModifier(modifiers, token, "overridable", ref modifiers.\overridable);
 		},
 		TokenType.\override: @(parser, modifiers, token)
 		{
-			if modifiers.\override:
-				parser.recoverableError(token, ErrorCode.err_DuplicateModifier, ["override"]);
-
-			modifiers.\override = token;
-			if modifiers.start is null:
-				modifiers.start = token;
+			parser.addModifier(modifiers, token, "override", ref modifiers.\override);
 		},
 	};
 
