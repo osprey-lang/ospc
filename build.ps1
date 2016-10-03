@@ -12,7 +12,7 @@ function shouldRebuild {
   )
 
   if (-not (Test-Path $target)) {
-    return True
+    return $True
   }
 
   $sourceTime = (Get-Item $source).LastWriteTime
