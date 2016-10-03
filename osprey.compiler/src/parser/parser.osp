@@ -2134,6 +2134,7 @@ public inheritable Parser is ParserBase
 			var statements = new List(1);
 			while not accept(i, TokenType.curlyClose):
 				statements.add(parseStatement(ref i));
+			statements = new NodeList(statements);
 
 			var end = expectr(ref i, TokenType.curlyClose);
 
