@@ -19,6 +19,8 @@ public class Modifiers
 
 	/// Summary: The `public` modifier {Token} if specified, otherwise null.
 	public \public;
+	/// Summary: The `internal` modifier {Token} if specified, otherwise null.
+	public \internal;
 	/// Summary: The `protected` modifier {Token} if specified, otherwise null.
 	public \protected;
 	/// Summary: The `private` modifier {Token} if specified, otherwise null.
@@ -41,6 +43,7 @@ public class Modifiers
 	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
 	public get hasModifiers =
 		\public      or
+		\internal    or
 		\protected   or
 		\private     or
 		\static      or
@@ -59,6 +62,8 @@ public class Modifiers
 	{
 		if \public:
 			return Accessibility.\public;
+		if \internal:
+			return Accessibility.\internal;
 		if \protected:
 			return Accessibility.\protected;
 		if \private:
@@ -72,6 +77,7 @@ public class Modifiers
 		annotations  = EmptyLists.node;
 		start        = null;
 		\public      = null;
+		\internal    = null;
 		\protected   = null;
 		\private     = null;
 		\static      = null;
@@ -87,7 +93,8 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForGlobalFunctionOrConstant(parser)
 	{
-		var invalidToken = \protected ??
+		var invalidToken =
+			\protected ?? \private ??
 			\static ??
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
@@ -100,7 +107,8 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForClass(parser)
 	{
-		var invalidToken = \protected ??
+		var invalidToken =
+			\protected ?? \private ??
 			\overridable ?? \override;
 		if invalidToken:
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClass);
@@ -254,7 +262,8 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForEnum(parser)
 	{
-		var invalidToken = \protected ??
+		var invalidToken =
+			\protected ?? \private ??
 			\static ??
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;

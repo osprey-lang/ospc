@@ -597,7 +597,7 @@ public inheritable Parser is ParserBase
 		 *     class-modifiers class-modifier
 		 *   class-modifier:
 		 *     'public'
-		 *     'private'
+		 *     'internal'
 		 *     'abstract'
 		 *     'static'
 		 *     'inheritable'
@@ -744,7 +744,7 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   constructor-declaration:
-		 *     access-level-modifier? 'new' '(' ctor-parameter-list? ')' constructor-body
+		 *     accessibility-modifier? 'new' '(' ctor-parameter-list? ')' constructor-body
 		 *   constructor-body:
 		 *     block
 		 *     ';'
@@ -811,7 +811,7 @@ public inheritable Parser is ParserBase
 		 *     property-modifier
 		 *     property-modifiers property-modifier
 		 *   property-modifier:
-		 *     access-level-modifier
+		 *     accessibility-modifier
 		 *     'static'
 		 *     'abstract'
 		 *     'overridable'
@@ -920,7 +920,7 @@ public inheritable Parser is ParserBase
 		 *     field-modifier
 		 *     field-modifiers field-modifier
 		 *   field-modifier:
-		 *     access-level-modifier
+		 *     accessibility-modifier
 		 *     'static'
 		 *   field-declarators:
 		 *     field-declarator
@@ -981,7 +981,7 @@ public inheritable Parser is ParserBase
 		 *     method-modifier
 		 *     method-modifiers method-modifier
 		 *   method-modifier:
-		 *     access-level-modifier
+		 *     accessibility-modifier
 		 *     'static'
 		 *     'abstract'
 		 *     'overridable'
@@ -1050,7 +1050,7 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   class-constant-declaration:
-		 *     annotations? access-level-modifier? 'const' constant-declarators ';'
+		 *     annotations? accessibility-modifier? 'const' constant-declarators ';'
 		 *   constant-declarators:
 		 *     constant-declarator
 		 *     constant-declarators ',' constant-declarator
@@ -1250,7 +1250,7 @@ public inheritable Parser is ParserBase
 		 *     annotations? enum-modifier? 'enum' identifier '{' simple-enum-body? '}'
 		 *   enum-modifier:
 		 *     'public'
-		 *     'private'
+		 *     'internal'
 		 *   simple-enum-body:
 		 *     enum-members ','?
 		 *   enum-members:
@@ -4231,6 +4231,10 @@ public inheritable Parser is ParserBase
 		TokenType.\public: @(parser, modifiers, token)
 		{
 			parser.addAccessibilityModifier(modifiers, token, "public", ref modifiers.\public);
+		},
+		TokenType.\internal: @(parser, modifiers, token)
+		{
+			parser.addAccessibilityModifier(modifiers, token, "internal", ref modifiers.\internal);
 		},
 		TokenType.\protected: @(parser, modifiers, token)
 		{

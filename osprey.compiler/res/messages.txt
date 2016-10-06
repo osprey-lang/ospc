@@ -67,8 +67,8 @@
 1633 err_InvalidLocationForFileNamespace = "The file namespace declaration ('namespace …;') must be the first namespace declaration in the file.";
 
 // Type declaration errors
-1641 err_InvalidModifierForClass = "A class declaration cannot be marked 'protected', 'overridable' or 'override'.";
-1642 err_InvalidModifierForEnum = "An enum declaration cannot be marked 'protected', 'inheritable', 'abstract', 'static', 'overridable' or 'override'.";
+1641 err_InvalidModifierForClass = "A class declaration cannot be marked 'protected', 'private', 'overridable' or 'override'.";
+1642 err_InvalidModifierForEnum = "An enum declaration cannot be marked 'protected', 'private', 'inheritable', 'abstract', 'static', 'overridable' or 'override'.";
 1643 err_StaticClassCannotBeAbstractOrInheritable = "A static class declaration cannot be marked 'abstract' or 'inheritable'.";
 1644 err_ClassCannotBeBothAbstractAndInheritable = "A class declaration cannot be marked both 'abstract' and 'inheritable'.";
 

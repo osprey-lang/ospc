@@ -80,64 +80,66 @@ public enum set TokenType
 	\in = 18 | keyword,
 	/// Summary: inheritable
 	\inheritable = 19 | keyword | memberModifier,
+	/// Summary: internal
+	\internal = 20 | keyword | memberModifier,
 	/// Summary: is
-	\is = 20 | keyword,
+	\is = 21 | keyword,
 	/// Summary: iter
-	\iter = 21 | keyword,
+	\iter = 22 | keyword,
 	/// Summary: namespace
-	\namespace = 22 | keyword,
+	\namespace = 23 | keyword,
 	/// Summary: new
-	\new = 23 | keyword,
+	\new = 24 | keyword,
 	/// Summary: next
-	\next = 24 | keyword,
+	\next = 25 | keyword,
 	/// Summary: not
-	\not = 25 | keyword | lambdaOperator,
+	\not = 26 | keyword | lambdaOperator,
 	/// Summary: null
-	\null = 26 | keyword | literal,
+	\null = 27 | keyword | literal,
 	/// Summary: operator
-	\operator = 27 | keyword,
+	\operator = 28 | keyword,
 	/// Summary: or
-	\or = 28 | keyword | lambdaOperator,
+	\or = 29 | keyword | lambdaOperator,
 	/// Summary: overridable
-	\overridable = 29 | keyword | memberModifier,
+	\overridable = 30 | keyword | memberModifier,
 	/// Summary: override
-	\override = 30 | keyword | memberModifier,
+	\override = 31 | keyword | memberModifier,
 	/// Summary: private
-	\private = 31 | keyword | memberModifier,
+	\private = 32 | keyword | memberModifier,
 	/// Summary: protected
-	\protected = 32 | keyword | memberModifier,
+	\protected = 33 | keyword | memberModifier,
 	/// Summary: public
-	\public = 33 | keyword | memberModifier,
+	\public = 34 | keyword | memberModifier,
 	/// Summary: ref
-	\ref = 34 | keyword,
+	\ref = 35 | keyword,
 	/// Summary: refeq
-	\refeq = 35 | keyword,
+	\refeq = 36 | keyword,
 	/// Summary: return
-	\return = 36 | keyword,
+	\return = 37 | keyword,
 	/// Summary: static
-	\static = 37 | keyword | memberModifier,
+	\static = 38 | keyword | memberModifier,
 	/// Summary: this
-	\this = 38 | keyword,
+	\this = 39 | keyword,
 	/// Summary: throw
-	\throw = 39 | keyword,
+	\throw = 40 | keyword,
 	/// Summary: true
-	\true = 40 | keyword | literal,
+	\true = 41 | keyword | literal,
 	/// Summary: try
-	\try = 41 | keyword,
+	\try = 42 | keyword,
 	/// Summary: typeof
-	\typeof = 42 | keyword,
+	\typeof = 43 | keyword,
 	/// Summary: use
-	\use = 43 | keyword,
+	\use = 44 | keyword,
 	/// Summary: var
-	\var = 44 | keyword,
+	\var = 45 | keyword,
 	/// Summary: with
-	\with = 45 | keyword,
+	\with = 46 | keyword,
 	/// Summary: while
-	\while = 46 | keyword,
+	\while = 47 | keyword,
 	/// Summary: xor
-	\xor = 47 | keyword | lambdaOperator,
+	\xor = 48 | keyword | lambdaOperator,
 	/// Summary: yield
-	\yield = 48 | keyword,
+	\yield = 49 | keyword,
 
 	/** Literals **/
 

@@ -138,8 +138,10 @@ public enum Accessibility
 	none = 0,
 	/// Summary: Public accessibility.
 	\public = 1,
+	/// Summary: Internal accessibility.
+	\internal = 2,
 	/// Summary: Protected accessibility.
-	\protected = 2,
+	\protected = 3,
 	/// Summary: Private accessibility.
-	\private = 3,
+	\private = 4,
 }

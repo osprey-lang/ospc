@@ -7,16 +7,16 @@ internal static class LexicalFacts
 {
 	/* Syntax:
 	 *   keyword: one of
-	 *     'abstract'  'and'        'async'    'base'         'break'
-	 *     'catch'     'class'      'const'    'do'           'else'
-	 *     'enum'      'false'      'finally'  'for'          'function'
-	 *     'global'    'if'         'in'       'inheritable'  'is'
-	 *     'iter'      'namespace'  'new'      'next'         'not'
-	 *     'null'      'operator'   'or'       'overridable'  'override'
-	 *     'private'   'protected'  'public'   'ref'          'refeq'
-	 *     'return'    'static'     'this'     'throw'        'true'
-	 *     'try'       'typeof'     'use'      'var'          'while'
-	 *     'with'      'xor'        'yield'
+	 *     'abstract'  'and'      'async'      'base'         'break'
+	 *     'catch'     'class'    'const'      'do'           'else'
+	 *     'enum'      'false'    'finally'    'for'          'function'
+	 *     'global'    'if'       'in'         'inheritable'  'internal'
+	 *     'is'        'iter'     'namespace'  'new'          'next'
+	 *     'not'       'null'     'operator'   'or'           'overridable'
+	 *     'override'  'private'  'protected'  'public'       'ref'
+	 *     'refeq'     'return'   'static'     'this'         'throw'
+	 *     'true'      'try'      'typeof'     'use'          'var'
+	 *     'while'     'with'     'xor'        'yield'
 	 * Mapping from keyword string to corresponding TokenType.
 	 */
 	public static keywordToType = {
@@ -39,6 +39,7 @@ internal static class LexicalFacts
 		"if":          TokenType.\if,
 		"in":          TokenType.\in,
 		"inheritable": TokenType.\inheritable,
+		"internal":    TokenType.\internal,
 		"is":          TokenType.\is,
 		"iter":        TokenType.\iter,
 		"namespace":   TokenType.\namespace,
