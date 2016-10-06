@@ -4,12 +4,6 @@
  * ponsible for name resolution, flow analysis, bytecode   *
  * generation and all the fun things that eventually lead  *
  * to an output module.                                    *
- *                                                         *
- * To accomplish this task, the compiler has a parse tree  *
- * implementation (see WrappedNode) that wraps the regular *
- * parse tree. The wrapped tree is *not* immutable, unlike *
- * the regular tree, which enables the compiler to store   *
- * stateful information inside the wrapped tree.           *
  ***********************************************************/
 
 use "CompilerErrorManager.osp";

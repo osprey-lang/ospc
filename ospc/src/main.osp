@@ -2,7 +2,6 @@ use aves;
 use aves.reflection;
 use osprey.compiler.parser;
 use osprey.compiler.syntax;
-use osprey.compiler.syntax.wrapped;
 
 namespace osprey.compiler;
 
@@ -50,33 +49,28 @@ public function main(args)
 		}
 	};
 	var commands = {
-		"!clear": @(ref mode, ref wrapNodes, ref multiLine)
+		"!clear": @(ref mode, ref multiLine)
 		{
 			Console.clear();
 		},
-		"!expr": @(ref mode, ref wrapNodes, ref multiLine)
+		"!expr": @(ref mode, ref multiLine)
 		{
 			mode = ParseMode.expression;
 		},
-		"!stmt": @(ref mode, ref wrapNodes, ref multiLine)
+		"!stmt": @(ref mode, ref multiLine)
 		{
 			mode = ParseMode.statement;
 		},
-		"!doc": @(ref mode, ref wrapNodes, ref multiLine)
+		"!doc": @(ref mode, ref multiLine)
 		{
 			mode = ParseMode.document;
 		},
-		"!wrap": @(ref mode, ref wrapNodes, ref multiLine)
-		{
-			wrapNodes = not wrapNodes;
-			print("Wrapping nodes: " :: (wrapNodes ? "yes": "no"));
-		},
-		"!+": @(ref mode, ref wrapNodes, ref multiLine)
+		"!+": @(ref mode, ref multiLine)
 		{
 			multiLine = true;
 			print("Entering multi-line mode");
 		},
-		"!1": @(ref mode, ref wrapNodes, ref multiLine)
+		"!1": @(ref mode, ref multiLine)
 		{
 			multiLine = false;
 			print("Entering single-line mode");
@@ -91,7 +85,6 @@ private function mainLoop(parsers, labels, commands)
 	var err = new CompilerErrorManager(true, true);
 
 	var mode = ParseMode.expression;
-	var wrapNodes = false;
 	var multiLine = false;
 
 	writeLabel(labels[mode]);
@@ -105,7 +98,7 @@ private function mainLoop(parsers, labels, commands)
 		if not (multiLine and input.length > 0) and
 			commands.tryGet(line, ref command)
 		{
-			command(ref mode, ref wrapNodes, ref multiLine);
+			command(ref mode, ref multiLine);
 		}
 		else
 		{
@@ -114,7 +107,7 @@ private function mainLoop(parsers, labels, commands)
 				if line.isEmpty
 				{
 					// Commit!
-					parseAndPrint(input, parsers[mode], err, wrapNodes);
+					parseAndPrint(input, parsers[mode], err);
 					input = "";
 				}
 				else
@@ -126,7 +119,7 @@ private function mainLoop(parsers, labels, commands)
 			{
 				line = line.trim();
 				if not line.isEmpty:
-					parseAndPrint(line, parsers[mode], err, wrapNodes);
+					parseAndPrint(line, parsers[mode], err);
 			}
 		}
 
@@ -141,7 +134,7 @@ private function writeLabel(label)
 	Console.resetColors();
 }
 
-private function parseAndPrint(text, parseFunc, err, wrapNodes)
+private function parseAndPrint(text, parseFunc, err)
 {
 	var file = SourceFile.createAnon(text, "<stdin>");
 	var parser = new Parser(file, ParseFlags.useExtensions, err);
@@ -170,18 +163,13 @@ private function parseAndPrint(text, parseFunc, err, wrapNodes)
 
 	if node and not err.hasErrors
 	{
-		if wrapNodes
-		{
-			var wrapper = new ParseTreeWrapper();
-			node = node.accept(wrapper, null);
-		}
 		SyntaxPrinter.print(node);
 	}
 }
 
 private static class SyntaxPrinter
 {
-	private static ignoreMembers = Set.fromCollection(["location", "parent", "wrappedNode"]);
+	private static ignoreMembers = Set.fromCollection(["location", "parent"]);
 
 	private static printColors = [ConsoleColor.gray,       ConsoleColor.black];
 	private static fieldColors = [ConsoleColor.green,      ConsoleColor.black];

@@ -1,7 +1,0 @@
-use aves;
-
-namespace osprey.compiler.syntax.wrapped;
-
-public abstract class WrappedTreeVisitor is ParseTreeVisitor
-{
-}
