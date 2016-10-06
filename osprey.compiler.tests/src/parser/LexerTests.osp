@@ -308,15 +308,15 @@ public class LexerTests is TestFixture
 	public test_ContextualKeywords()
 	{
 		var source = r"
-			get  set  to  version  __primitive
-			__init_type  __extern  __named_const  __get_argc
+			get  set  to
+			__primitive  __init_type  __extern  __named_const  __get_argc
 		";
 		var lexer = lex(source);
 
 		// Same order as the source, of course.
 		var tokens = [
-			CT.get, CT.set, CT.to, CT.version, CT.primitive,
-			CT.initType, CT.extern, CT.namedConst, CT.getArgc
+			CT.get, CT.set, CT.to,
+			CT.primitive, CT.initType, CT.extern, CT.namedConst, CT.getArgc
 		];
 
 		Assert.collectionsMatch(lexer, tokens, @(token, contextualType)
@@ -331,7 +331,7 @@ public class LexerTests is TestFixture
 	public test_ContextualKeywordEscapes()
 	{
 		var source = r"
-			\get  \set  \to  \where  \version
+			\get  \set  \to  \where
 			\__primitive  \__init_type  \__extern  \__named_const  \__get_argc
 		";
 		var lexer = lex(source);
@@ -344,7 +344,7 @@ public class LexerTests is TestFixture
 			Assert.areEqual(token.contextualType, CT.none);
 			count += 1;
 		}
-		Assert.areEqual(count, 10);
+		Assert.areEqual(count, 9);
 	}
 
 	public test_SimpleDecimalIntegerLiteral()

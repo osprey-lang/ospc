@@ -14,13 +14,6 @@ public class WrappedDocument is WrappedNode
 		this.statements        = claimAll(statements);
 	}
 
-	/// Summary: Gets the {VersionSpecifier} of this compilation unit,
-	///          or null if there is none.
-	/// Remarks: Note: this is not a {WrappedNode}, because version
-	///          specifiers contain no {ParseNode}s and do not need any
-	///          state during compilation.
-	public get version = wrappedNode.version;
-
 	/// Summary: A {NodeList} containing the {WrappedUseDirective}s in
 	///          this compilation unit.
 	public useDirectives;

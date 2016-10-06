@@ -4,22 +4,16 @@ namespace osprey.compiler.syntax;
 
 public class Document is ParseNode
 {
-	public new(location, version, useDirectives, globalAnnotations, fileNamespaceName, members, statements)
+	public new(location, useDirectives, globalAnnotations, fileNamespaceName, members, statements)
 	{
 		new base(location);
 
-		this._version           = claim(version);
 		this._useDirectives     = claimAll(useDirectives ?? EmptyLists.node);
 		this._globalAnnotations = claimAll(globalAnnotations ?? EmptyLists.node);
 		this._fileNamespaceName = fileNamespaceName;
 		this._members           = claimAll(members ?? EmptyLists.node);
 		this._statements        = claimAll(statements ?? EmptyLists.node);
 	}
-
-	private _version;
-	/// Summary: Gets the {VersionSpecifier} of this compilation unit,
-	///          or null if there is none.
-	public get version = _version;
 
 	private _useDirectives;
 	/// Summary: Gets a {NodeList} containing the {UseDirective}s in
@@ -50,51 +44,5 @@ public class Document is ParseNode
 	override accept(visitor, arg)
 	{
 		return visitor.visitDocument(this, arg);
-	}
-}
-
-public class VersionSpecifier is ParseNode
-{
-	public new(location, major, minor, build, revision)
-	{
-		new base(location);
-
-		this._major    = major;
-		this._minor    = minor;
-		this._build    = build;
-		this._revision = revision;
-	}
-
-	private _major;
-	/// Summary: Gets the {LiteralToken} corresponding to the major version component.
-	public get major = _major;
-
-	private _minor;
-	/// Summary: Gets the {LiteralToken} corresponding to the minor version component.
-	public get minor = _minor;
-
-	private _build;
-	/// Summary: Gets the {LiteralToken} corresponding to the build number component,
-	///          or null if unspecified.
-	public get build = _build;
-
-	private _revision;
-	/// Summary: Gets the {LiteralToken} corresponding to the revision component,
-	///          or null if unspecified.
-	public get revision = _revision;
-
-	/// Summary: Returns a new {Version} number constructed from the components of this
-	///          version specifier
-	public getVersion()
-	{
-		return new Version(int(major.literalValue),
-			int(minor.literalValue),
-			int(build?.literalValue ?? 0),
-			int(revision?.literalValue ?? 0));
-	}
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitVersionSpecifier(this, arg);
 	}
 }

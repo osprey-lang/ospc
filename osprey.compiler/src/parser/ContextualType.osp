@@ -12,16 +12,18 @@ public enum ContextualType
 	set = 2,
 	/// Summary: to
 	to = 3,
-	/// Summary: version
-	version = 4,
+
+	// Extension keywords use values above 100, so as to reserve
+	// some spaces for future standard contextual keywords.
+
 	/// Summary: __primitive (non-standard extension)
-	primitive = 5,
+	primitive = 101,
 	/// Summary: __init_type (non-standard extension)
-	initType = 6,
+	initType = 102,
 	/// Summary: __extern (non-standard extension)
-	extern = 7,
+	extern = 103,
 	/// Summary: __named_const (non-standard extension)
-	namedConst = 8,
+	namedConst = 104,
 	/// Summary: __get_argc (non-standard extension)
-	getArgc = 9,
+	getArgc = 105,
 }

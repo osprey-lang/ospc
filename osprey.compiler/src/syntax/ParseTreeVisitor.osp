@@ -21,8 +21,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitUseNamespaceDirective(directive, arg);
 
-	public abstract visitVersionSpecifier(version, arg);
-
 	// Declarations
 
 	public abstract visitClassConstantDeclaration(decl, arg);

@@ -14,7 +14,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 
 	overridable override visitDocument(document, arg)
 	{
-		document.version?.accept(this, arg);
 		document.useDirectives.acceptAll(this, arg);
 		document.globalAnnotations.acceptAll(this, arg);
 		document.members.acceptAll(this, arg);
@@ -33,11 +32,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	}
 
 	overridable override visitUseNamespaceDirective(directive, arg)
-	{
-		return null;
-	}
-
-	overridable override visitVersionSpecifier(version, arg)
 	{
 		return null;
 	}

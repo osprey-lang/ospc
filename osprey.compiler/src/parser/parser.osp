@@ -194,8 +194,8 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   compilation-unit:
-		 *     version-specifier? use-directives? global-annotations?
-		 *       file-namespace-declaration? top-level-members?
+		 *     use-directives? global-annotations? file-namespace-declaration?
+		 *       top-level-members?
 		 *   top-level-members:
 		 *     top-level-member
 		 *     top-level-members top-level-member
@@ -211,12 +211,6 @@ public inheritable Parser is ParserBase
 		 */
 
 		var start = lex[i];
-
-		// version-specifier
-		var version;
-		if acceptContextual(i, ContextualType.version) and
-			accept(i + 1, TokenType.int):
-			version = parseVersionSpecifier(ref i);
 
 		// use-directives
 		var uses;
@@ -289,52 +283,11 @@ public inheritable Parser is ParserBase
 		var end = lex[i];
 		return new Document(
 			getLocation(start, end),
-			version,
 			uses,
 			globalAnnotations,
 			fileNamespace,
 			members,
 			statements
-		);
-	}
-
-	/// Summary: Parses a version specifier at the specified token index.
-	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
-	///          the index of the token that immediately follows the returned parse tree.
-	/// Returns: A {VersionSpecifier} from the tokens at the starting index.
-	/// Remarks: This method parses the grammar of the 'version-specifier' nonterminal.
-	public parseVersionSpecifier(ref i)
-	{
-		/* Syntax:
-		 *   version-specifier:
-		 *     'version' version-number ';'
-		 *   version-number:
-		 *     integer-literal version-field version-field? version-field?
-		 *   version-field:
-		 *     ':' integer-literal
-		 */
-		var start = expectr(ref i, TokenType.identifier);
-		if start.contextualType != ContextualType.version:
-			fatalError(start, ErrorCode.err_UnexpectedToken);
-
-		var major, minor, build, revision;
-		major = expectr(ref i, TokenType.int);
-
-		expectr(ref i, TokenType.colon);
-		minor = expectr(ref i, TokenType.int);
-
-		if acceptr(ref i, TokenType.colon)
-		{
-			build = expectr(ref i, TokenType.int);
-			if acceptr(ref i, TokenType.colon):
-				revision = expectr(ref i, TokenType.int);
-		}
-
-		var end = expectr(ref i, TokenType.semicolon);
-
-		return new VersionSpecifier(
-			getLocation(start, end),
-			major, minor, build, revision
 		);
 	}
 
