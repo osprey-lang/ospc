@@ -2,7 +2,7 @@ use aves;
 
 namespace osprey.compiler.syntax;
 
-private static class EmptyLists
+internal static class EmptyLists
 {
 	private static _syntax = new SyntaxList();
 	public static get syntax = _syntax;

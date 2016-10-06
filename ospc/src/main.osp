@@ -5,8 +5,8 @@ use osprey.compiler.syntax;
 
 namespace osprey.compiler;
 
-private enum ParseMode { expression, statement, document }
-private const continuationLabel = ".. ";
+internal enum ParseMode { expression, statement, document }
+internal const continuationLabel = ".. ";
 
 /// Summary: The application entry point.
 /// Param args: Command-line arguments passed to the application.
@@ -80,7 +80,7 @@ public function main(args)
 	mainLoop(parsers, labels, commands);
 }
 
-private function mainLoop(parsers, labels, commands)
+internal function mainLoop(parsers, labels, commands)
 {
 	var err = new CompilerErrorManager(true, true);
 
@@ -127,14 +127,14 @@ private function mainLoop(parsers, labels, commands)
 	}
 }
 
-private function writeLabel(label)
+internal function writeLabel(label)
 {
 	Console.textColor = ConsoleColor.cyan;
 	Console.write(label);
 	Console.resetColors();
 }
 
-private function parseAndPrint(text, parseFunc, err)
+internal function parseAndPrint(text, parseFunc, err)
 {
 	var file = SourceFile.createAnon(text, "<stdin>");
 	var parser = new Parser(file, ParseFlags.useExtensions, err);
@@ -167,7 +167,7 @@ private function parseAndPrint(text, parseFunc, err)
 	}
 }
 
-private static class SyntaxPrinter
+internal static class SyntaxPrinter
 {
 	private static ignoreMembers = Set.fromCollection(["location", "parent"]);
 

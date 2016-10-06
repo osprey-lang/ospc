@@ -6,7 +6,7 @@ namespace osprey.compiler.parser;
 ///          manager throws every error it gets, but does still keep track of them,
 ///          so that {hasErrors} and {getAllErrors} can work correctly. Effectively,
 ///          this class turns every error into a fatal error.
-private class ParserErrorManager is ErrorManager
+internal class ParserErrorManager is ErrorManager
 {
 	private errors = [];
 	private warnings = [];

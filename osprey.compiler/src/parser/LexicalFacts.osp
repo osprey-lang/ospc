@@ -3,7 +3,7 @@ use osprey.compiler.syntax;
 
 namespace osprey.compiler.parser;
 
-private static class LexicalFacts
+internal static class LexicalFacts
 {
 	/* Syntax:
 	 *   keyword: one of
@@ -274,7 +274,7 @@ private static class LexicalFacts
 //
 // When a PunctInfo has no base type, it means the particular sequence of characters that
 // led to the PunctInfo are invalid without another character following.
-private class PunctInfo
+internal class PunctInfo
 {
 	public new(this._baseType, this._nextChars);
 

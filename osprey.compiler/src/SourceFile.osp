@@ -232,7 +232,7 @@ public class SourceFile
 	private static anonName = "<anonymous>";
 }
 
-private class LineInfo
+internal class LineInfo
 {
 	public lineNumber = 1;
 	public startIndex = 0;

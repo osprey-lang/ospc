@@ -1158,7 +1158,7 @@ public class Lexer
 	//</region>
 }
 
-private class LexerIterator is Iterator
+internal class LexerIterator is Iterator
 {
 	public new(this.lexer);
 
