@@ -10,8 +10,6 @@ public enum ContextualType
 	get = 1,
 	/// Summary: set
 	set = 2,
-	/// Summary: to
-	to = 3,
 
 	// Extension keywords use values above 100, so as to reserve
 	// some spaces for future standard contextual keywords.

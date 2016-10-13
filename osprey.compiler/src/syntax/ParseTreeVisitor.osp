@@ -189,8 +189,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitParenthesizedExpression(expr, arg);
 
-	public abstract visitRangeExpression(expr, arg);
-
 	public abstract visitRefExpression(expr, arg);
 
 	public abstract visitSafeAccess(expr, arg);

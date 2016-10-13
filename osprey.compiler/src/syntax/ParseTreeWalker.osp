@@ -574,14 +574,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitRangeExpression(expr, arg)
-	{
-		expr.low.accept(this, arg);
-		expr.high.accept(this, arg);
-		expr.step?.accept(this, arg);
-		return null;
-	}
-
 	overridable override visitRefExpression(expr, arg)
 	{
 		expr.inner.accept(this, arg);

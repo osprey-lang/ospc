@@ -87,7 +87,6 @@ internal static class LexicalFacts
 	public static contextualToType = {
 		"get":           ContextualType.get,
 		"set":           ContextualType.set,
-		"to":            ContextualType.to,
 		"__primitive":   ContextualType.primitive,
 		"__init_type":   ContextualType.initType,
 		"__extern":      ContextualType.extern,

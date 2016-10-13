@@ -826,35 +826,6 @@ public class ListCreationExpression is Expression
 	}
 }
 
-public class RangeExpression is Expression
-{
-	public new(location, low, high, step)
-	{
-		new base(location);
-
-		this._low  = claim(low);
-		this._high = claim(high);
-		this._step = claim(step);
-	}
-
-	private _low;
-	/// Summary: Gets the low (starting) value {Expression} of the range.
-	public get low = _low;
-
-	private _high;
-	/// Summary: Gets the high (end) value {Expression} of the range.
-	public get high = _high;
-
-	private _step;
-	/// Summary: Gets the step value {Expression} of the range, or null if absent.
-	public get step = _step;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitRangeExpression(this, arg);
-	}
-}
-
 public class HashCreationExpression is Expression
 {
 	public new(location, members)
