@@ -3847,6 +3847,7 @@ public inheritable Parser is ParserBase
 		 *     'ref' identifier
 		 *     '...' identifier
 		 *     'this' '.' identifier
+		 *     '...' 'this' '.' identifier
 		 */
 		if accept(i, TokenType.parenClose):
 			return EmptyLists.parameter;
