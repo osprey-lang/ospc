@@ -3726,9 +3726,6 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   parameter-list:
-		 *     parameters
-		 *     regular-parameters '...'
-		 *   parameters:
 		 *     regular-parameters
 		 *     optional-parameters
 		 *     regular-parameters ',' optional-parameters
@@ -3737,7 +3734,8 @@ public inheritable Parser is ParserBase
 		 *     regular-parameters ',' parameter
 		 *   parameter:
 		 *     identifier
-		 *     ref identifier
+		 *     'ref' identifier
+		 *     '...' identifier
 		 *   optional-parameters:
 		 *     optional-parameter
 		 *     optional-parameters ',' optional-parameter
@@ -3769,28 +3767,27 @@ public inheritable Parser is ParserBase
 		{
 			var start = lex[i];
 			var isRef = acceptr(ref i, TokenType.\ref);
-			var isVariadic = false;
+			var isVariadic = acceptr(ref i, TokenType.splat);
 
 			var name = expectr(ref i, TokenType.identifier);
 
-			var defaultValue;
+			var defaultValue = null;
 			if acceptr(ref i, TokenType.assign)
 			{
 				defaultValue = parseExpression(ref i);
 				optionalCount += 1;
 			}
-			else if optionalCount
+			else if optionalCount > 0
 			{
 				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
 			}
 
-			if acceptr(ref i, TokenType.splat)
+			if isVariadic
 			{
 				if accept(i, TokenType.comma):
 					recoverableError(lex[i], ErrorCode.err_VariadicMustBeLastParameter);
 				if hasVariadicParam:
 					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
-				isVariadic = true;
 				hasVariadicParam = true;
 			}
 
@@ -3833,9 +3830,6 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   ctor-parameter-list:
-		 *     ctor-parameters
-		 *     regular-ctor-parameters '...'
-		 *   ctor-parameters:
 		 *     regular-ctor-parameters
 		 *     optional-ctor-parameters
 		 *     ctor-parameters ',' optional-ctor-parameters
@@ -3851,6 +3845,7 @@ public inheritable Parser is ParserBase
 		 *   ctor-parameter:
 		 *     identifier
 		 *     'ref' identifier
+		 *     '...' identifier
 		 *     'this' '.' identifier
 		 */
 		if accept(i, TokenType.parenClose):
@@ -3864,10 +3859,12 @@ public inheritable Parser is ParserBase
 			var start = lex[i];
 
 			var isRef = acceptr(ref i, TokenType.\ref);
-			var isVariadic = false;
+			var isVariadic = acceptr(ref i, TokenType.splat);
+
 			var hasThisPrefix = acceptr(ref i, TokenType.\this);
 			if hasThisPrefix:
 				expectr(ref i, TokenType.dot);
+
 			var name = expectr(ref i, TokenType.identifier);
 
 			var defaultValue;
@@ -3881,13 +3878,12 @@ public inheritable Parser is ParserBase
 				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
 			}
 
-			if acceptr(ref i, TokenType.splat)
+			if isVariadic
 			{
 				if accept(i, TokenType.comma):
 					recoverableError(lex[i], ErrorCode.err_VariadicMustBeLastParameter);
 				if hasVariadicParam:
 					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
-				isVariadic = true;
 				hasVariadicParam = true;
 			}
 
