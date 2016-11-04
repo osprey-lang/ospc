@@ -1833,28 +1833,19 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   return-statement:
-		 *     'return' expression-list? ';'
+		 *     'return' expression? ';'
 		 */
 		var start = expectr(ref i, TokenType.\return);
 
-		var values;
-		if accept(i, TokenType.semicolon)
+		var value = null;
+		if not accept(i, TokenType.semicolon)
 		{
-			values = EmptyLists.node;
-		}
-		else
-		{
-			values = new List(1);
-			do
-			{
-				values.add(parseExpression(ref i));
-			} while acceptr(ref i, TokenType.comma);
-			values = new NodeList(values);
+			value = parseExpression(ref i);
 		}
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new ReturnStatement(getLocation(start, end), values);
+		return new ReturnStatement(getLocation(start, end), value);
 	}
 
 	/// Summary: Parses a `yield` statement at the specified token index.
@@ -1866,20 +1857,15 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   yield-statement:
-		 *     'yield' expression-list ';'
+		 *     'yield' expression ';'
 		 */
 		var start = expectr(ref i, TokenType.\yield);
 
-		var values = new List(1);
-		do
-		{
-			values.add(parseExpression(ref i));
-		} while acceptr(ref i, TokenType.comma);
-		values = new NodeList(values);
+		var value = parseExpression(ref i);
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		return new YieldStatement(getLocation(start, end), values);
+		return new YieldStatement(getLocation(start, end), value);
 	}
 
 	/// Summary: Parses a `next` statement at the specified token index.

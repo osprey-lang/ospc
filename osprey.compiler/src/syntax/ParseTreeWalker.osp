@@ -301,7 +301,7 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 
 	overridable override visitReturnStatement(stmt, arg)
 	{
-		stmt.returnValues.acceptAll(this, arg);
+		stmt.returnValue.accept(this, arg);
 		return null;
 	}
 
@@ -367,7 +367,7 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 
 	overridable override visitYieldStatement(stmt, arg)
 	{
-		stmt.returnValues.acceptAll(this, arg);
+		stmt.returnValue.accept(this, arg);
 		return null;
 	}
 

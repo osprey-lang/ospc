@@ -182,16 +182,16 @@ public class DoWhileStatement is IterationStatement
 
 public class ReturnStatement is Statement
 {
-	public new(location, returnValues)
+	public new(location, returnValue)
 	{
 		new base(location);
 
-		this._returnValues = claimAll(returnValues ?? EmptyLists.node);
+		this._returnValue = claim(returnValue);
 	}
 
-	private _returnValues;
+	private _returnValue;
 	/// Summary: Gets a {NodeList} of the return values of this statement.
-	public get returnValues = _returnValues;
+	public get returnValue = _returnValue;
 
 	override accept(visitor, arg)
 	{
@@ -201,16 +201,16 @@ public class ReturnStatement is Statement
 
 public class YieldStatement is Statement
 {
-	public new(location, returnValues)
+	public new(location, returnValue)
 	{
 		new base(location);
 
-		this._returnValues = claimAll(returnValues);
+		this._returnValue = claim(returnValue);
 	}
 
-	private _returnValues;
+	private _returnValue;
 	/// Summary: Gets a {NodeList} of the return values of this statement.
-	public get returnValues = _returnValues;
+	public get returnValue = _returnValue;
 
 	override accept(visitor, arg)
 	{
