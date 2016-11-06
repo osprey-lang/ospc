@@ -97,8 +97,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitParallelAssignment(stmt, arg);
 
-	public abstract visitParallelLocalVariableDeclaration(decl, arg);
-
 	public abstract visitReturnStatement(stmt, arg);
 
 	public abstract visitThisConstructorCall(stmt, arg);

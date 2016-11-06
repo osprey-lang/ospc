@@ -1448,7 +1448,6 @@ public inheritable Parser is ParserBase
 		/* Syntax:
 		 *   local-variable-declaration:
 		 *     'var' local-variable-declarators ';'
-		 *     'var' '(' identifier-list ')' '=' expression ';'
 		 *   local-variable-declarators:
 		 *     local-variable-declarator
 		 *     local-variable-declarators ',' local-variable-declarator
@@ -1461,55 +1460,29 @@ public inheritable Parser is ParserBase
 		 */
 		var start = expectr(ref i, TokenType.\var);
 
-		if acceptr(ref i, TokenType.parenOpen)
+		var variables = new List(1);
+		do
 		{
-			// Parallel variable declaration
-			var names = new List(2);
-			do
-			{
-				names.add(expectr(ref i, TokenType.identifier));
-			} while acceptr(ref i, TokenType.comma);
-			names = new SyntaxList(names);
+			var name = expectr(ref i, TokenType.identifier);
+			var value;
+			if acceptr(ref i, TokenType.assign):
+				value = parseExpression(ref i);
 
-			expectr(ref i, TokenType.parenClose);
-			expectr(ref i, TokenType.assign, ErrorCode.err_ParallelVariableDeclarationWithoutValue);
-
-			var value = parseExpression(ref i);
-
-			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
-
-			return new ParallelLocalVariableDeclaration(
-				getLocation(start, end),
-				names, value
+			var location = value ?
+				getLocation(name, value) :
+				name.location;
+			variables.add(
+				new VariableDeclarator(location, name, value)
 			);
-		}
-		else
-		{
-			// Simple variable declaration
-			var variables = new List(1);
-			do
-			{
-				var name = expectr(ref i, TokenType.identifier);
-				var value;
-				if acceptr(ref i, TokenType.assign):
-					value = parseExpression(ref i);
+		} while acceptr(ref i, TokenType.comma);
+		variables = new NodeList(variables);
 
-				var location = value ?
-					getLocation(name, value) :
-					name.location;
-				variables.add(
-					new VariableDeclarator(location, name, value)
-				);
-			} while acceptr(ref i, TokenType.comma);
-			variables = new NodeList(variables);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
-
-			return new SimpleLocalVariableDeclaration(
-				getLocation(start, end),
-				variables
-			);
-		}
+		return new LocalVariableDeclaration(
+			getLocation(start, end),
+			variables
+		);
 	}
 
 	/// Summary: Parses a local constant declaration at the specified token index.

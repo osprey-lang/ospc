@@ -94,7 +94,6 @@ public static class ErrorCode
 	public const err_ParallelAssignmentWrongValueCount = 1807;
 	public const err_ExpectedStatementTerminator = 1808;
 	public const err_ConstantWithoutValue = 1809;
-	public const err_ParallelVariableDeclarationWithoutValue = 1810;
 	public const err_WithStatementVariableWithoutValue = 1811;
 	public const err_ExpectedPrimaryExpression = 1851;
 	public const err_InvalidStatementExpression = 1852;

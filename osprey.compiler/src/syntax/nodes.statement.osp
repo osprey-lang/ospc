@@ -502,7 +502,7 @@ public abstract class LocalDeclaration is Statement
 	abstract override accept(visitor, arg);
 }
 
-public class SimpleLocalVariableDeclaration is LocalDeclaration
+public class LocalVariableDeclaration is LocalDeclaration
 {
 	public new(location, variables)
 	{
@@ -519,31 +519,6 @@ public class SimpleLocalVariableDeclaration is LocalDeclaration
 	override accept(visitor, arg)
 	{
 		return visitor.visitLocalVariableDeclaration(this, arg);
-	}
-}
-
-public class ParallelLocalVariableDeclaration is LocalDeclaration
-{
-	public new(location, names, value)
-	{
-		new base(location);
-
-		this._names = names;
-		this._value = claim(value);
-	}
-
-	private _names;
-	/// Summary: Gets a {SyntaxList} containing the {Identifier}s corresponding
-	///          to the names of the declared variables.
-	public get names = _names;
-
-	private _value;
-	/// Summary: Gets the initializer {Expression} of the declaration.
-	public get value = _value;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitParallelLocalVariableDeclaration(this, arg);
 	}
 }
 

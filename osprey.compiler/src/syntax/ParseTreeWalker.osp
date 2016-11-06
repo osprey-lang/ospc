@@ -293,12 +293,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitParallelLocalVariableDeclaration(decl, arg)
-	{
-		decl.value.accept(this, arg);
-		return null;
-	}
-
 	overridable override visitReturnStatement(stmt, arg)
 	{
 		stmt.returnValue.accept(this, arg);

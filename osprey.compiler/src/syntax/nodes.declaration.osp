@@ -681,8 +681,8 @@ public class GlobalVariableDeclaration is LocalDeclaration
 	}
 
 	private _declaration;
-	/// Summary: Gets the {SimpleLocalVariableDeclaration} or {ParallelLocalVariableDeclaration}
-	///          that this global variable declaration wraps.
+	/// Summary: Gets the {SimpleLocalVariableDeclaration} or that this global variable
+	///          declaration wraps.
 	public get declaration = _declaration;
 
 	override accept(visitor, arg)

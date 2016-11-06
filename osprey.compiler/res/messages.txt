@@ -120,7 +120,6 @@
 1807 err_ParallelAssignmentWrongValueCount = "A parallel assignment must have one value or as many values as there are targets (expected {0}, got {1}).";
 1808 err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
 1809 err_ConstantWithoutValue = "Expected '=' followed by a constant value. A constant cannot be declared without a value.";
-1810 err_ParallelVariableDeclarationWithoutValue = "Expected '=' followed by an expression. A parallel variable declaration ('var (a, b) = …;') must have an initial value. Otherwise, use a regular variable declaration ('var a, b;').";
 1811 err_WithStatementVariableWithoutValue = "Expected '=' followed by an expression. A 'with' statement variable must be assigned a value.";
 
 // Expression errors
