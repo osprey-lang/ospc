@@ -98,7 +98,6 @@ public inheritable Parser is ParserBase
 		 *     invocation-expression
 		 *     function-application-expression
 		 *     object-creation-expression
-		 *     assignment-expression
 		 *     A safe-access whose last safe-access-link (if it has a safe-access-chain)
 		 *       or whose safe-start-component (if it does not) is a safe-invocation or
 		 *       unsafe-invocation
@@ -110,8 +109,7 @@ public inheritable Parser is ParserBase
 			return expression.chain.last() is SafeInvocation;
 
 		return expression is InvocationExpression or
-			expression is ObjectCreationExpression or
-			expression is AssignmentExpression;
+			expression is ObjectCreationExpression;
 	}
 
 	/*\
@@ -1564,7 +1562,7 @@ public inheritable Parser is ParserBase
 	public parseEmbeddedStatement(ref i)
 	{
 		/* Syntax:
-		 *  embedded-statement:
+		 *   embedded-statement:
 		 *     empty-statement
 		 *     expression-statement
 		 *     if-statement
@@ -2155,6 +2153,7 @@ public inheritable Parser is ParserBase
 		 *       or whose safe-start-component (if it does not) is a safe-invocation or
 		 *       unsafe-invocation
 		 *   assignment-statement:
+		 *     simple-assignment-statement
 		 *     compound-assignment-statement
 		 *     parallel-assignment-statement
 		 * Additional notes:
@@ -2168,6 +2167,9 @@ public inheritable Parser is ParserBase
 		 */
 		var expr = parseExpression(ref i);
 
+		if accept(i, TokenType.assign):
+			// simple-assignment-statement
+			return parseSimpleAssignment(ref i, expr);
 		if accept(i, TokenType.compoundAssign):
 			// compound-assignment-statement
 			return parseCompoundAssignment(ref i, expr);
@@ -2181,6 +2183,27 @@ public inheritable Parser is ParserBase
 			recoverableError(expr, ErrorCode.err_InvalidStatementExpression);
 
 		return new ExpressionStatement(getLocation(expr, end), expr);
+	}
+
+	private parseSimpleAssignment(ref i, target)
+	{
+		/* Syntax:
+		 *   simple-assignment-statement:
+		 *     primary-expression '=' expression ';'
+		 */
+		 ensureAssignable(target);
+
+		 expectr(ref i, TokenType.assign);
+
+		 var value = parseExpression(ref i);
+
+		 var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+
+		return new SimpleAssignment(
+			getLocation(target, end),
+			target,
+			value
+		);
 	}
 
 	private parseCompoundAssignment(ref i, target)
@@ -2342,30 +2365,12 @@ public inheritable Parser is ParserBase
 		/* Syntax:
 		 *   expression:
 		 *     conditional-expression
-		 *     assignment-expression
 		 *     use-in-expression
-		 *   assignment-expression:
-		 *     primary-expression '=' expression
 		 */
 		if accept(i, TokenType.\use):
 			return parseUseInExpression(ref i);
 
-		// Parse a conditional-expression first. If the last operand of
-		// a conditional-expression ends with an assignment, it will be
-		// eaten up by the parseConditionalExpression method.
-		var left = parseConditionalExpression(ref i);
-
-		if acceptr(ref i, TokenType.assign)
-		{
-			ensureAssignable(left);
-			var right = parseExpression(ref i);
-			left = new AssignmentExpression(
-				getLocation(left, right),
-				left, right
-			);
-		}
-
-		return left;
+		return parseConditionalExpression(ref i);
 	}
 
 	/// Summary: Parses a conditional (ternary operator) expression at the specified

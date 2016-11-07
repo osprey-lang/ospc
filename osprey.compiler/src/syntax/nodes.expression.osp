@@ -180,30 +180,6 @@ public class NullCoalescingExpression is BinaryExpression
 	}
 }
 
-public class AssignmentExpression is Expression
-{
-	public new(location, target, value)
-	{
-		new base(location);
-
-		this._target = claim(target);
-		this._value  = claim(value);
-	}
-
-	private _target;
-	/// Summary: Gets the target {Expression} of the assignment.
-	public get target = _target;
-
-	private _value;
-	/// Summary: Gets the value {Expression} of the assignment.
-	public get value = _value;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitAssignmentExpression(this, arg);
-	}
-}
-
 public class UseInExpression is Expression
 {
 	public new(location, variables, expression)

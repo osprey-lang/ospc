@@ -299,6 +299,13 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
+	overridable override visitSimpleAssignment(stmt, arg)
+	{
+		stmt.target.accept(this, arg);
+		stmt.value.accept(this, arg);
+		return null;
+	}
+
 	overridable override visitThisConstructorCall(stmt, arg)
 	{
 		stmt.arguments.acceptAll(this, arg);
@@ -366,13 +373,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	}
 
 	// Expressions
-
-	overridable override visitAssignmentExpression(expr, arg)
-	{
-		expr.target.accept(this, arg);
-		expr.value.accept(this, arg);
-		return null;
-	}
 
 	overridable override visitBaseAccess(expr, arg)
 	{

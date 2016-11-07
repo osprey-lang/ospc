@@ -99,6 +99,8 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitReturnStatement(stmt, arg);
 
+	public abstract visitSimpleAssignment(stmt, arg);
+
 	public abstract visitThisConstructorCall(stmt, arg);
 
 	public abstract visitThrowStatement(stmt, arg);
@@ -120,8 +122,6 @@ public abstract class ParseTreeVisitor
 	public abstract visitYieldStatement(stmt, arg);
 
 	// Expressions
-
-	public abstract visitAssignmentExpression(expr, arg);
 
 	public abstract visitBaseAccess(expr, arg);
 
