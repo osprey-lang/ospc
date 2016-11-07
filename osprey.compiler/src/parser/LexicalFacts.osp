@@ -139,100 +139,111 @@ internal static class LexicalFacts
 	 */
 	public static punctuation = new PunctInfo(null, {
 		// Always single: { } [ ] ( ) , ; ~ @
-		'{': TokenType.curlyOpen,
-		'}': TokenType.curlyClose,
-		'[': TokenType.squareOpen,
-		']': TokenType.squareClose,
-		'(': TokenType.parenOpen,
-		')': TokenType.parenClose,
-		',': TokenType.comma,
-		';': TokenType.semicolon,
-		'~': TokenType.tilde,
-		'@': TokenType.at,
+		'{': PunctInfo.last(TokenType.curlyOpen),
+		'}': PunctInfo.last(TokenType.curlyClose),
+		'[': PunctInfo.last(TokenType.squareOpen),
+		']': PunctInfo.last(TokenType.squareClose),
+		'(': PunctInfo.last(TokenType.parenOpen),
+		')': PunctInfo.last(TokenType.parenClose),
+		',': PunctInfo.last(TokenType.comma),
+		';': PunctInfo.last(TokenType.semicolon),
+		'~': PunctInfo.last(TokenType.tilde),
+		'@': PunctInfo.last(TokenType.at),
 		'.': new PunctInfo(TokenType.dot, {
 			// .. – error
 			'.': new PunctInfo(null, {
 				// ...
-				'.': TokenType.splat,
+				'.': PunctInfo.last(TokenType.splat),
 			}),
 		}),
 		'<': new PunctInfo(TokenType.less, {
 			// <=
 			'=': new PunctInfo(TokenType.lessEqual, {
 				// <=>
-				'>': TokenType.compare,
+				'>': PunctInfo.last(TokenType.compare),
 			}),
 			// <<
 			'<': PunctInfo.acceptEqual(TokenType.shiftLeft,
 				// <<=
-				TokenType.shiftLeftAssign),
+				TokenType.shiftLeftAssign
+			),
 		}),
 		'>': new PunctInfo(TokenType.greater, {
 			// >=
-			'=': TokenType.greaterEqual,
+			'=': PunctInfo.last(TokenType.greaterEqual),
 			// >>
 			'>': PunctInfo.acceptEqual(TokenType.shiftRight,
 				// >>=
-				TokenType.shiftRightAssign),
+				TokenType.shiftRightAssign
+			),
 		}),
 		'*': new PunctInfo(TokenType.multiply, {
 			// *=
-			'=': TokenType.mulAssign,
+			'=': PunctInfo.last(TokenType.mulAssign),
 			// **
 			'*': PunctInfo.acceptEqual(TokenType.power,
 				// **=
-				TokenType.powerAssign),
+				TokenType.powerAssign
+			),
 		}),
 		':': new PunctInfo(TokenType.colon, {
 			// ::
 			':': PunctInfo.acceptEqual(TokenType.concatenate,
 				// ::=
-				TokenType.concatAssign),
+				TokenType.concatAssign
+			),
 		}),
 		'-': new PunctInfo(TokenType.minus, {
 			// ->
-			'>': TokenType.funcApplication,
+			'>': PunctInfo.last(TokenType.funcApplication),
 			// -=
-			'=': TokenType.minusAssign,
+			'=': PunctInfo.last(TokenType.minusAssign),
 		}),
 		'+': PunctInfo.acceptEqual(TokenType.plus,
 			// +=
-			TokenType.plusAssign),
+			TokenType.plusAssign
+		),
 		'|': PunctInfo.acceptEqual(TokenType.pipe,
 			// |=
-			TokenType.pipeAssign),
+			TokenType.pipeAssign
+		),
 		'/': PunctInfo.acceptEqual(TokenType.divide,
 			// /=
-			TokenType.divAssign),
+			TokenType.divAssign
+		),
 		'%': PunctInfo.acceptEqual(TokenType.modulo,
 			// %=
-			TokenType.modAssign),
+			TokenType.modAssign
+		),
 		'&': PunctInfo.acceptEqual(TokenType.ampersand,
 			// &=
-			TokenType.ampAssign),
+			TokenType.ampAssign
+		),
 		'^': PunctInfo.acceptEqual(TokenType.caret,
 			// ^=
-			TokenType.caretAssign),
+			TokenType.caretAssign
+		),
 		'=': new PunctInfo(TokenType.assign, {
 			// ==
-			'=': TokenType.doubleEqual,
+			'=': PunctInfo.last(TokenType.doubleEqual),
 			// =>
-			'>': TokenType.fatArrow,
+			'>': PunctInfo.last(TokenType.fatArrow),
 		}),
 		'!': PunctInfo.acceptEqual(TokenType.exclam,
 			// !=
-			TokenType.notEqual),
+			TokenType.notEqual
+		),
 		'?': new PunctInfo(TokenType.question, {
 			// ?.
-			'.': TokenType.safeAccess,
+			'.': PunctInfo.last(TokenType.safeAccess),
 			// ?(
-			'(': TokenType.parenOpenSafe,
+			'(': PunctInfo.last(TokenType.parenOpenSafe),
 			// ?[
-			'[': TokenType.squareOpenSafe,
+			'[': PunctInfo.last(TokenType.squareOpenSafe),
 			// ??
-			'?': TokenType.nullCoalescing,
+			'?': PunctInfo.last(TokenType.nullCoalescing),
 			// ?!
-			'!': TokenType.nullOr,
+			'!': PunctInfo.last(TokenType.nullOr),
 		})
 	});
 
@@ -287,11 +298,19 @@ internal class PunctInfo
 
 	public accepts(nextChar, ref nextType)
 	{
-		return _nextChars.tryGet(nextChar, ref nextType);
+		if _nextChars is not null:
+			return _nextChars.tryGet(nextChar, ref nextType);
+		else:
+			return false;
 	}
 
 	public static acceptEqual(baseType, equalType)
 	{
-		return new PunctInfo(baseType, {'=': equalType});
+		return new PunctInfo(baseType, {'=': PunctInfo.last(equalType)});
+	}
+
+	public static last(baseType)
+	{
+		return new PunctInfo(baseType, null);
 	}
 }

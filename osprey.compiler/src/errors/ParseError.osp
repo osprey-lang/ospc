@@ -120,8 +120,8 @@ public inheritable UnexpectedTokenError is ParseError
 		var str;
 		if specialTypeToString.tryGet(type, ref str):
 			return str;
-		if str = Lexer.getKeywordFromTokenType(type):
-			return "keyword '{0}'".format([type]);
+		if LexicalFacts.typeToKeyword.tryGet(type, ref str):
+			return "keyword '{0}'".format([str]);
 		if typeToPunctuation.tryGet(type, ref str):
 			return "'" :: str :: "'";
 		return "'" :: type :: "'";

@@ -89,9 +89,12 @@ internal function mainLoop(parsers, labels, commands)
 
 	writeLabel(labels[mode]);
 	var input = "";
-	var line;
-	while line = Console.readLine()
+	while true
 	{
+		var line = Console.readLine();
+		if not line:
+			break;
+
 		err.clearAll();
 
 		var command;

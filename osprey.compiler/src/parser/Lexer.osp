@@ -170,8 +170,11 @@ public class Lexer
 
 		skipWhiteSpace(ref i);
 
-		if isEOF(i):
-			return eof = new Token(getLocation(length, length), TokenType.eof);
+		if isEOF(i)
+		{
+			eof = new Token(getLocation(length, length), TokenType.eof);
+			return eof;
+		}
 
 		var ch = source[i];
 		var nextCh = not isEOF(i + 1) ? source[i + 1] : null;
@@ -928,36 +931,36 @@ public class Lexer
 		 *     '?['  '<=>'  '!'    '=>'
 		 */
 		var startIndex = i;
-		var type = LexicalFacts.punctuation;
-		var ch;
-		do
-		{
-			if isEOF(i) or not type.accepts(ch = source[i], ref type)
-			{
-				// If this is the first character of the punctuation token,
-				// or the PunctInfo's baseType is null, throw an error.
-				if i == startIndex or type.baseType is null
-				{
-					if isEOF(i):
-						i -= 1;
-					fatalError(
-						ErrorCode.err_InvalidCharacter,
-						[ch, ch.codePoint.toString("X4")],
-						i, 1
-					);
-				}
-				// Otherwise, assign baseType to type; this is the end of
-				// the token.
-				type = type.baseType;
-				break;
-			}
-			// If we get here, then we're either at EOF, or type.accepts
-			// returned true, in which case type is now something else.
-			if ch is not null:
-				i += 1; // Skip the consumed character
-		} while type is PunctInfo;
+		var lastPunctInfo = LexicalFacts.punctuation;
 
-		return new Token(getLocation(startIndex, i), type);
+		while true
+		{
+			if isEOF(i) or not lastPunctInfo.accepts(source[i], ref lastPunctInfo):
+				break;
+			// If we get here, then type.accepts returned true, in which case
+			// lastPunctInfo is now something else.
+			i += 1; // Skip the consumed character
+		}
+
+		// If lastPunctInfo.baseType is null, it means we're either at the
+		// startIndex or the currently consumed sequence of characters is
+		// invalid, so we throw an error.
+		if lastPunctInfo.baseType is null
+		{
+			if isEOF(i):
+				i -= 1;
+			var ch = source[i];
+			fatalError(
+				ErrorCode.err_InvalidCharacter,
+				[ch, ch.codePoint.toString("X4")],
+				i,
+				1
+			);
+		}
+
+		// Otherwise, this is the end of the token. The token type is
+		// lastPunctInfo.baseType.
+		return new Token(getLocation(startIndex, i), lastPunctInfo.baseType);
 	}
 
 	private skipWhiteSpace(ref i)
