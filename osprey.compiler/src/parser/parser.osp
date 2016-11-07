@@ -2191,13 +2191,13 @@ public inheritable Parser is ParserBase
 		 *   simple-assignment-statement:
 		 *     primary-expression '=' expression ';'
 		 */
-		 ensureAssignable(target);
+		ensureAssignable(target);
 
-		 expectr(ref i, TokenType.assign);
+		expectr(ref i, TokenType.assign);
 
-		 var value = parseExpression(ref i);
+		var value = parseExpression(ref i);
 
-		 var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
 		return new SimpleAssignment(
 			getLocation(target, end),
