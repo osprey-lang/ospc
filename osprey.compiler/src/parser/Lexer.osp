@@ -933,12 +933,11 @@ public class Lexer
 		var startIndex = i;
 		var lastPunctInfo = LexicalFacts.punctuation;
 
-		while true
+		while not isEOF(i) and
+			lastPunctInfo.accepts(source[i], ref lastPunctInfo)
 		{
-			if isEOF(i) or not lastPunctInfo.accepts(source[i], ref lastPunctInfo):
-				break;
-			// If we get here, then type.accepts returned true, in which case
-			// lastPunctInfo is now something else.
+			// If we get here, then lastPunctInfo.accepts returned true, in which
+			// case lastPunctInfo is now something else.
 			i += 1; // Skip the consumed character
 		}
 
