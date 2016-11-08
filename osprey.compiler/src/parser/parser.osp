@@ -815,7 +815,7 @@ public inheritable Parser is ParserBase
 		 *     'overridable'
 		 *     'override'
 		 *   property-getter-body:
-		 *     '=' expression ';'
+		 *     '=>' expression ';'
 		 *     block
 		 *     ';'
 		 *   property-setter-body:
@@ -882,7 +882,7 @@ public inheritable Parser is ParserBase
 			if modifiers.\abstract:
 				recoverableError(lex[i], ErrorCode.err_AbstractPropertyMustHaveEmptyBody);
 
-			if not isSetter and acceptr(ref i, TokenType.assign)
+			if not isSetter and acceptr(ref i, TokenType.fatArrow)
 			{
 				body = parseExpression(ref i);
 				expectr(ref i, TokenType.semicolon);
