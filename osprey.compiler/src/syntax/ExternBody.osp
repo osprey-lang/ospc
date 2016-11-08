@@ -14,12 +14,12 @@ public class ExternBody is ParseNode
 
 	private _externName;
 	/// Summary: Gets a string {LiteralToken} containing the name of the extern method.
-	public get externName = _externName;
+	public get externName => _externName;
 
 	private _locals;
 	/// Summary: Gets the {Expression} that represents the `locals` parameter, or null
 	///          if unspecified.
-	public get locals = _locals;
+	public get locals => _locals;
 
 	override accept(visitor, arg)
 	{

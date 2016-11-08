@@ -24,7 +24,7 @@ public class UseFileDirective is UseDirective
 	private _fileName;
 	/// Summary: Gets a string {LiteralToken} containing the name of the file
 	///          that is referenced by this directive.
-	public get fileName = _fileName;
+	public get fileName => _fileName;
 
 	override accept(visitor, arg)
 	{
@@ -44,7 +44,7 @@ public class UseNamespaceDirective is UseDirective
 	private _name;
 	/// Summary: Gets the {QualifiedName} of the namespace that is imported
 	///          by this directive.
-	public get name = _name;
+	public get name => _name;
 
 	override accept(visitor, arg)
 	{
@@ -65,11 +65,11 @@ public class UseAliasDirective is UseDirective
 	private _alias;
 	/// Summary: Gets an {Identifier} corresponding to the alias name introduced
 	///          by this directive.
-	public get alias = _alias;
+	public get alias => _alias;
 
 	private _fullName;
 	/// Summary: Gets the {QualifiedName} of the member that is aliased.
-	public get fullName = _fullName;
+	public get fullName => _fullName;
 
 	override accept(visitor, arg)
 	{

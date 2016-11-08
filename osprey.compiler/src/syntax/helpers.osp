@@ -5,14 +5,14 @@ namespace osprey.compiler.syntax;
 internal static class EmptyLists
 {
 	private static _syntax = new SyntaxList();
-	public static get syntax = _syntax;
+	public static get syntax => _syntax;
 
 	private static _node = new NodeList();
-	public static get node = _node;
+	public static get node => _node;
 
 	private static _argument = new ArgumentList();
-	public static get argument = _argument;
+	public static get argument => _argument;
 
 	private static _parameter = new ParameterList();
-	public static get parameter = _parameter;
+	public static get parameter => _parameter;
 }

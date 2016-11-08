@@ -16,11 +16,11 @@ public inheritable NamespaceDeclaration is ParseNode
 	private _name;
 	/// Summary: Gets a {QualifiedName} corresponding to the declared name
 	///          of the namespace.
-	public get name = _name;
+	public get name => _name;
 
 	private _members;
 	/// Summary: Gets a {NodeList} containing the members of this namespace declaration.
-	public get members = _members;
+	public get members => _members;
 
 	override accept(visitor, arg)
 	{
@@ -42,16 +42,16 @@ public class GlobalConstantDeclaration is ParseNode
 	private _annotations;
 	/// Summary: Gets the annotations associated with the global constant,
 	///          as a {NodeList} of {Annotation} instances.
-	public get annotations = _annotations;
+	public get annotations => _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the global constants.
-	public get accessibility = _accessibility;
+	public get accessibility => _accessibility;
 
 	private _constants;
 	/// Summary: Gets a {NodeList} containing {VariableDeclarator}s that represent
 	///          the constants declared in this declaration.
-	public get constants = _constants;
+	public get constants => _constants;
 
 	override accept(visitor, arg)
 	{
@@ -75,25 +75,25 @@ public class GlobalFunctionDeclaration is ParseNode
 	private _annotations;
 	/// Summary: Gets the annotations associated with the global function,
 	///          as a {NodeList} of {Annotation} instances.
-	public get annotations = _annotations;
+	public get annotations => _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the global constants.
-	public get accessibility = _accessibility;
+	public get accessibility => _accessibility;
 
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the name of the global function.
-	public get name = _name;
+	public get name => _name;
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the function’s parameters.
-	public get parameters = _parameters;
+	public get parameters => _parameters;
 
 	private _body;
 	/// Summary: Gets a {ParseNode} containing the function’s body. This is usually
 	///          a {Block}, but may be an {ExternBody} if non-standard extensions
 	///          are enabled.
-	public get body = _body;
+	public get body => _body;
 
 	override accept(visitor, arg)
 	{
@@ -115,15 +115,15 @@ public abstract class TypeDeclaration is ParseNode
 	private _annotations;
 	/// Summary: Gets the annotations associated with the type,
 	///          as a {NodeList} of {Annotation} instances.
-	public get annotations = _annotations;
+	public get annotations => _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the type.
-	public get accessibility = _accessibility;
+	public get accessibility => _accessibility;
 
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the name of the type declaration.
-	public get name = _name;
+	public get name => _name;
 
 	abstract override accept(visitor, arg);
 }
@@ -157,34 +157,34 @@ public class ClassDeclaration is TypeDeclaration
 
 	private _isStatic;
 	/// Summary: Determines whether the class declaration is marked static.
-	public get isStatic = _isStatic;
+	public get isStatic => _isStatic;
 
 	private _isAbstract;
 	/// Summary: Determines whether the class declaration is marked abstract.
-	public get isAbstract = _isAbstract;
+	public get isAbstract => _isAbstract;
 
 	private _isInheritable;
 	/// Summary: Determines whether the class declaration is marked inheritable.
-	public get isInheritable = _isInheritable;
+	public get isInheritable => _isInheritable;
 
 	private _baseType;
 	/// Summary: Gets the base type of the class. This is either a {TypeName},
 	///          or the same reference as {ClassDeclaration.primitive}, or null.
-	public get baseType = _baseType;
+	public get baseType => _baseType;
 
 	private _members;
 	/// Summary: Gets a {NodeList} containing the {ClassMember}s of the class declaration.
-	public get members = _members;
+	public get members => _members;
 
 	private _typeInitializer;
 	/// Summary: Gets a string {LiteralToken} containing the type initializer name,
 	///          if specified, or null otherwise. This is a non-standard extension.
-	public get typeInitializer = _typeInitializer;
+	public get typeInitializer => _typeInitializer;
 
 	private static _primitive = new Object();
 	/// Summary: Gets an object that represents the base type specifier `__primitive`.
 	///          This is a non-standard extension.
-	public static get primitive = _primitive;
+	public static get primitive => _primitive;
 
 	override accept(visitor, arg)
 	{
@@ -207,22 +207,22 @@ public abstract class ClassMember is ParseNode
 	private _annotations;
 	/// Summary: Gets the annotations associated with the member,
 	///          as a {NodeList} of {Annotation} instances.
-	public get annotations = _annotations;
+	public get annotations => _annotations;
 
 	private _accessibility;
 	/// Summary: Gets the declared {Accessibility} of the member.
-	public get accessibility = _accessibility;
+	public get accessibility => _accessibility;
 
 	private _isStatic;
 	/// Summary: Determines whether the member is declared static.
-	public get isStatic = _isStatic;
+	public get isStatic => _isStatic;
 
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the name of the member.
 	///          If the member is unnamed, such as a constructor or iterator,
 	///          or declares multiple members, such as a field declaration,
 	///          this property returns null.
-	public get name = _name;
+	public get name => _name;
 
 	abstract override accept(visitor, arg);
 }
@@ -239,12 +239,12 @@ public class ConstructorDeclaration is ClassMember
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the constructor’s parameters.
-	public get parameters = _parameters;
+	public get parameters => _parameters;
 
 	private _body;
 	/// Summary: Gets a {Block} containing the body of the constructor, or null
 	///          if the constructor lacks a body.
-	public get body = _body;
+	public get body => _body;
 
 	override accept(visitor, arg)
 	{
@@ -263,7 +263,7 @@ public class StaticConstructorDeclaration is ClassMember
 
 	private _body;
 	/// Summary: Gets a {Block} containing the body of the static constructor.
-	public get body = _body;
+	public get body => _body;
 
 	override accept(visitor, arg)
 	{
@@ -289,7 +289,7 @@ public class FieldDeclaration is ClassMember
 	private _fields;
 	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this
 	///          field declaration.
-	public get fields = _fields;
+	public get fields => _fields;
 
 	override accept(visitor, arg)
 	{
@@ -323,27 +323,27 @@ public inheritable PropertyDeclaration is ClassMember
 
 	private _isAbstract;
 	/// Summary: Determines whether the property accessor is abstract.
-	public get isAbstract = _isAbstract;
+	public get isAbstract => _isAbstract;
 
 	private _isOverride;
 	/// Summary: Determines whether the property accessor is an override.
-	public get isOverride = _isOverride;
+	public get isOverride => _isOverride;
 
 	private _isOverridable;
 	/// Summary: Determines whether the property accessor is overridable.
-	public get isOverridable = _isOverridable;
+	public get isOverridable => _isOverridable;
 
 	private _isSetter;
 	/// Summary: Determines whether the property accessor is a setter.
-	public get isSetter = _isSetter;
+	public get isSetter => _isSetter;
 
 	/// Summary: Determines whether the property accessor is a getter.
-	public get isGetter = not _isSetter;
+	public get isGetter => not _isSetter;
 
 	private _body;
 	/// Summary: Gets a {Block} or {Expression} that contains the body
 	///          of the property accessor.
-	public get body = _body;
+	public get body => _body;
 
 	overridable override accept(visitor, arg)
 	{
@@ -375,7 +375,7 @@ public class IndexerDeclaration is PropertyDeclaration
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the indexer accessor’s parameters.
-	public get parameters = _parameters;
+	public get parameters => _parameters;
 
 	override accept(visitor, arg)
 	{
@@ -409,24 +409,24 @@ public inheritable MethodDeclaration is ClassMember
 
 	private _isAbstract;
 	/// Summary: Determines whether the method is abstract.
-	public get isAbstract = _isAbstract;
+	public get isAbstract => _isAbstract;
 
 	private _isOverride;
 	/// Summary: Determines whether the method is an override.
-	public get isOverride = _isOverride;
+	public get isOverride => _isOverride;
 
 	private _isOverridable;
 	/// Summary: Determines whether the method is overridable.
-	public get isOverridable = _isOverridable;
+	public get isOverridable => _isOverridable;
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the parameters of the method.
-	public get parameters = _parameters;
+	public get parameters => _parameters;
 
 	private _body;
 	/// Summary: Gets a {Block} containing the body of the method, or null if
 	///          it has none.
-	public get body = _body;
+	public get body => _body;
 
 	overridable override accept(visitor, arg)
 	{
@@ -472,7 +472,7 @@ public class ClassConstantDeclaration is ClassMember
 	private _constants;
 	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s
 	///          of the class constant declaration.
-	public get constants = _constants;
+	public get constants => _constants;
 
 	override accept(visitor, arg)
 	{
@@ -491,7 +491,7 @@ public class IteratorDeclaration is ClassMember
 
 	private _body;
 	/// Summary: Gets a {Block} containing the body of the iterator.
-	public get body = _body;
+	public get body => _body;
 
 	override accept(visitor, arg)
 	{
@@ -513,22 +513,22 @@ public class OperatorDeclaration is ClassMember
 	private _op;
 	/// Summary: Gets the {BinaryOperator} or {UnaryOperator} that this
 	///          operator declaration overloads.
-	public get op = _op;
+	public get op => _op;
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the parameters of the
 	///          operator declaration.
-	public get parameters = _parameters;
+	public get parameters => _parameters;
 
 	/// Summary: Determines whether this operator overloads a unary operator.
-	public get isUnary = op is UnaryOperator;
+	public get isUnary => op is UnaryOperator;
 
 	/// Summary: Determines whether this operator overloads a binary operator.
-	public get isBinary = op is BinaryOperator;
+	public get isBinary => op is BinaryOperator;
 
 	private _body;
 	/// Summary: Gets a {Block} containing the body of the operator overload declaration.
-	public get body = _body;
+	public get body => _body;
 
 	override accept(visitor, arg)
 	{
@@ -548,11 +548,11 @@ public class EnumDeclaration is TypeDeclaration
 
 	private _isSet;
 	/// Summary: Determines whether the declaration is for an enum set type.
-	public get isSet = _isSet;
+	public get isSet => _isSet;
 
 	private _members;
 	/// Summary: Gets a {NodeList} containing the {EnumMember}s of the enum declaration.
-	public get members = _members;
+	public get members => _members;
 
 	override accept(visitor, arg)
 	{
@@ -574,15 +574,15 @@ public class EnumMember is ParseNode
 	private _annotations;
 	/// Summary: Gets the annotations associated with the enum member,
 	///          as a {NodeList} of {Annotation} instances.
-	public get annotations = _annotations;
+	public get annotations => _annotations;
 
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the name of the member.
-	public get name = _name;
+	public get name => _name;
 
 	private _value;
 	/// Summary: Gets the value {Expression} of this member, or null if there is none.
-	public get value = _value;
+	public get value => _value;
 
 	override accept(visitor, arg)
 	{
@@ -603,12 +603,12 @@ public class VariableDeclarator is ParseNode
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the declared name
 	///          of the variable.
-	public get name = _name;
+	public get name => _name;
 
 	private _initializer;
 	/// Summary: Gets the initializer {Expression} of the variable, or null if
 	///          the declarator has no initializer.
-	public get initializer = _initializer;
+	public get initializer => _initializer;
 
 	override accept(visitor, arg)
 	{
@@ -630,25 +630,25 @@ public inheritable Parameter is ParseNode
 
 	private _name;
 	/// Summary: Gets an {Identifier} corresponding to the name of the parameter.
-	public get name = _name;
+	public get name => _name;
 
 	private _defaultValue;
 	/// Summary: Gets the {Expression} that makes up the default value of
 	///          the parameter, or null if the parameter is not optional.
-	public get defaultValue = _defaultValue;
+	public get defaultValue => _defaultValue;
 
 	/// Summary: Determines whether the parameter is optional.
-	public get isOptional = _defaultValue is not null;
+	public get isOptional => _defaultValue is not null;
 
 	private _isVariadic;
 	/// Summary: Determines whether the parameter is variadic.
-	public get isVariadic = _isVariadic;
+	public get isVariadic => _isVariadic;
 
 	private _isRef;
 	/// Summary: Determines whether the parameter is passed by reference.
-	public get isRef = _isRef;
+	public get isRef => _isRef;
 
-	public overridable get hasThisPrefix = false;
+	public overridable get hasThisPrefix => false;
 
 	overridable override accept(visitor, arg)
 	{
@@ -663,7 +663,7 @@ public class ThisParameter is Parameter
 		new base(location, name, defaultValue, isVariadic, false);
 	}
 
-	override get hasThisPrefix = true;
+	override get hasThisPrefix => true;
 
 	override accept(visitor, arg)
 	{
@@ -683,7 +683,7 @@ public class GlobalVariableDeclaration is LocalDeclaration
 	private _declaration;
 	/// Summary: Gets the {SimpleLocalVariableDeclaration} or that this global variable
 	///          declaration wraps.
-	public get declaration = _declaration;
+	public get declaration => _declaration;
 
 	override accept(visitor, arg)
 	{
@@ -706,21 +706,21 @@ public class Annotation is ParseNode
 	private _isGlobal;
 	/// Summary: Determines whether the annotation is targeted at the module, rather
 	///          than at a member.
-	public get isGlobal = _isGlobal;
+	public get isGlobal => _isGlobal;
 
 	private _type;
 	/// Summary: Gets the {TypeName} of the annotation type.
-	public get type = _type;
+	public get type => _type;
 
 	private _positionalArguments;
 	/// Summary: Gets an {ArgumentList} containing the positional arguments
 	///          of this annotation.
-	public get positionalArguments = _positionalArguments;
+	public get positionalArguments => _positionalArguments;
 
 	private _namedArguments;
 	/// Summary: Gets a {NodeList} containing the named arguments of this annotation,
 	///          represented by {MemberInitializer}s.
-	public get namedArguments = _namedArguments;
+	public get namedArguments => _namedArguments;
 
 	override accept(visitor, arg)
 	{

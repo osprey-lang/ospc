@@ -49,7 +49,7 @@ public inheritable ParseError is CompileTimeError
 		new base(source, errorCode, message ?? defaultMessage, innerError);
 	}
 
-	private static get defaultMessage =
+	private static get defaultMessage =>
 		ErrorCode.getMessage(ErrorCode.err_Syntax);
 }
 
@@ -96,18 +96,18 @@ public inheritable UnexpectedTokenError is ParseError
 
 	private _actualToken;
 	/// Summary: Gets the {Token} that was encountered in the token stream.
-	public get actualToken = _actualToken;
+	public get actualToken => _actualToken;
 
 	private _expectedType;
 	/// Summary: Gets the {TokenType} that was expected.
-	public get expectedType = _expectedType;
+	public get expectedType => _expectedType;
 
 	overridable override get message
 	{
 		return base.message :: getExpectation(actualToken, expectedType);
 	}
 
-	private static get defaultMessage =
+	private static get defaultMessage =>
 		ErrorCode.getMessage(ErrorCode.err_UnexpectedToken);
 
 	private static getExpectation(actualToken, expectedType)

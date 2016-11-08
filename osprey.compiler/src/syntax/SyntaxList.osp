@@ -21,20 +21,20 @@ public inheritable class SyntaxList is Collection
 	/// Summary: Gets the {Syntax} element at the specified index.
 	/// Param index: The index of the item to get.
 	/// Returns: The {Syntax} element at the specified index.
-	public get this[index] = _collection[index];
+	public get this[index] => _collection[index];
 
 	/// Summary: Gets the length of the list.
 	/// Returns: The length of the list, as an Int.
-	override get length = _collection.length;
+	override get length => _collection.length;
 
 	/// Summary: Determines whether the list is emtpy.
 	/// Returns: True if the syntax list is empty; otherwise, false.
-	public get isEmpty = length == 0;
+	public get isEmpty => length == 0;
 
 	private _collection;
 	/// Summary: Gets the internal container of the syntax list.
 	/// Returns: The internal {List} that contains the syntax list's items.
-	protected get collection = _collection;
+	protected get collection => _collection;
 
 	private static getItems(items)
 	{

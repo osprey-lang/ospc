@@ -35,7 +35,7 @@ public inheritable ParameterList is NodeList
 	}
 
 	/// Summary: Determines whether the parameter list has any optional parameters.
-	public get hasOptionalParameters = optionalParameterCount > 0;
+	public get hasOptionalParameters => optionalParameterCount > 0;
 
 	private _hasVariadicParameter;
 	/// Summary: Determines whether the parameter list has a variadic parameter.
@@ -57,5 +57,5 @@ public inheritable ParameterList is NodeList
 	}
 
 	/// Summary: Determines whether the parameter list has any ref parameters.
-	public get hasRefParameters = refParameterCount > 0;
+	public get hasRefParameters => refParameterCount > 0;
 }

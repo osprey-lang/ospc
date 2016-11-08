@@ -56,7 +56,7 @@ public abstract class Syntax
 
 	private _location;
 	/// Summary: Gets the {SourceLocation} of this syntax element.
-	public get location = _location;
+	public get location => _location;
 
 	/// Summary: Gets the line number of this syntax element.
 	/// Returns: The 1-based line number of this syntax element within the source file.

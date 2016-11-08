@@ -16,15 +16,15 @@ public class SourceLocation
 
 	private _sourceFile;
 	/// Summary: Gets the {SourceFile} that this location is contained within.
-	public get sourceFile = _sourceFile;
+	public get sourceFile => _sourceFile;
 
 	private _startIndex;
 	/// Summary: Gets the inclusive start index of this location within the source file string.
-	public get startIndex = _startIndex;
+	public get startIndex => _startIndex;
 
 	private _endIndex;
 	/// Summary: Gets the exclusive end index of this location within the source file string.
-	public get endIndex = _endIndex;
+	public get endIndex => _endIndex;
 
 	/// Summary: Gets the text value of this source location.
 	/// Returns: A string containing the text value of this source location.

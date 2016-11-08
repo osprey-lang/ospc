@@ -292,7 +292,7 @@ internal class PunctInfo
 	private _baseType;
 	// The base TokenType of the punctuation token, or null if it must
 	// be followed by something.
-	public get baseType = _baseType;
+	public get baseType => _baseType;
 
 	private _nextChars;
 

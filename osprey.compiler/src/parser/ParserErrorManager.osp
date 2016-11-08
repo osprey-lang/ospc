@@ -11,9 +11,9 @@ internal class ParserErrorManager is ErrorManager
 	private errors = [];
 	private warnings = [];
 
-	override get hasErrors = not errors.isEmpty;
+	override get hasErrors => not errors.isEmpty;
 
-	override get hasWarnings = not warnings.isEmpty;
+	override get hasWarnings => not warnings.isEmpty;
 
 	override addErrorInner(error)
 	{

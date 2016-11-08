@@ -9,16 +9,16 @@ public class SourceFile
 
 	private _fileName;
 	/// Summary: Gets the name of the file that the {SourceFile} was opened from.
-	public get fileName = _fileName;
+	public get fileName => _fileName;
 
 	private _source;
 	/// Summary: Gets the text contents of the file.
-	public get source = _source;
+	public get source => _source;
 
 	private _hash;
 	/// Summary: Gets a {Buffer} containing the SHA-1 hash of the file’s bytes, or null if
 	///          the program is being compiled without debug symbols.
-	public get hash = _hash;
+	public get hash => _hash;
 
 	// Known lines in the source file, as a list of `LineInfo` instances.
 	private lines = [];

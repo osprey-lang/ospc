@@ -38,10 +38,10 @@ public class Modifiers
 
 	/// Summary: Determines whether this {Modifiers} instance has no modifiers
 	///          and no annotations.
-	public get isEmpty = not hasModifiers and annotations.isEmpty;
+	public get isEmpty => not hasModifiers and annotations.isEmpty;
 
 	/// Summary: Determines whether this {Modifiers} instance has any modifiers.
-	public get hasModifiers =
+	public get hasModifiers =>
 		\public      or
 		\internal    or
 		\protected   or
@@ -53,7 +53,7 @@ public class Modifiers
 		\override;
 
 	/// Summary: Determines whether this {Modifiers} instance has an accessibility modifier.
-	public get hasAccessibility = \public or \protected or \private;
+	public get hasAccessibility => \public or \protected or \private;
 
 	/// Summary: Gets an {Accessibility} value representing the declared accessibility
 	///          of the member. If no accessibility modifier is present, the return

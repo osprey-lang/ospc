@@ -44,16 +44,16 @@ public inheritable Warning
 	private _source;
 	/// Summary: Gets a {SourceLocation} that is the source of the warning, or null
 	///          if the warning has no meaningful source.
-	public get source = _source;
+	public get source => _source;
 
 	private _errorCode;
 	/// Summary: Gets the error code associated with the warning, usually corresponding
 	///          to one of the {ErrorCode} constants.
-	public get errorCode = _errorCode;
+	public get errorCode => _errorCode;
 
 	private _message;
 	/// Summary: Gets a string containing the warning message.
-	public get message = _message;
+	public get message => _message;
 
 	override toString()
 	{

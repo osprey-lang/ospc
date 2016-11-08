@@ -22,5 +22,5 @@ public class Compiler
 
 	private err;
 	/// Summary: Gets the {ErrorManager} associated with this compiler.
-	public get errorManager = err;
+	public get errorManager => err;
 }

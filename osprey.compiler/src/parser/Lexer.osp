@@ -94,10 +94,10 @@ public class Lexer
 	private errors; // ErrorManager
 
 	/// Summary: Gets the {ErrorManager} that the lexer uses.
-	public get errorManager = errors;
+	public get errorManager => errors;
 
 	/// Summary: Gets the source file that is being lexed.
-	public get sourceFile = file;
+	public get sourceFile => file;
 
 	public get this[index]
 	{
@@ -1168,7 +1168,7 @@ internal class LexerIterator is Iterator
 	private index = 0;
 	private _current = null;
 
-	override get current = _current;
+	override get current => _current;
 
 	override moveNext()
 	{

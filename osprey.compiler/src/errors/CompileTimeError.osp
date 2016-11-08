@@ -70,13 +70,13 @@ public inheritable CompileTimeError is Error
 	private _source;
 	/// Summary: Gets the {SourceLocation} that is the source of the error, or null
 	///          if the error has no meaningful source.
-	public get source = _source;
+	public get source => _source;
 
 	private _errorCode;
 	/// Summary: Gets the error code associated with this compile-time error.
 	///          This corresponds to one of the {ErrorCode} constants.
-	public get errorCode = _errorCode;
+	public get errorCode => _errorCode;
 
-	private static get defaultMessage =
+	private static get defaultMessage =>
 		ErrorCode.getMessage(ErrorCode.err_Unspecified);
 }

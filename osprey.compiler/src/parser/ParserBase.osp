@@ -99,19 +99,19 @@ public abstract class ParserBase
 	protected lex;
 
 	/// Summary: Gets the {ErrorManager} that the parser uses.
-	public get errorManager = errors;
+	public get errorManager => errors;
 
 	/// Summary: Determines whether the parser recognises non-standard extension keywords.
-	public get useExtensions = flags.hasFlag(ParseFlags.useExtensions);
+	public get useExtensions => flags.hasFlag(ParseFlags.useExtensions);
 
 	/// Summary: Determines whether identifiers are normalized.
-	public get normalizeIdentifiers = flags.hasFlag(ParseFlags.normalizeIdentifiers);
+	public get normalizeIdentifiers => flags.hasFlag(ParseFlags.normalizeIdentifiers);
 
 	/// Summary: Gets the {SourceFile} used by this parser.
-	public get sourceFile = file;
+	public get sourceFile => file;
 
 	/// Summary: Gets the {Lexer} used by this parser.
-	public get lexer = lex;
+	public get lexer => lex;
 
 	//<region: Accept helpers>
 

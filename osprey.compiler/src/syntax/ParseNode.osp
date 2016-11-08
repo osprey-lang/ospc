@@ -17,7 +17,7 @@ public abstract class ParseNode is Syntax
 
 	private _parent = null;
 	/// Summary: Gets the parent of this node, or null if it has none.
-	public get parent = _parent;
+	public get parent => _parent;
 
 	/// Summary: Claims the specified node, updating its {parent} property to
 	///          the current node.

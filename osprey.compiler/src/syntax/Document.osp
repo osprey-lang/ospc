@@ -18,28 +18,28 @@ public class Document is ParseNode
 	private _useDirectives;
 	/// Summary: Gets a {NodeList} containing the {UseDirective}s in
 	///          this compilation unit.
-	public get useDirectives = _useDirectives;
+	public get useDirectives => _useDirectives;
 
 	private _globalAnnotations;
 	/// Summary: Gets a {NodeList} containing the {Annotation}s targeted
 	///          at the module.
-	public get globalAnnotations = _globalAnnotations;
+	public get globalAnnotations => _globalAnnotations;
 
 	private _fileNamespaceName;
 	/// Summary: Gets a {QualifiedName} containing the file namespace
 	///          name of this compilation unit.
-	public get fileNamespaceName = _fileNamespaceName;
+	public get fileNamespaceName => _fileNamespaceName;
 
 	private _members;
 	/// Summary: Gets a {NodeList} containing the members declared in
 	///          the compilation unit, not including global variables.
-	public get members = _members;
+	public get members => _members;
 
 	private _statements;
 	/// Summary: Gets a {NodeList} containing the global {Statement}s
 	///          of this compilation unit, including global variable
 	///          declarations.
-	public get statements = _statements;
+	public get statements => _statements;
 
 	override accept(visitor, arg)
 	{

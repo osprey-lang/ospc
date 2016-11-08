@@ -16,15 +16,15 @@ public inheritable BinaryExpression is Expression
 
 	private _left;
 	/// Summary: Gets the left-hand side operand {Expression}.
-	public get left = _left;
+	public get left => _left;
 
 	private _op;
 	/// Summary: Gets the {BinaryOperator} that combines the operands.
-	public get op = _op;
+	public get op => _op;
 
 	private _right;
 	/// Summary: Gets the right-hand side operand {Expression}.
-	public get right = _right;
+	public get right => _right;
 
 	overridable override accept(visitor, arg)
 	{
@@ -44,11 +44,11 @@ public inheritable UnaryExpression is Expression
 
 	private _op;
 	/// Summary: Gets the {UnaryOperator} that is applied to the operand.
-	public get op = _op;
+	public get op => _op;
 
 	private _inner;
 	/// Summary: Gets the operand {Expression}.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	overridable override accept(visitor, arg)
 	{
@@ -69,16 +69,16 @@ public class TypeTestExpression is Expression
 
 	private _expression;
 	/// Summary: Gets the {Expression} whose type is being tested.
-	public get expression = _expression;
+	public get expression => _expression;
 
 	private _type;
 	/// Summary: Gets the {TypeName} of the type that is being tested for, or null
 	///          if the expression is being tested against null.
-	public get type = _type;
+	public get type => _type;
 
 	private _negated;
 	/// Summary: Determines whether the test is negated (“is not” rather than “is”).
-	public get negated = _negated;
+	public get negated => _negated;
 
 	override accept(visitor, arg)
 	{
@@ -99,15 +99,15 @@ public class ConditionalExpression is Expression
 
 	private _condition;
 	/// Summary: Gets the condition (first operand).
-	public get condition = _condition;
+	public get condition => _condition;
 
 	private _truePart;
 	/// Summary: Gets the “if true” expression (second operand).
-	public get truePart = _truePart;
+	public get truePart => _truePart;
 
 	private _falsePart;
 	/// Summary: Gets the “if false” expression (third operand).
-	public get falsePart = _falsePart;
+	public get falsePart => _falsePart;
 
 	override accept(visitor, arg)
 	{
@@ -193,11 +193,11 @@ public class UseInExpression is Expression
 	private _variables;
 	/// Summary: Gets a {NodeList} with the {VariableDeclarator}s associated with
 	///          this use-in expression.
-	public get variables = _variables;
+	public get variables => _variables;
 
 	private _expression;
 	/// Summary: Gets the {Expression} that generates the value of this use-in expression.
-	public get expression = _expression;
+	public get expression => _expression;
 
 	override accept(visitor, arg)
 	{
@@ -227,14 +227,14 @@ public class SimpleLambdaExpression is LambdaExpression
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the parameters of the lambda expression.
-	public get parameters = _parameters;
+	public get parameters => _parameters;
 
 	private _body;
 	/// Summary: Gets a {Statement} or {Expression} with the body of the lambda expression.
 	/// Remarks: When the body is a {Statement}, it corresponds to a lambda expression with
 	///          a `block` for its body, of the form `@x { ... }`. When it’s an {Expression},
 	///          the lambda expression is of the form `@x => ...`.
-	public get body = _body;
+	public get body => _body;
 
 	override accept(visitor, arg)
 	{
@@ -253,7 +253,7 @@ public class LambdaMemberExpression is LambdaExpression
 
 	private _members;
 	/// Summary: Gets a {NodeList} containing the {SafeAccessNode}s of the lambda expression.
-	public get members = _members;
+	public get members => _members;
 
 	override accept(visitor, arg)
 	{
@@ -272,7 +272,7 @@ public class LambdaOperatorExpression is LambdaExpression
 
 	private _op;
 	/// Summary: Gets the {LambdaOperator} used in this lambda expression.
-	public get op = _op;
+	public get op => _op;
 
 	override accept(visitor, arg)
 	{
@@ -291,7 +291,7 @@ public abstract class LiteralExpression is Expression
 
 	private _literalValue;
 	/// Summary: Gets the value represented by the literal expression.
-	public get literalValue = _literalValue;
+	public get literalValue => _literalValue;
 
 	abstract override accept(visitor, arg);
 }
@@ -330,7 +330,7 @@ public class IntegerLiteralExpression is LiteralExpression
 	}
 
 	/// Summary: Determines whether the expression represents an unsigned integer.
-	public get isUnsigned = literalValue is UInt;
+	public get isUnsigned => literalValue is UInt;
 
 	override accept(visitor, arg)
 	{
@@ -388,7 +388,7 @@ public class SimpleNameExpression is Expression
 
 	private _name;
 	/// Summary: Gets the {Identifier} associated with this expression.
-	public get name = _name;
+	public get name => _name;
 
 	override accept(visitor, arg)
 	{
@@ -407,7 +407,7 @@ public class ParenthesizedExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} that is wrapped in parentheses.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	override accept(visitor, arg)
 	{
@@ -427,11 +427,11 @@ public class MemberAccessExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} whose member is accessed.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	private _member;
 	/// Summary: Gets the {Identifier} corresponding to the member name.
-	public get member = _member;
+	public get member => _member;
 
 	override accept(visitor, arg)
 	{
@@ -451,11 +451,11 @@ public class InvocationExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} that is invoked.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	private _arguments;
 	/// Summary: Gets an {ArgumentList} with the arguments to the invocation.
-	public get arguments = _arguments;
+	public get arguments => _arguments;
 
 	override accept(visitor, arg)
 	{
@@ -475,11 +475,11 @@ public class IndexerAccessExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} whose indexer is accessed.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	private _arguments;
 	/// Summary: Gets an {ArgumentList} with the arguments to the indexer.
-	public get arguments = _arguments;
+	public get arguments => _arguments;
 
 	override accept(visitor, arg)
 	{
@@ -498,7 +498,7 @@ public class IteratorAccessExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} whose iterator is accessed.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	override accept(visitor, arg)
 	{
@@ -518,12 +518,12 @@ public class SafeAccessExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} on which the first member access occurs.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	private _chain;
 	/// Summary: Gets a {NodeList} containing the {SafeAccessNode}s associated with
 	///          this expression’s safe access chain.
-	public get chain = _chain;
+	public get chain => _chain;
 
 	override accept(visitor, arg)
 	{
@@ -542,7 +542,7 @@ public abstract class SafeAccessNode is ParseNode
 
 	private _isSafe;
 	/// Summary: Determines whether the node is safe.
-	public get isSafe = _isSafe;
+	public get isSafe => _isSafe;
 }
 
 public class SafeMemberAccess is SafeAccessNode
@@ -556,7 +556,7 @@ public class SafeMemberAccess is SafeAccessNode
 
 	private _member;
 	/// Summary: Gets the {Identifier} that corresponds to the member name.
-	public get member = _member;
+	public get member => _member;
 
 	override accept(visitor, arg)
 	{
@@ -575,7 +575,7 @@ public class SafeInvocation is SafeAccessNode
 
 	private _arguments;
 	/// Summary: Gets an {ArgumentList} with the arguments to the invocation.
-	public get arguments = _arguments;
+	public get arguments => _arguments;
 
 	override accept(visitor, arg)
 	{
@@ -594,7 +594,7 @@ public class SafeIndexerAccess is SafeAccessNode
 
 	private _arguments;
 	/// Summary: Gets an {ArgumentList} with the arguments to the indexer.
-	public get arguments = _arguments;
+	public get arguments => _arguments;
 
 	override accept(visitor, arg)
 	{
@@ -626,7 +626,7 @@ public class GlobalAccessExpression is Expression
 
 	private _member;
 	/// Summary: Gets the {Identifier} corresponding to the name of the global member.
-	public get member = _member;
+	public get member => _member;
 
 	override accept(visitor, arg)
 	{
@@ -673,16 +673,16 @@ public class ObjectCreationExpression is Expression
 
 	private _type;
 	/// Summary: Gets the {TypeName} that this expression constructs an instance of.
-	public get type = _type;
+	public get type => _type;
 
 	private _arguments;
 	/// Summary: Gets an {ArgumentList} with the arguments to the constructor.
-	public get arguments = _arguments;
+	public get arguments => _arguments;
 
 	private _initializer;
 	/// Summary: Gets the {Initializer} associated with the object creation expression,
 	///          or null if it has none.
-	public get initializer = _initializer;
+	public get initializer => _initializer;
 
 	override accept(visitor, arg)
 	{
@@ -711,7 +711,7 @@ public class ObjectInitializer is Initializer
 
 	private _members;
 	/// Summary: Gets a {NodeList} with the {MemberInitializer}s of this object initializer.
-	public get members = _members;
+	public get members => _members;
 
 	override accept(visitor, arg)
 	{
@@ -732,11 +732,11 @@ public class MemberInitializer is ParseNode
 	private _member;
 	/// Summary: Gets an {Identifier} corresponding to the name of the member
 	///          that is initialized.
-	public get member = _member;
+	public get member => _member;
 
 	private _expression;
 	/// Summary: Gets the expression that the member is initialized to.
-	public get expression = _expression;
+	public get expression => _expression;
 
 	override accept(visitor, arg)
 	{
@@ -755,7 +755,7 @@ public inheritable CollectionInitializer is Initializer
 
 	private _elements;
 	/// Summary: Gets a {NodeList} with the {ElementInitializer}s of this collection initializer.
-	public get elements = _elements;
+	public get elements => _elements;
 
 	overridable override accept(visitor, arg)
 	{
@@ -775,7 +775,7 @@ public class ElementInitializer is ParseNode
 	private _arguments;
 	/// Summary: Gets a {NodeList} containing this initializer’s arguments to
 	///          the newly constructed value’s `add` method.
-	public get arguments = _arguments;
+	public get arguments => _arguments;
 
 	override accept(visitor, arg)
 	{
@@ -794,7 +794,7 @@ public class ListCreationExpression is Expression
 
 	private _values;
 	/// Summary: Gets a {NodeList} with the {Expression}s that make up the values in the list.
-	public get values = _values;
+	public get values => _values;
 
 	override accept(visitor, arg)
 	{
@@ -813,7 +813,7 @@ public class HashCreationExpression is Expression
 
 	private _members;
 	/// Summary: Gets a {NodeList} containing the {HashMember}s of this hash creation expression.
-	public get members = _members;
+	public get members => _members;
 
 	override accept(visitor, arg)
 	{
@@ -833,11 +833,11 @@ public class HashMember is ParseNode
 
 	private _key;
 	/// Summary: Gets the key {Expression} of this hash member.
-	public get key = _key;
+	public get key => _key;
 
 	private _value;
 	/// Summary: Gets the value {Expression} of this hash member.
-	public get value = _value;
+	public get value => _value;
 
 	override accept(visitor, arg)
 	{
@@ -856,7 +856,7 @@ public class TypeOfExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} whose type is loaded.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	override accept(visitor, arg)
 	{
@@ -875,7 +875,7 @@ public class RefExpression is Expression
 
 	private _inner;
 	/// Summary: Gets the {Expression} that is passed by reference.
-	public get inner = _inner;
+	public get inner => _inner;
 
 	override accept(visitor, arg)
 	{
@@ -898,12 +898,12 @@ public class NamedConstantExpression is Expression
 	private _type;
 	/// Summary: Gets the first {Identifier} of the named constant, which specifies
 	///          the constant type.
-	public get type = _type;
+	public get type => _type;
 
 	private _value;
 	/// Summary: Gets the second {Identifier} of the named constant, which specifies
 	///          the constant value together with {type}.
-	public get value = _value;
+	public get value => _value;
 
 	override accept(visitor, arg)
 	{

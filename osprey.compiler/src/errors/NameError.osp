@@ -59,7 +59,7 @@ public inheritable NameError is CompileTimeError
 	private _name;
 	/// Summary: Gets the name that caused the error. If the name is not available,
 	///          returns null.
-	public get name = _name;
+	public get name => _name;
 
 	overridable override get message
 	{
