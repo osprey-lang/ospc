@@ -98,9 +98,8 @@ public inheritable Parser is ParserBase
 		 *     invocation-expression
 		 *     function-application-expression
 		 *     object-creation-expression
-		 *     A safe-access whose last safe-access-link (if it has a safe-access-chain)
-		 *       or whose safe-start-component (if it does not) is a safe-invocation or
-		 *       unsafe-invocation
+		 *     A safe-access whose last safe-access-chain component is a safe-invocation
+		 *       or unsafe-invocation
 		 */
 		if expression is BinaryExpression:
 			return expression.op == BinaryOperator.functionApplication;
@@ -2149,9 +2148,8 @@ public inheritable Parser is ParserBase
 		 *     function-application-expression
 		 *     object-creation-expression
 		 *     assignment-expression
-		 *     A safe-access whose last safe-access-link (if it has a safe-access-chain)
-		 *       or whose safe-start-component (if it does not) is a safe-invocation or
-		 *       unsafe-invocation
+		 *     A safe-access whose last safe-access-chain component is a safe-invocation
+		 *       or unsafe-invocation
 		 *   assignment-statement:
 		 *     simple-assignment-statement
 		 *     compound-assignment-statement
@@ -2891,7 +2889,7 @@ public inheritable Parser is ParserBase
 		 *   indexer-access:
 		 *     primary-expression '[' argument-list ']'
 		 *   safe-access:
-		 *     primary-expression safe-start-component safe-access-chain?
+		 *     primary-expression safe-access-chain
 		 *   iterator-lookup-expression:
 		 *     primary-expression '.' 'iter'
 		 * Additional notes:
@@ -2919,9 +2917,13 @@ public inheritable Parser is ParserBase
 		 *     safe-access
 		 *     iterator-lookup-expression
 		 *
-		 *   For the sake of simplicity, and because the spec treats them this way, this
-		 *   method parses a safe-access as if the safe-start-component were part of the
-		 *   safe-access-chain.
+		 *   A safe-access-chain starts with a safe-start-component, defined like so:
+		 *
+		 *     safe-start-component:
+		 *       safe-member-access
+		 *       safe-invocation
+		 *       safe-indexer-access
+		 *       safe-iterator-lookup
 		 */
 		var inner = parseAtomicExpression(ref i);
 
@@ -3484,8 +3486,13 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   safe-access-chain:
-		 *     safe-access-link
+		 *     safe-start-component
 		 *     safe-access-chain safe-access-link
+		 *   safe-start-component:
+		 *     safe-member-access
+		 *     safe-invocation
+		 *     safe-indexer-access
+		 *     safe-iterator-lookup
 		 *   safe-access-link:
 		 *     safe-member-access
 		 *     safe-invocation
