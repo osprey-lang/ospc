@@ -19,7 +19,7 @@ internal static class LexicalFacts
 	 *     'while'     'with'     'xor'        'yield'
 	 * Mapping from keyword string to corresponding TokenType.
 	 */
-	public static keywordToType = {
+	internal static keywordToType = {
 		"abstract":    TokenType.\abstract,
 		"and":         TokenType.\and,
 		"async":       TokenType.\async,
@@ -72,19 +72,19 @@ internal static class LexicalFacts
 	};
 
 	// Mapping from TokenType to keyword string. Assigned by static constructor.
-	public static typeToKeyword;
+	internal static typeToKeyword;
 
 	// Receives the length of the longest keyword. Assigned by static constructor.
-	public static longestKeywordLength;
+	internal static longestKeywordLength;
 
 	// Mapping from literal keyword type to corresponding literal value.
-	public static literalKeywordTypes = {
+	internal static literalKeywordTypes = {
 		TokenType.\true:  true,
 		TokenType.\false: false,
 		TokenType.\null:  null,
 	};
 
-	public static contextualToType = {
+	internal static contextualToType = {
 		"get":           ContextualType.get,
 		"set":           ContextualType.set,
 		"__primitive":   ContextualType.primitive,
@@ -95,10 +95,10 @@ internal static class LexicalFacts
 	};
 
 	// Mapping from ContextualType to keyword string. Assigned by static constructor.
-	public static typeToContextual;
+	internal static typeToContextual;
 
 	// Receives the length of the longest contextual keyword. Assigned by static constructor.
-	public static longestContextualLength;
+	internal static longestContextualLength;
 
 	/* Syntax:
 	 *   hex-digit: one of
@@ -107,7 +107,7 @@ internal static class LexicalFacts
 	 *     'a'  'b'  'c'  'd'  'e'  'f'
 	 * Mapping from hex-digit to corresponding value (as a UInt).
 	 */
-	public static hexDigits = {
+	internal static hexDigits = {
 		'0': 0u,  '1': 1u,  '2': 2u,  '3': 3u,
 		'4': 4u,  '5': 5u,  '6': 6u,  '7': 7u,
 		'8': 8u,  '9': 9u,  'a': 10u, 'b': 11u,
@@ -121,7 +121,7 @@ internal static class LexicalFacts
 	 *     'k'  'K'  'm'  'M'  'g'  'G'  't'  'T'
 	 * Mapping from multiplier-suffix to corresponding value (as an Int).
 	 */
-	public static multipliers = {
+	internal static multipliers = {
 		'k':             1_024, 'K':             1_024,
 		'm':         1_048_576, 'M':         1_048_576,
 		'g':     1_073_741_824, 'G':     1_073_741_824,
@@ -137,7 +137,7 @@ internal static class LexicalFacts
 	 *     '&='  '^='   '::='  '<<='  '>>='  '**='  '@'    '...'  '?.'  '?('
 	 *     '?['  '<=>'  '!'    '=>'
 	 */
-	public static punctuation = new PunctInfo(null, {
+	internal static punctuation = new PunctInfo(null, {
 		// Always single: { } [ ] ( ) , ; ~ @
 		'{': PunctInfo.last(TokenType.curlyOpen),
 		'}': PunctInfo.last(TokenType.curlyClose),
