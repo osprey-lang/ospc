@@ -788,14 +788,13 @@ public class Lexer
 		var ch = source[i];
 		i += 1; // Skip escaped character
 
-		var escapedChar;
-		if not escapes.tryGet(ch, ref escapedChar):
-			// If the escape sequence is not found, let escapedChar remain null
-			recoverableError(ErrorCode.err_InvalidEscapeSequence, i - 2, 2);
-		else if escapedChar is Method:
-			escapedChar = escapedChar(this, ref i);
+		var parseEscapeChar;
+		if escapes.tryGet(ch, ref parseEscapeChar):
+			return parseEscapeChar(this, ref i);
 
-		return escapedChar;
+		// If the escape sequence is not found, let parseEscapeChar remain null
+		recoverableError(ErrorCode.err_InvalidEscapeSequence, i - 2, 2);
+		return null;
 	}
 
 	private scanUnicodeEscape(length, ref i)
@@ -1128,19 +1127,19 @@ public class Lexer
 	 *       hex-digit hex-digit hex-digit hex-digit
 	 */
 	private static escapes = {
-		'0':  '\u0000', // Null
-		'a':  '\u0007', // Alert
-		'b':  '\u0008', // Backspace
-		't':  '\u0009', // Horizontal tab
-		'n':  '\u000A', // New line
-		'r':  '\u000D', // Carriage return
-		'"':  '\u0022', // Double quote
-		'\'': '\u0027', // Single quote
-		'\\': '\u005C', // Backslash
-		'_':  '\u00A0', // No-break space
-		'-':  '\u00AD', // Soft hyphen
-		'u': @(lexer, ref i) => lexer.scanUnicodeEscape(4, ref i),
-		'U': @(lexer, ref i) => lexer.scanUnicodeEscape(8, ref i),
+		'0':  @(lexer, ref i) => '\u0000', // Null
+		'a':  @(lexer, ref i) => '\u0007', // Alert
+		'b':  @(lexer, ref i) => '\u0008', // Backspace
+		't':  @(lexer, ref i) => '\u0009', // Horizontal tab
+		'n':  @(lexer, ref i) => '\u000A', // New line
+		'r':  @(lexer, ref i) => '\u000D', // Carriage return
+		'"':  @(lexer, ref i) => '\u0022', // Double quote
+		'\'': @(lexer, ref i) => '\u0027', // Single quote
+		'\\': @(lexer, ref i) => '\u005C', // Backslash
+		'_':  @(lexer, ref i) => '\u00A0', // No-break space
+		'-':  @(lexer, ref i) => '\u00AD', // Soft hyphen
+		'u':  @(lexer, ref i) => lexer.scanUnicodeEscape(4, ref i),
+		'U':  @(lexer, ref i) => lexer.scanUnicodeEscape(8, ref i),
 	};
 
 	public static getKeywordFromTokenType(type)
