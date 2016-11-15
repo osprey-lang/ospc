@@ -1142,18 +1142,23 @@ public class Lexer
 		'U':  @(lexer, ref i) => lexer.scanUnicodeEscape(8, ref i),
 	};
 
+	/// Summary: Gets the source text that corresponds to the specified keyword {TokenType}.
+	/// Param type: The keyword {TokenType} to look up. The token type must have the flag
+	///          {TokenType.keyword}.
+	/// Returns: A string containing the source text corresponding to {type}, or null if {type}
+	///          is not a keyword {TokenType}.
 	public static getKeywordFromTokenType(type)
 	{
-		var kw;
-		LexicalFacts.typeToKeyword.tryGet(type, ref kw);
-		return kw;
+		return LexicalFacts.typeToKeyword.get(type, null);
 	}
 
+	/// Summary: Gets the source text that corresponds to the specified {ContextualType}.
+	/// Param type: The {ContextualType} to look up.
+	/// Returns: A string containing the source text corresponding to {type}, or null if {type}
+	///          is not a {ContextualType} or is {ContextualType.none}.
 	public static getContextualKeywordFromContextualType(type)
 	{
-		var kw;
-		LexicalFacts.typeToContextual.tryGet(type, ref kw);
-		return kw;
+		return LexicalFacts.typeToContextual.get(type, null);
 	}
 
 	//</region>
