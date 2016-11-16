@@ -983,7 +983,7 @@ public class Lexer
 	private fatalError(errorCode, index, length)
 	{
 		throw new ParseError(
-			getErrorToken(index, length),
+			getErrorLocation(index, length),
 			errorCode,
 			errors.getMessage(errorCode)
 		);
@@ -991,7 +991,7 @@ public class Lexer
 	private fatalError(errorCode, formatArg, index, length)
 	{
 		throw new ParseError(
-			getErrorToken(index, length),
+			getErrorLocation(index, length),
 			errorCode,
 			errors.getMessage(errorCode, formatArg)
 		);
@@ -1000,7 +1000,7 @@ public class Lexer
 	private recoverableError(errorCode, index, length)
 	{
 		var error = new ParseError(
-			getErrorToken(index, length),
+			getErrorLocation(index, length),
 			errorCode,
 			errors.getMessage(errorCode)
 		);
@@ -1009,18 +1009,17 @@ public class Lexer
 	private recoverableError(errorCode, formatArg, index, length)
 	{
 		var error = new ParseError(
-			getErrorToken(index, length),
+			getErrorLocation(index, length),
 			errorCode,
 			errors.getMessage(errorCode, formatArg)
 		);
 		errors.addError(error);
 	}
 
-	private getErrorToken(index, length)
+	private getErrorLocation(index, length)
 	{
-		if isEOF(index):
-			return new Token(getLocation(index, index), TokenType.eof, "");
-		return new Token(getLocation(index, index + length), TokenType.invalid, null);
+		var endIndex = math.min(index + length, this.length);
+		return new SourceLocation(file, index, endIndex);
 	}
 
 	private getLocation(startIndex, endIndex)
