@@ -172,7 +172,7 @@ internal function parseAndPrint(text, parseFunc, err)
 
 internal static class SyntaxPrinter
 {
-	private static ignoreMembers = Set.fromCollection(["location", "parent"]);
+	private static ignoreMembers = Set.from(["location", "parent"]);
 
 	private static printColors = [ConsoleColor.gray,       ConsoleColor.black];
 	private static fieldColors = [ConsoleColor.green,      ConsoleColor.black];

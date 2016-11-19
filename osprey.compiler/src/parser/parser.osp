@@ -4205,7 +4205,7 @@ public inheritable Parser is ParserBase
 	};
 
 	// TokenTypes that denote the beginning of a jump statement.
-	private static jumpStatementTypes = Set.fromCollection([
+	private static jumpStatementTypes = Set.from([
 		TokenType.\return,
 		TokenType.\yield,
 		TokenType.\next,
