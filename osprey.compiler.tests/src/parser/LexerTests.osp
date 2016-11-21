@@ -249,31 +249,31 @@ public class LexerTests is TestFixture
 	public test_Keywords()
 	{
 		var source = r"
-			abstract  and        async    base         break
-			catch     class      const    do           else
-			enum      false      finally  for          function
-			global    if         in       inheritable  is
-			iter      namespace  new      next         not
-			null      operator   or       overridable  override
-			private   protected  public   ref          refeq
-			return    static     this     throw        true
-			try       typeof     use      var          while
-			with      xor        yield
+			abstract     and       async    base         break
+			catch        class     const    do           else
+			enum         false     finally  for          function
+			global       if        in       inheritable  internal
+			is           iter      let      namespace    new
+			next         not       null     operator     or
+			overridable  override  private  protected    public
+			ref          refeq     return   static       this
+			throw        true      try      typeof       use
+			var          while     with     xor          yield
 		";
 		var lexer = lex(source);
 
 		// Same order as the source, of course. Sorry it's a bit hard to read.
 		var tokens = [
-			TT.\abstract, TT.\and,       TT.\async,   TT.\base,        TT.\break,
-			TT.\catch,    TT.\class,     TT.\const,   TT.\do,          TT.\else,
-			TT.\enum,     TT.\false,     TT.\finally, TT.\for,         TT.\function,
-			TT.\global,   TT.\if,        TT.\in,      TT.\inheritable, TT.\is,
-			TT.\iter,     TT.\namespace, TT.\new,     TT.\next,        TT.\not,
-			TT.\null,     TT.\operator,  TT.\or,      TT.\overridable, TT.\override,
-			TT.\private,  TT.\protected, TT.\public,  TT.\ref,         TT.\refeq,
-			TT.\return,   TT.\static,    TT.\this,    TT.\throw,       TT.\true,
-			TT.\try,      TT.\typeof,    TT.\use,     TT.\var,         TT.\while,
-			TT.\with,     TT.\xor,       TT.\yield,
+			TT.\abstract,    TT.\and,      TT.\async,   TT.\base,        TT.\break,
+			TT.\catch,       TT.\class,    TT.\const,   TT.\do,          TT.\else,
+			TT.\enum,        TT.\false,    TT.\finally, TT.\for,         TT.\function,
+			TT.\global,      TT.\if,       TT.\in,      TT.\inheritable, TT.\internal,
+			TT.\is,          TT.\iter,     TT.\let,     TT.\namespace,   TT.\new,
+			TT.\next,        TT.\not,      TT.\null,    TT.\operator,    TT.\or,
+			TT.\overridable, TT.\override, TT.\private, TT.\protected,   TT.\public,
+			TT.\ref,         TT.\refeq,    TT.\return,  TT.\static,      TT.\this,
+			TT.\throw,       TT.\true,     TT.\try,     TT.\typeof,      TT.\use,
+			TT.\var,         TT.\while,    TT.\with,    TT.\xor,         TT.\yield,
 		];
 
 		Assert.collectionsMatch(lexer, tokens, assertTokenMatches);
@@ -282,16 +282,16 @@ public class LexerTests is TestFixture
 	public test_KeywordEscapes()
 	{
 		var source = r"
-			\abstract  \and        \async    \base         \break
-			\catch     \class      \const    \do           \else
-			\enum      \false      \finally  \for          \function
-			\global    \if         \in       \inheritable  \is
-			\iter      \namespace  \new      \next         \not
-			\null      \operator   \or       \overridable  \override
-			\private   \protected  \public   \ref          \refeq
-			\return    \static     \this     \throw        \true
-			\try       \typeof     \use      \var          \while
-			\with      \xor        \yield
+			\abstract     \and       \async    \base         \break
+			\catch        \class     \const    \do           \else
+			\enum         \false     \finally  \for          \function
+			\global       \if        \in       \inheritable  \internal
+			\is           \iter      \let      \namespace    \new
+			\next         \not       \null     \operator     \or
+			\overridable  \override  \private  \protected    \public
+			\ref          \refeq     \return   \static       \this
+			\throw        \true      \try      \typeof       \use
+			\var          \while     \with     \xor          \yield
 		";
 		var lexer = lex(source);
 
@@ -302,7 +302,7 @@ public class LexerTests is TestFixture
 			Assert.areEqual(token.contextualType, CT.none);
 			count += 1;
 		}
-		Assert.areEqual(count, 48);
+		Assert.areEqual(count, 50);
 	}
 
 	public test_ContextualKeywords()

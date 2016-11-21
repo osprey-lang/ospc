@@ -86,60 +86,62 @@ public enum set TokenType
 	\is = 21 | keyword,
 	/// Summary: iter
 	\iter = 22 | keyword,
+	/// Summary: let
+	\let = 23 | keyword,
 	/// Summary: namespace
-	\namespace = 23 | keyword,
+	\namespace = 24 | keyword,
 	/// Summary: new
-	\new = 24 | keyword,
+	\new = 25 | keyword,
 	/// Summary: next
-	\next = 25 | keyword,
+	\next = 26 | keyword,
 	/// Summary: not
-	\not = 26 | keyword | lambdaOperator,
+	\not = 27 | keyword | lambdaOperator,
 	/// Summary: null
-	\null = 27 | keyword | literal,
+	\null = 28 | keyword | literal,
 	/// Summary: operator
-	\operator = 28 | keyword,
+	\operator = 29 | keyword,
 	/// Summary: or
-	\or = 29 | keyword | lambdaOperator,
+	\or = 30 | keyword | lambdaOperator,
 	/// Summary: overridable
-	\overridable = 30 | keyword | memberModifier,
+	\overridable = 31 | keyword | memberModifier,
 	/// Summary: override
-	\override = 31 | keyword | memberModifier,
+	\override = 32 | keyword | memberModifier,
 	/// Summary: private
-	\private = 32 | keyword | memberModifier,
+	\private = 33 | keyword | memberModifier,
 	/// Summary: protected
-	\protected = 33 | keyword | memberModifier,
+	\protected = 34 | keyword | memberModifier,
 	/// Summary: public
-	\public = 34 | keyword | memberModifier,
+	\public = 35 | keyword | memberModifier,
 	/// Summary: ref
-	\ref = 35 | keyword,
+	\ref = 36 | keyword,
 	/// Summary: refeq
-	\refeq = 36 | keyword,
+	\refeq = 37 | keyword,
 	/// Summary: return
-	\return = 37 | keyword,
+	\return = 38 | keyword,
 	/// Summary: static
-	\static = 38 | keyword | memberModifier,
+	\static = 39 | keyword | memberModifier,
 	/// Summary: this
-	\this = 39 | keyword,
+	\this = 40 | keyword,
 	/// Summary: throw
-	\throw = 40 | keyword,
+	\throw = 41 | keyword,
 	/// Summary: true
-	\true = 41 | keyword | literal,
+	\true = 42 | keyword | literal,
 	/// Summary: try
-	\try = 42 | keyword,
+	\try = 43 | keyword,
 	/// Summary: typeof
-	\typeof = 43 | keyword,
+	\typeof = 44 | keyword,
 	/// Summary: use
-	\use = 44 | keyword,
+	\use = 45 | keyword,
 	/// Summary: var
-	\var = 45 | keyword,
+	\var = 46 | keyword,
 	/// Summary: with
-	\with = 46 | keyword,
+	\with = 47 | keyword,
 	/// Summary: while
-	\while = 47 | keyword,
+	\while = 48 | keyword,
 	/// Summary: xor
-	\xor = 48 | keyword | lambdaOperator,
+	\xor = 49 | keyword | lambdaOperator,
 	/// Summary: yield
-	\yield = 49 | keyword,
+	\yield = 50 | keyword,
 
 	/** Literals **/
 

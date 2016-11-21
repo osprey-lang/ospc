@@ -7,16 +7,16 @@ internal static class LexicalFacts
 {
 	/* Syntax:
 	 *   keyword: one of
-	 *     'abstract'  'and'      'async'      'base'         'break'
-	 *     'catch'     'class'    'const'      'do'           'else'
-	 *     'enum'      'false'    'finally'    'for'          'function'
-	 *     'global'    'if'       'in'         'inheritable'  'internal'
-	 *     'is'        'iter'     'namespace'  'new'          'next'
-	 *     'not'       'null'     'operator'   'or'           'overridable'
-	 *     'override'  'private'  'protected'  'public'       'ref'
-	 *     'refeq'     'return'   'static'     'this'         'throw'
-	 *     'true'      'try'      'typeof'     'use'          'var'
-	 *     'while'     'with'     'xor'        'yield'
+	 *     'abstract'     'and'       'async'    'base'         'break'
+	 *     'catch'        'class'     'const'    'do'           'else'
+	 *     'enum'         'false'     'finally'  'for'          'function'
+	 *     'global'       'if'        'in'       'inheritable'  'internal'
+	 *     'is'           'iter'      'let'      'namespace'    'new'
+	 *     'next'         'not'       'null'     'operator'     'or'
+	 *     'overridable'  'override'  'private'  'protected'    'public'
+	 *     'ref'          'refeq'     'return'   'static'       'this'
+	 *     'throw'        'true'      'try'      'typeof'       'use'
+	 *     'var'          'while'     'with'     'xor'          'yield'
 	 * Mapping from keyword string to corresponding TokenType.
 	 */
 	internal static keywordToType = {
@@ -42,6 +42,7 @@ internal static class LexicalFacts
 		"internal":    TokenType.\internal,
 		"is":          TokenType.\is,
 		"iter":        TokenType.\iter,
+		"let":         TokenType.\let,
 		"namespace":   TokenType.\namespace,
 		"new":         TokenType.\new,
 		"next":        TokenType.\next,
