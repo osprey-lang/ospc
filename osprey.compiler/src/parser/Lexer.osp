@@ -1087,7 +1087,7 @@ public class Lexer
 			UnicodeCategory.letter |
 			UnicodeCategory.decimalNumber |
 			UnicodeCategory.letterNumber |
-			UnicodeCategory.connectorPunct |
+			UnicodeCategory.connectorPunctuation |
 			UnicodeCategory.mark;
 		return category & identifierCategories != UnicodeCategory.none;
 	}
