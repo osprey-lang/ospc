@@ -780,7 +780,7 @@ public class Lexer
 		 *     '\\"'  '\\\''  '\\\\'  '\\0'  '\\a'  '\\b'
 		 *     '\\n'  '\\r'   '\\t'   '\\_'  '\\-'
 		 * Additional notes:
-		 *   This method also parses the beginning of unicode escapes, '\\u' or '\\U'.
+		 *   This method also parses the beginning of Unicode escapes, '\\u'.
 		 */
 		if isEOF(i):
 			fatalError(ErrorCode.err_MissingEscapeSequence, i - 1, 1);
@@ -792,49 +792,73 @@ public class Lexer
 		if escapes.tryGet(ch, ref parseEscapeChar):
 			return parseEscapeChar(this, ref i);
 
-		// If the escape sequence is not found, let parseEscapeChar remain null
 		recoverableError(ErrorCode.err_InvalidEscapeSequence, i - 2, 2);
 		return null;
 	}
 
-	private scanUnicodeEscape(length, ref i)
+	private scanUnicodeEscape(ref i)
 	{
 		/* Syntax:
 		 *   unicode-escape-sequence:
-		 *     '\\u' hex-digit hex-digit hex-digit hex-digit
-		 *     '\\U' hex-digit hex-digit hex-digit hex-digit
-		 *       hex-digit hex-digit hex-digit hex-digit
-		 * Additional notes:
-		 *   The 'length' parameter is either 4 or 8, depending on the number of
-		 *   expected hexadecimal digits. This method does not in itself parse
-		 *   the '\\u' or '\\U' part, only the code point.
+		 *     '\\u{' hex-digits '}'
 		 */
+		if not isChar(i, '{')
+		{
+			recoverableError(ErrorCode.err_InvalidUnicodeEscapeSequence, i, 1);
+			return null;
+		}
+		i += 1; // skip {
+
+		// Note: scanCodePoint() returns null on invalid code point.
+		var codePoint = scanCodePoint(ref i);
+
+		if not isChar(i, '}')
+		{
+			// avoid multiple errors for the same sequence
+			if codePoint is not null:
+				recoverableError(ErrorCode.err_InvalidUnicodeEscapeSequence, i, 1);
+			return null;
+		}
+		i += 1; // skip }
+
+		return codePoint ?! new Char(codePoint);
+	}
+
+	private scanCodePoint(ref i)
+	{
 		var startIndex = i;
 
-		var expectedLength = length;
 		var codePoint = 0;
-		while length > 0 and not isEOF(i)
+		while not isEOF(i)
 		{
 			var digitValue;
 			if not LexicalFacts.hexDigits.tryGet(source[i], ref digitValue):
-				fatalError(
-					ErrorCode.err_InvalidUnicodeEscapeSequence,
-					[expectedLength],
-					i, 1
-				);
+				break;
+			i += 1;
 
 			codePoint = (codePoint << 4) | digitValue;
-			length -= 1;
-			i += 1;
+			if codePoint > LexicalFacts.maxCodePoint:
+				// Ugly hack to make sure all subsequent hex digits result in
+				// codePoint > maxCodePoint. This way we can keep consuming hex
+				// digits and produce a warning about the entire hex number at
+				// the end.
+				codePoint = 0xffffffff;
 		}
 
-		if codePoint > 0x10FFFF
+		if i == startIndex
+		{
+			// Gotta have at least one hex digit
+			recoverableError(ErrorCode.err_InvalidUnicodeEscapeSequence, i, 1);
+			return null;
+		}
+
+		if codePoint > LexicalFacts.maxCodePoint
 		{
 			recoverableError(ErrorCode.err_UnicodeEscapeOutOfRange, startIndex, i - startIndex);
 			return null;
 		}
 
-		return new Char(codePoint);
+		return codePoint;
 	}
 
 	private scanIdentifier(ref i)
@@ -1094,7 +1118,7 @@ public class Lexer
 
 	private static isNewline(char)
 	{
-		const newlines = "\u000A\u000D\u0085\u2028\u2029";
+		const newlines = "\u{A}\u{D}\u{85}\u{2028}\u{2029}";
 		return newlines.contains(char);
 	}
 
@@ -1121,24 +1145,21 @@ public class Lexer
 	 *     '\\"'  '\\\''  '\\\\'  '\\0'  '\\a'  '\\b'
 	 *     '\\n'  '\\r'   '\\t'   '\\_'  '\\-'
 	 *   unicode-escape-sequence:
-	 *     '\\u' hex-digit hex-digit hex-digit hex-digit
-	 *     '\\U' hex-digit hex-digit hex-digit hex-digit
-	 *       hex-digit hex-digit hex-digit hex-digit
+	 *     '\\u{' hex-digits '}'
 	 */
 	private static escapes = {
-		'0':  @(lexer, ref i) => '\u0000', // Null
-		'a':  @(lexer, ref i) => '\u0007', // Alert
-		'b':  @(lexer, ref i) => '\u0008', // Backspace
-		't':  @(lexer, ref i) => '\u0009', // Horizontal tab
-		'n':  @(lexer, ref i) => '\u000A', // New line
-		'r':  @(lexer, ref i) => '\u000D', // Carriage return
-		'"':  @(lexer, ref i) => '\u0022', // Double quote
-		'\'': @(lexer, ref i) => '\u0027', // Single quote
-		'\\': @(lexer, ref i) => '\u005C', // Backslash
-		'_':  @(lexer, ref i) => '\u00A0', // No-break space
-		'-':  @(lexer, ref i) => '\u00AD', // Soft hyphen
-		'u':  @(lexer, ref i) => lexer.scanUnicodeEscape(4, ref i),
-		'U':  @(lexer, ref i) => lexer.scanUnicodeEscape(8, ref i),
+		'0':  @(lexer, ref i) => '\u{0}', // Null
+		'a':  @(lexer, ref i) => '\u{7}', // Alert
+		'b':  @(lexer, ref i) => '\u{8}', // Backspace
+		't':  @(lexer, ref i) => '\u{9}', // Horizontal tab
+		'n':  @(lexer, ref i) => '\u{A}', // New line
+		'r':  @(lexer, ref i) => '\u{D}', // Carriage return
+		'"':  @(lexer, ref i) => '\u{22}', // Double quote
+		'\'': @(lexer, ref i) => '\u{27}', // Single quote
+		'\\': @(lexer, ref i) => '\u{5C}', // Backslash
+		'_':  @(lexer, ref i) => '\u{A0}', // No-break space
+		'-':  @(lexer, ref i) => '\u{AD}', // Soft hyphen
+		'u':  @(lexer, ref i) => lexer.scanUnicodeEscape(ref i),
 	};
 
 	/// Summary: Gets the source text that corresponds to the specified keyword {TokenType}.

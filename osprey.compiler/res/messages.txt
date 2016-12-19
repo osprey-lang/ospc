@@ -35,7 +35,7 @@
 // Escape sequence errors (1500-1599)
 1501 err_MissingEscapeSequence = "Expected escape sequence after backslash.";
 1502 err_InvalidEscapeSequence = "Invalid or unrecognised escape sequence.";
-1503 err_InvalidUnicodeEscapeSequence = "Expected {0} hexadecimal digits in Unicode escape sequence.";
+1503 err_InvalidUnicodeEscapeSequence = "Malformed Unicode escape sequence: expected '{', followed by one or more hexadecimal digits, followed by '}'.";
 1504 err_UnicodeEscapeOutOfRange = "The Unicode code point must be between U+0000 and U+10FFFF.";
 
 // Syntax errors (1600–1999)

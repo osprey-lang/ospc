@@ -136,7 +136,7 @@ public class SourceFile
 		var i = curLineStart;
 		while i < index
 		{
-			const newlines = "\r\n\u0085\u2028\u2029";
+			const newlines = "\r\n\u{85}\u{2028}\u{2029}";
 
 			var ch = source[i];
 			i += 1;

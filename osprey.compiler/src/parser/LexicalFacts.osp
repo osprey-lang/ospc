@@ -5,6 +5,9 @@ namespace osprey.compiler.parser;
 
 internal static class LexicalFacts
 {
+	// The maximum code point that a Unicode escape sequence can represent.
+	internal const maxCodePoint = 0x10FFFF;
+
 	/* Syntax:
 	 *   keyword: one of
 	 *     'abstract'     'and'       'async'    'base'         'break'
