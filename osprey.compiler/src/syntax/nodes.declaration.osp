@@ -144,8 +144,9 @@ public class ClassDeclaration is TypeDeclaration
 	{
 		new base(location, annotations, accessibility, name);
 
-		if baseType is TypeName:
+		if baseType is TypeName {
 			claim(baseType);
+		}
 
 		this._isStatic      = isStatic;
 		this._isAbstract    = isAbstract;

@@ -74,17 +74,20 @@ public abstract class ErrorManager
 	///          {error} is null.
 	public overridable addError(error)
 	{
-		if error is null:
+		if error is null {
 			throw new ArgumentNullError("error");
-		if error is not Error:
+		}
+		if error is not Error {
 			throw new ArgumentTypeError("error", typeof(Error));
-		if error is not CompileTimeError:
+		}
+		if error is not CompileTimeError {
 			error = new CompileTimeError(
 				null, // No meaningful source location
 				ErrorCode.err_Unspecified,
 				getMessage(ErrorCode.err_Unspecified),
 				error // innerError
 			);
+		}
 
 		addErrorInner(error);
 	}
@@ -110,10 +113,12 @@ public abstract class ErrorManager
 	///          {warning} is null.
 	public overridable addWarning(warning)
 	{
-		if warning is null:
+		if warning is null {
 			throw new ArgumentNullError("warning");
-		if warning is not Warning:
+		}
+		if warning is not Warning {
 			throw new ArgumentTypeError("warning", typeof(Warning));
+		}
 
 		addWarningInner(warning);
 	}

@@ -48,8 +48,9 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	overridable override visitClassDeclaration(decl, arg)
 	{
 		decl.annotations.acceptAll(this, arg);
-		if decl.baseType is TypeName:
+		if decl.baseType is TypeName {
 			decl.baseType.accept(this, arg);
+		}
 		decl.members.acceptAll(this, arg);
 		return null;
 	}
@@ -322,8 +323,9 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	{
 		visitTryClause(stmt.tryClause, arg);
 		stmt.catchClauses.acceptAll(this, arg);
-		if stmt.finallyClause is not null:
+		if stmt.finallyClause is not null {
 			visitFinallyClause(stmt.finallyClause, arg);
+		}
 		return null;
 	}
 
@@ -629,8 +631,9 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 	overridable override visitTypeTestExpression(expr, arg)
 	{
 		expr.expression.accept(this, arg);
-		if expr.type is not null:
+		if expr.type is not null {
 			visitTypeName(expr.type, arg);
+		}
 		return null;
 	}
 

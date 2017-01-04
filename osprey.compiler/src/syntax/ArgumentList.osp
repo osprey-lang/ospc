@@ -28,8 +28,9 @@ public inheritable ArgumentList is NodeList
 	public get hasRefArguments
 	{
 		// Initialize on demand
-		if _hasRefArguments is null:
+		if _hasRefArguments is null {
 			_hasRefArguments = any(isByRef);
+		}
 		return _hasRefArguments;
 	}
 

@@ -118,12 +118,15 @@ public inheritable UnexpectedTokenError is ParseError
 	private static tokenTypeToString(type)
 	{
 		var str;
-		if specialTypeToString.tryGet(type, ref str):
+		if specialTypeToString.tryGet(type, ref str) {
 			return str;
-		if LexicalFacts.typeToKeyword.tryGet(type, ref str):
+		}
+		if LexicalFacts.typeToKeyword.tryGet(type, ref str) {
 			return "keyword '{0}'".format([str]);
-		if typeToPunctuation.tryGet(type, ref str):
+		}
+		if typeToPunctuation.tryGet(type, ref str) {
 			return "'" :: str :: "'";
+		}
 		return "'" :: type :: "'";
 	}
 

@@ -296,8 +296,7 @@ public class LexerTests is TestFixture
 		var lexer = lex(source);
 
 		var count = 0;
-		for token in lexer
-		{
+		for token in lexer {
 			Assert.areEqual(token.type, TT.identifier);
 			Assert.areEqual(token.contextualType, CT.none);
 			count += 1;
@@ -321,8 +320,7 @@ public class LexerTests is TestFixture
 			CT.namedConst, CT.getArgc
 		];
 
-		Assert.collectionsMatch(lexer, tokens, @(token, contextualType)
-		{
+		Assert.collectionsMatch(lexer, tokens, @(token, contextualType) {
 			Assert.areEqual(token.type, TT.identifier);
 			Assert.isOfType(token, typeof(Identifier));
 			Assert.areEqual(token.contextualType, contextualType);
@@ -340,8 +338,7 @@ public class LexerTests is TestFixture
 		var lexer = lex(source);
 
 		var count = 0;
-		for token in lexer
-		{
+		for token in lexer {
 			Assert.areEqual(token.type, TT.identifier);
 			Assert.isOfType(token, typeof(Identifier));
 			Assert.areEqual(token.contextualType, CT.none);
@@ -363,8 +360,7 @@ public class LexerTests is TestFixture
 			1u, 12345678u, 4294967295u, 18446744073709551615u,
 		];
 
-		Assert.collectionsMatch(lexer, values, @(token, value)
-		{
+		Assert.collectionsMatch(lexer, values, @(token, value) {
 			assertTokenMatches(token, TT.int);
 			Assert.areSameRef(token.literalValue, value);
 			return true;
@@ -385,8 +381,7 @@ public class LexerTests is TestFixture
 			1u, 12345678u, 4294967295u, 18446744073709551615u,
 		];
 
-		Assert.collectionsMatch(lexer, values, @(token, value)
-		{
+		Assert.collectionsMatch(lexer, values, @(token, value) {
 			assertTokenMatches(token, TT.int);
 			Assert.areSameRef(token.literalValue, value);
 			return true;

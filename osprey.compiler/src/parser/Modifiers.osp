@@ -60,14 +60,18 @@ public class Modifiers
 	///          value is always {Accessibility.none}.
 	public get accessibility
 	{
-		if \public:
+		if \public {
 			return Accessibility.\public;
-		if \internal:
+		}
+		if \internal {
 			return Accessibility.\internal;
-		if \protected:
+		}
+		if \protected {
 			return Accessibility.\protected;
-		if \private:
+		}
+		if \private {
 			return Accessibility.\private;
+		}
 		return Accessibility.none;
 	}
 
@@ -98,8 +102,9 @@ public class Modifiers
 			\static ??
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
-		if invalidToken:
+		if invalidToken {
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for a class declaration. If any modifiers are
@@ -110,16 +115,16 @@ public class Modifiers
 		var invalidToken =
 			\protected ?? \private ??
 			\overridable ?? \override;
-		if invalidToken:
+		if invalidToken {
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClass);
-
-		if \static
-		{
-			if \abstract or \inheritable:
-				parser.recoverableError(\abstract ?? \inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
 		}
-		else if \abstract and \inheritable
-		{
+
+		if \static {
+			if \abstract or \inheritable {
+				parser.recoverableError(\abstract ?? \inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
+			}
+		}
+		else if \abstract and \inheritable {
 			parser.recoverableError(\abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
 		}
 	}
@@ -129,22 +134,22 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForConstructor(parser)
 	{
-		if \static
-		{
+		if \static {
 			var invalidToken =
 				\public ?? \protected ?? \private ??
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
-			if invalidToken:
+			if invalidToken {
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
+			}
 		}
-		else
-		{
+		else {
 			var invalidToken =
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
-			if invalidToken:
+			if invalidToken {
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
+			}
 		}
 	}
 
@@ -156,8 +161,9 @@ public class Modifiers
 		var invalidToken =
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
-		if invalidToken:
+		if invalidToken {
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForField);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for a method declaration. If any modifiers are
@@ -165,21 +171,22 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForMethod(parser)
 	{
-		if \static
-		{
+		if \static {
 			var invalidToken =
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
-			if invalidToken:
+			if invalidToken {
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
+			}
 		}
-		else
-		{
-			if \inheritable:
+		else {
+			if \inheritable {
 				parser.recoverableError(\inheritable, ErrorCode.err_MethodCannotBeInheritable);
+			}
 
-			if \abstract and \overridable:
+			if \abstract and \overridable {
 				parser.recoverableError(\overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
+			}
 		}
 	}
 
@@ -188,8 +195,9 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForInvocator(parser)
 	{
-		if \static:
+		if \static {
 			parser.recoverableError(\static, ErrorCode.err_InvocatorCannotBeStatic);
+		}
 		verifyForMethod(parser);
 	}
 
@@ -198,21 +206,22 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForProperty(parser)
 	{
-		if \static
-		{
+		if \static {
 			var invalidToken =
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
-			if invalidToken:
+			if invalidToken {
 				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
+			}
 		}
-		else
-		{
-			if \inheritable:
+		else {
+			if \inheritable {
 				parser.recoverableError(\inheritable, ErrorCode.err_PropertyCannotBeInheritable);
+			}
 
-			if \abstract and \overridable:
+			if \abstract and \overridable {
 				parser.recoverableError(\overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
+			}
 		}
 	}
 
@@ -221,8 +230,9 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForIndexer(parser)
 	{
-		if \static:
+		if \static {
 			parser.recoverableError(\static, ErrorCode.err_IndexerCannotBeStatic);
+		}
 		verifyForProperty(parser);
 	}
 
@@ -235,8 +245,9 @@ public class Modifiers
 			\static ??
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
-		if invalidToken:
+		if invalidToken {
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for an operator declaration. If any modifiers
@@ -244,8 +255,9 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForOperator(parser)
 	{
-		if hasModifiers:
+		if hasModifiers {
 			parser.recoverableError(start, ErrorCode.err_InvalidModifierForOperator);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for an iterator declaration. If any modifiers
@@ -253,8 +265,9 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForIterator(parser)
 	{
-		if hasModifiers:
+		if hasModifiers {
 			parser.recoverableError(start, ErrorCode.err_InvalidModifierForIterator);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for an enum declaration. If any modifiers are
@@ -267,8 +280,9 @@ public class Modifiers
 			\static ??
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
-		if invalidToken:
+		if invalidToken {
 			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForEnum);
+		}
 	}
 
 	/// Summary: Verifies the modifiers for a namespace declaration. If any modifiers
@@ -276,7 +290,8 @@ public class Modifiers
 	/// Param parser: The {Parser} that receives modifier errors.
 	public verifyForNamespace(parser)
 	{
-		if not isEmpty:
+		if not isEmpty {
 			parser.recoverableError(start, ErrorCode.err_InvalidNamespaceModifiers);
+		}
 	}
 }

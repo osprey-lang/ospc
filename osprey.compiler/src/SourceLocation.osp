@@ -6,8 +6,9 @@ public class SourceLocation
 {
 	public new(sourceFile, startIndex, endIndex)
 	{
-		if sourceFile is not SourceFile:
+		if sourceFile is not SourceFile {
 			throw new ArgumentTypeError("sourceFile", typeof(SourceFile));
+		}
 
 		this._sourceFile = sourceFile;
 		this._startIndex = int(startIndex);
@@ -73,10 +74,12 @@ public class SourceLocation
 	/// Remarks: To test if the source location contains a single index, use {contains}.
 	public encloses(other)
 	{
-		if other is null:
+		if other is null {
 			throw new ArgumentNullError("other");
-		if other is Syntax:
+		}
+		if other is Syntax {
 			other = other.location;
+		}
 		return encloses(other.startIndex, other.endIndex);
 	}
 	/// Summary: Determines whether the current source location fully encloses the
@@ -91,8 +94,9 @@ public class SourceLocation
 	/// Remarks: To test if the source location contains a single index, use {contains}.
 	public encloses(startIndex, endIndex)
 	{
-		if endIndex < startIndex:
+		if endIndex < startIndex {
 			throw new ArgumentError("startIndex must be less than or equal to endIndex.");
+		}
 		return this._startIndex >= startIndex and this._endIndex <= endIndex;
 	}
 
@@ -107,10 +111,12 @@ public class SourceLocation
 	/// Remarks: To test if the source location contains a single index, use {contains}.
 	public overlaps(other)
 	{
-		if other is null:
+		if other is null {
 			throw new ArgumentNullError("other");
-		if other is Syntax:
+		}
+		if other is Syntax {
 			other = other.location;
+		}
 		return overlaps(other.startIndex, other.endIndex);
 	}
 	/// Summary: Determines whether the current source location overlaps the specified
@@ -125,8 +131,9 @@ public class SourceLocation
 	/// Remarks: To test if the source location contains a single index, use {contains}.
 	public overlaps(startIndex, endIndex)
 	{
-		if endIndex < startIndex:
+		if endIndex < startIndex {
 			throw new ArgumentError("startIndex must be less than or equal to endIndex.");
+		}
 		return startIndex <= this._endIndex and endIndex >= this._startIndex;
 	}
 
@@ -138,8 +145,9 @@ public class SourceLocation
 
 	operator ==(a, b)
 	{
-		if b is not SourceLocation:
+		if b is not SourceLocation {
 			return false;
+		}
 
 		return a._startIndex == b._startIndex and
 			a._endIndex == b._endIndex and

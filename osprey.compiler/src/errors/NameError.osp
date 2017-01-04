@@ -63,8 +63,9 @@ public inheritable NameError is CompileTimeError
 
 	overridable override get message
 	{
-		if name is not null:
+		if name is not null {
 			return "{0} (name: {1})".format([base.message, name]);
+		}
 		return base.message;
 	}
 
@@ -85,12 +86,15 @@ public inheritable NameError is CompileTimeError
 	///          used; and in all other cases, {name} is converted to a String.
 	protected static formatName(name)
 	{
-		if name is Identifier:
+		if name is Identifier {
 			return name.identifier;
-		if name is QualifiedName:
+		}
+		if name is QualifiedName {
 			return name.join(".");
-		if name is not null:
+		}
+		if name is not null {
 			return string(name);
+		}
 		return null;
 	}
 }

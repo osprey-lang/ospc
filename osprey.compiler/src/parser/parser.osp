@@ -85,8 +85,9 @@ public inheritable Parser is ParserBase
 	///          {expression} is not assignable.
 	public ensureAssignable(expression, errorCode = null)
 	{
-		if not isAssignable(expression):
+		if not isAssignable(expression) {
 			recoverableError(expression, errorCode ?? ErrorCode.err_ExpressionMustBeAssignable);
+		}
 	}
 
 	/// Summary: Determines whether the specified {Expression} is a valid statement-expression.
@@ -101,11 +102,13 @@ public inheritable Parser is ParserBase
 		 *     A safe-access whose last safe-access-chain component is a safe-invocation
 		 *       or unsafe-invocation
 		 */
-		if expression is BinaryExpression:
+		if expression is BinaryExpression {
 			return expression.op == BinaryOperator.functionApplication;
+		}
 
-		if expression is SafeAccessExpression:
+		if expression is SafeAccessExpression {
 			return expression.chain.last() is SafeInvocation;
+		}
 
 		return expression is InvocationExpression or
 			expression is ObjectCreationExpression;
@@ -211,12 +214,14 @@ public inheritable Parser is ParserBase
 
 		// use-directives
 		var uses;
-		if accept(i, TokenType.\use):
+		if accept(i, TokenType.\use) {
 			uses = parseUseDirectives(ref i);
+		}
 
 		var globalAnnotations;
-		if accept(i, TokenType.exclam):
+		if accept(i, TokenType.exclam) {
 			globalAnnotations = parseGlobalAnnotations(ref i);
+		}
 
 		// file-namespace-declaration
 		var fileNamespace = tryParseFileNamespaceDeclaration(ref i);
@@ -224,14 +229,12 @@ public inheritable Parser is ParserBase
 		// top-level-members, grouped into global-statements and everything else.
 		var members = new List(5), statements = [];
 		var modifiers = new Modifiers();
-		while not accept(i, TokenType.eof)
-		{
+		while not accept(i, TokenType.eof) {
 			parseModifiers(ref i, modifiers);
 
 			var token = lex[i];
 			var construct;
-			if token.match(TokenType.\namespace)
-			{
+			if token.match(TokenType.\namespace) {
 				modifiers.verifyForNamespace(this);
 				construct = parseNamespaceDeclaration(ref i);
 			}
@@ -242,31 +245,24 @@ public inheritable Parser is ParserBase
 			{
 				construct = parseClassDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\enum)
-			{
+			else if token.match(TokenType.\enum) {
 				construct = parseEnumDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\const)
-			{
+			else if token.match(TokenType.\const) {
 				construct = parseGlobalConstantDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\function)
-			{
+			else if token.match(TokenType.\function) {
 				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
 			}
-			else if not modifiers.isEmpty
-			{
+			else if not modifiers.isEmpty {
 				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
 			}
-			else
-			{
-				if token.match(TokenType.\var)
-				{
+			else {
+				if token.match(TokenType.\var) {
 					construct = parseLocalVariableDeclaration(ref i);
 					construct = new GlobalVariableDeclaration(construct.location, construct);
 				}
-				else
-				{
+				else {
 					construct = parseEmbeddedStatement(ref i);
 				}
 				statements.add(construct);
@@ -297,8 +293,9 @@ public inheritable Parser is ParserBase
 		 */
 		var uses = new List(2);
 
-		while accept(i, TokenType.\use):
+		while accept(i, TokenType.\use) {
 			uses.add(parseUseDirective(ref i));
+		}
 
 		return new NodeList(uses);
 	}
@@ -324,8 +321,7 @@ public inheritable Parser is ParserBase
 		 */
 		var start = expectr(ref i, TokenType.\use);
 
-		if accept(i, TokenType.string)
-		{
+		if accept(i, TokenType.string) {
 			// UseFileDirective
 			var fileName = lex[i];
 			i += 1;
@@ -333,13 +329,11 @@ public inheritable Parser is ParserBase
 			return new UseFileDirective(getLocation(start, end), fileName);
 		}
 
-		if accept(i, TokenType.identifier)
-		{
+		if accept(i, TokenType.identifier) {
 			// UseNamespaceDirective or UseAliasDirective: if we find an '=' after
 			// the identifier, it must be a member alias; otherwise, we parse it
 			// as a UseNamespaceDirective.
-			if accept(i + 1, TokenType.assign)
-			{
+			if accept(i + 1, TokenType.assign) {
 				// UseAliasDirective
 				var alias = lex[i];
 				i += 2; // skip alias and '='
@@ -347,8 +341,7 @@ public inheritable Parser is ParserBase
 				var end = expectr(ref i, TokenType.semicolon);
 				return new UseAliasDirective(getLocation(start, end), alias, fullName);
 			}
-			else
-			{
+			else {
 				// UseNamespaceDirective
 				var name = parseQualifiedName(ref i);
 				var end = expectr(ref i, TokenType.semicolon);
@@ -381,8 +374,9 @@ public inheritable Parser is ParserBase
 		// Don't modify i until we have a full file-namespace-declaration
 		var k = i;
 
-		if not acceptr(ref k, TokenType.\namespace):
+		if not acceptr(ref k, TokenType.\namespace) {
 			return null;
+		}
 
 		// We have a 'namespace' keyword. Try to parse the beginning of a namespace
 		// declaration. If a curly bracket follows the qualified-name, return null
@@ -394,8 +388,9 @@ public inheritable Parser is ParserBase
 
 		var fileNamespace = parseQualifiedName(ref k);
 
-		if not acceptr(ref k, TokenType.semicolon):
+		if not acceptr(ref k, TokenType.semicolon) {
 			return null;
+		}
 
 		i = k;
 		return fileNamespace;
@@ -428,24 +423,22 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\namespace);
 
 		var name = parseQualifiedName(ref i);
-		if accept(i, TokenType.semicolon):
+		if accept(i, TokenType.semicolon) {
 			fatalError(lex[i], ErrorCode.err_InvalidLocationForFileNamespace);
+		}
 		expectr(ref i, TokenType.curlyOpen);
 
 		var members = new List(5);
 		var modifiers = new Modifiers();
-		while not accept(i, TokenType.eof, TokenType.curlyClose)
-		{
+		while not accept(i, TokenType.eof, TokenType.curlyClose) {
 			parseModifiers(ref i, modifiers);
 
 			var token = lex[i];
 			var member;
-			if token.match(TokenType.\const)
-			{
+			if token.match(TokenType.\const) {
 				member = parseGlobalConstantDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\function)
-			{
+			else if token.match(TokenType.\function) {
 				member = parseGlobalFunctionDeclaration(ref i, modifiers);
 			}
 			else if token.match(TokenType.\class) or
@@ -455,17 +448,14 @@ public inheritable Parser is ParserBase
 			{
 				member = parseClassDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\enum)
-			{
+			else if token.match(TokenType.\enum) {
 				member = parseEnumDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\namespace)
-			{
+			else if token.match(TokenType.\namespace) {
 				modifiers.verifyForNamespace(this);
 				member = parseNamespaceDeclaration(ref i);
 			}
-			else
-			{
+			else {
 				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
 			}
 
@@ -503,15 +493,15 @@ public inheritable Parser is ParserBase
 		 *   This is not the only method that parses constant-declarators, due to their
 		 *   underwhelming simplicity.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForGlobalFunctionOrConstant(this);
 
 		var start = expectr(ref i, TokenType.\const);
 
 		var constants = new List(1);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
 			var value = parseExpression(ref i);
@@ -551,8 +541,9 @@ public inheritable Parser is ParserBase
 		 * Additional notes:
 		 *   If extensions are in use, the body block can also be an __extern reference.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForGlobalFunctionOrConstant(this);
 
 		var start = expectr(ref i, TokenType.\function);
@@ -606,31 +597,35 @@ public inheritable Parser is ParserBase
 		 *   type-initer:       (non-standard extension)
 		 *     '__init_type' '(' string-literal ')' ';'
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForClass(this);
 
 		var start;
-		if modifiers.\inheritable and modifiers.\inheritable refeq lex[i - 1]:
+		if modifiers.\inheritable and modifiers.\inheritable refeq lex[i - 1] {
 			// 'class' keyword is optional if 'inheritable' is the last modifier
 			acceptr(ref i, TokenType.\class);
-		else:
+		}
+		else {
 			start = expectr(ref i, TokenType.\class);
+		}
 		start = modifiers.start ?? start;
 
 		var name = expectr(ref i, TokenType.identifier);
 
 		var baseType;
-		if acceptr(ref i, TokenType.\is):
+		if acceptr(ref i, TokenType.\is) {
 			baseType = parseTypeName(ref i);
-		else if acceptrExtension(ref i, ContextualType.primitive):
+		}
+		else if acceptrExtension(ref i, ContextualType.primitive) {
 			baseType = ClassDeclaration.primitive;
+		}
 
 		expectr(ref i, TokenType.curlyOpen);
 
 		var typeIniter;
-		if acceptrExtension(ref i, ContextualType.initType)
-		{
+		if acceptrExtension(ref i, ContextualType.initType) {
 			expectr(ref i, TokenType.parenOpen);
 			typeIniter = expectr(ref i, TokenType.string);
 			expectr(ref i, TokenType.parenClose);
@@ -670,14 +665,12 @@ public inheritable Parser is ParserBase
 		var members = new List(5);
 
 		var modifiers = new Modifiers();
-		while not accept(i, TokenType.curlyClose)
-		{
+		while not accept(i, TokenType.curlyClose) {
 			parseModifiers(ref i, modifiers);
 
 			var token = lex[i];
 			var member;
-			if token.match(TokenType.\new)
-			{
+			if token.match(TokenType.\new) {
 				member = parseConstructorDeclaration(ref i, modifiers);
 			}
 			else if (token.contextualType == ContextualType.get or token.contextualType == ContextualType.set) and
@@ -685,38 +678,34 @@ public inheritable Parser is ParserBase
 			{
 				member = parsePropertyOrIndexerDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\var)
-			{
+			else if token.match(TokenType.\var) {
 				member = parseFieldDeclaration(ref i, modifiers);
 			}
 			// Modifiers + 'this' = invocator without 'function' keyword; an indexer
 			// always requires 'get' or 'set', which we check for above
-			else if token.match(TokenType.\function, TokenType.\this)
-			{
+			else if token.match(TokenType.\function, TokenType.\this) {
 				member = parseMethodDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\const)
-			{
+			else if token.match(TokenType.\const) {
 				member = parseClassConstantDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\iter)
-			{
+			else if token.match(TokenType.\iter) {
 				member = parseIteratorDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\operator)
-			{
+			else if token.match(TokenType.\operator) {
 				member = parseOperatorDeclaration(ref i, modifiers);
 			}
-			else
-			{
+			else {
 				// Method declaration without 'function',
 				// or field declaration without 'var'.
 				// In both cases, we need an identifier.
 				expect(i, TokenType.identifier);
-				if accept(i + 1, TokenType.parenOpen):
+				if accept(i + 1, TokenType.parenOpen) {
 					member = parseMethodDeclaration(ref i, modifiers);
-				else:
+				}
+				else {
 					member = parseFieldDeclaration(ref i, modifiers);
+				}
 			}
 
 			members.add(member);
@@ -748,8 +737,9 @@ public inheritable Parser is ParserBase
 		 *   static-constructor-declaration:
 		 *     annotations? 'static' 'new' '(' ')' block
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForConstructor(this);
 
 		var start = expectr(ref i, TokenType.\new);
@@ -758,23 +748,26 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.parenOpen);
 
 		var parameters;
-		if not modifiers.\static:
+		if not modifiers.\static {
 			parameters = parseConstructorParameterList(ref i);
+		}
 
 		expectr(ref i, TokenType.parenClose);
 
 		var body;
-		if modifiers.\static or not acceptr(ref i, TokenType.semicolon):
+		if modifiers.\static or not acceptr(ref i, TokenType.semicolon) {
 			body = parseBlockOrExtern(ref i);
+		}
 
 		var end = lex[i - 1];
 
-		if modifiers.\static:
+		if modifiers.\static {
 			return new StaticConstructorDeclaration(
 				getLocation(start, end),
 				modifiers.annotations,
 				body
 			);
+		}
 		return new ConstructorDeclaration(
 			getLocation(start, end),
 			modifiers.annotations,
@@ -831,21 +824,23 @@ public inheritable Parser is ParserBase
 		 *   This method parses both property-accessor-declaration and indexer-declaration,
 		 *   since they both start with property-modifiers followed by 'get' or 'set'.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 
 		var start = expectr(ref i, TokenType.identifier);
 
 		var isSetter = false;
-		if start.contextualType == ContextualType.set:
+		if start.contextualType == ContextualType.set {
 			isSetter = true;
-		else if start.contextualType != ContextualType.get:
+		}
+		else if start.contextualType != ContextualType.get {
 			fatalError(start, ErrorCode.err_UnexpectedToken);
+		}
 
 		// name is null for indexer; indexerParams is null for property
 		var name, indexerParams;
-		if acceptr(ref i, TokenType.\this)
-		{
+		if acceptr(ref i, TokenType.\this) {
 			modifiers.verifyForIndexer(this);
 			expectr(ref i, TokenType.squareOpen);
 
@@ -854,47 +849,48 @@ public inheritable Parser is ParserBase
 				/*endToken=*/ TokenType.squareClose,
 				/*allowEmpty=*/ false
 			);
-			if indexerParams.hasOptionalParameters:
+			if indexerParams.hasOptionalParameters {
 				recoverableError(indexerParams.first(@.isOptional), ErrorCode.err_IndexerCannotHaveOptionalParameters);
-			if indexerParams.hasVariadicParameter:
+			}
+			if indexerParams.hasVariadicParameter {
 				recoverableError(indexerParams.first(@.isVariadic), ErrorCode.err_IndexerCannotHaveVariadicParameter);
-			if indexerParams.hasRefParameters:
+			}
+			if indexerParams.hasRefParameters {
 				recoverableError(indexerParams.first(@.isRef), ErrorCode.err_IndexerCannotHaveRefParameters);
+			}
 
 			expectr(ref i, TokenType.squareClose);
 		}
-		else
-		{
+		else {
 			modifiers.verifyForProperty(this);
 			name = expectr(ref i, TokenType.identifier);
 		}
 
 		var body;
-		if acceptr(ref i, TokenType.semicolon)
-		{
-			if not modifiers.\abstract:
+		if acceptr(ref i, TokenType.semicolon) {
+			if not modifiers.\abstract {
 				recoverableError(lex[i - 1], ErrorCode.err_NonAbstractPropertyCannotHaveEmptyBody);
+			}
 			// otherwise, leave body null
 		}
-		else
-		{
-			if modifiers.\abstract:
+		else {
+			if modifiers.\abstract {
 				recoverableError(lex[i], ErrorCode.err_AbstractPropertyMustHaveEmptyBody);
+			}
 
-			if not isSetter and acceptr(ref i, TokenType.fatArrow)
-			{
+			if not isSetter and acceptr(ref i, TokenType.fatArrow) {
 				body = parseExpression(ref i);
 				expectr(ref i, TokenType.semicolon);
 			}
-			else
-			{
+			else {
 				body = parseBlockOrExtern(ref i);
 			}
 		}
 
 		var location = getLocation(modifiers.start ?? start, lex[i - 1]);
-		if name is null:
+		if name is null {
 			return new IndexerDeclaration(location, modifiers, isSetter, indexerParams, body);
+		}
 		return new PropertyDeclaration(location, modifiers, isSetter, name, body);
 	}
 
@@ -926,8 +922,9 @@ public inheritable Parser is ParserBase
 		 *     identifier
 		 *     identifier '=' expression
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForField(this);
 
 		var start = lex[i];
@@ -935,12 +932,12 @@ public inheritable Parser is ParserBase
 		acceptr(ref i, TokenType.\var);
 
 		var fields = new List(1);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			var value;
-			if acceptr(ref i, TokenType.assign):
+			if acceptr(ref i, TokenType.assign) {
 				value = parseExpression(ref i);
+			}
 
 			fields.add(
 				new VariableDeclarator(
@@ -992,20 +989,19 @@ public inheritable Parser is ParserBase
 		 * Additional notes:
 		 *   When extensions are enabled, a method-body can also be an `__extern` body.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 
 		var start = lex[i];
 
 		acceptr(ref i, TokenType.\function);
 
 		var name; // leave null for invocator
-		if acceptr(ref i, TokenType.\this)
-		{
+		if acceptr(ref i, TokenType.\this) {
 			modifiers.verifyForInvocator(this);
 		}
-		else
-		{
+		else {
 			modifiers.verifyForMethod(this);
 			name = expectr(ref i, TokenType.identifier);
 		}
@@ -1015,22 +1011,23 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.parenClose);
 
 		var body;
-		if acceptr(ref i, TokenType.semicolon)
-		{
-			if not modifiers.\abstract:
+		if acceptr(ref i, TokenType.semicolon) {
+			if not modifiers.\abstract {
 				recoverableError(lex[i - 1], ErrorCode.err_NonAbstractMethodCannotHaveEmptyBody);
+			}
 			// Otherwise, leave body null
 		}
-		else
-		{
-			if modifiers.\abstract:
+		else {
+			if modifiers.\abstract {
 				recoverableError(lex[i], ErrorCode.err_AbstractMethodMustHaveEmptyBody);
+			}
 			body = parseBlockOrExtern(ref i);
 		}
 
 		var location = getLocation(modifiers.start ?? start, lex[i - 1]);
-		if name is null:
+		if name is null {
 			return new InvocatorDeclaration(location, modifiers, parameters, body);
+		}
 		return new MethodDeclaration(location, modifiers, name, parameters, body);
 	}
 
@@ -1057,15 +1054,15 @@ public inheritable Parser is ParserBase
 		 *   This is not the only method that parses constant-declarators, due to their
 		 *   underwhelming simplicity.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForClassConstant(this);
 
 		var start = expectr(ref i, TokenType.\const);
 
 		var constants = new List(1);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
 			var value = parseExpression(ref i);
@@ -1104,8 +1101,9 @@ public inheritable Parser is ParserBase
 		 * Additional notes:
 		 *   When extensions are enabled, the body can also be an `__extern` block.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForIterator(this);
 
 		var start = expectr(ref i, TokenType.\iter);
@@ -1153,21 +1151,20 @@ public inheritable Parser is ParserBase
 		 *   TokenType.overloadableBinaryOperator. Note that this category contains
 		 *   '+' and '-' as well, both of which are also unary operators.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForOperator(this);
 
 		var start = expectr(ref i, TokenType.\operator);
 
 		var opToken, op;
-		if accept(i, TokenType.tilde)
-		{
+		if accept(i, TokenType.tilde) {
 			opToken = lex[i];
 			i += 1;
 			op = UnaryOperator.bitwiseNot;
 		}
-		else
-		{
+		else {
 			opToken = expectr(ref i, TokenType.overloadableBinaryOperator);
 			op = typeToBinaryOperator[opToken.type];
 		}
@@ -1180,44 +1177,48 @@ public inheritable Parser is ParserBase
 		);
 		expectr(ref i, TokenType.parenClose);
 
-		if parameters.hasOptionalParameters:
+		if parameters.hasOptionalParameters {
 			recoverableError(parameters.first(@.isOptional), ErrorCode.err_OperatorCannotHaveOptionalParameters);
-		if parameters.hasVariadicParameter:
+		}
+		if parameters.hasVariadicParameter {
 			recoverableError(parameters.first(@.isVariadic), ErrorCode.err_OperatorCannotHaveVariadicParameter);
-		if parameters.hasRefParameters:
+		}
+		if parameters.hasRefParameters {
 			recoverableError(parameters.first(@.isRef), ErrorCode.err_OperatorCannotHaveRefParameters);
+		}
 
 		// If op is UnaryOperator.bitwiseNot, we always expect exactly one parameter.
 		// If it's BinaryOperator.addition or BinaryOperator.subtraction, we expect one or two
 		// (and update to UnaryOperator.plus/negation if we find one parameter).
 		// Otherwise, we always expect exactly two.
-		if op == UnaryOperator.bitwiseNot
-		{
-			if parameters.length != 1:
+		if op == UnaryOperator.bitwiseNot {
+			if parameters.length != 1 {
 				recoverableError(
 					opToken, ErrorCode.err_WrongParameterCountForUnaryOperator,
 					[parameters.length]
 				);
+			}
 		}
-		else if op == BinaryOperator.addition or op == BinaryOperator.subtraction
-		{
-			if parameters.length == 1:
+		else if op == BinaryOperator.addition or op == BinaryOperator.subtraction {
+			if parameters.length == 1 {
 				op = op == BinaryOperator.addition ?
 					UnaryOperator.plus :
 					UnaryOperator.negation;
-			else if parameters.length != 2:
+			}
+			else if parameters.length != 2 {
 				recoverableError(
 					opToken, ErrorCode.err_WrongParameterCountForUnaryOrBinaryOperator,
 					[parameters.length]
 				);
+			}
 		}
-		else
-		{
-			if parameters.length != 2:
+		else {
+			if parameters.length != 2 {
 				recoverableError(
 					opToken, ErrorCode.err_WrongParameterCountForBinaryOperator,
 					[parameters.length]
 				);
+			}
 		}
 
 		var body = parseBlockOrExtern(ref i);
@@ -1261,8 +1262,9 @@ public inheritable Parser is ParserBase
 		 *   enum-set-body:
 		 *     enum-members ','?
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = parseModifiers(ref i);
+		}
 		modifiers.verifyForEnum(this);
 
 		var start = expectr(ref i, TokenType.\enum);
@@ -1279,15 +1281,15 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.curlyOpen);
 
 		var members = new List(5);
-		if not accept(i, TokenType.curlyClose):
-			do
-			{
+		if not accept(i, TokenType.curlyClose) {
+			do {
 				var fieldAnnotations = parseAnnotations(ref i);
 
 				var fieldName = expectr(ref i, TokenType.identifier);
 				var value;
-				if acceptr(ref i, TokenType.assign):
+				if acceptr(ref i, TokenType.assign) {
 					value = parseExpression(ref i);
+				}
 
 				members.add(
 					new EnumMember(
@@ -1297,6 +1299,7 @@ public inheritable Parser is ParserBase
 				);
 			} while acceptr(ref i, TokenType.comma) and
 				not accept(i, TokenType.curlyClose);
+		}
 		members = new NodeList(members);
 
 		var end = expectr(ref i, TokenType.curlyClose);
@@ -1329,8 +1332,9 @@ public inheritable Parser is ParserBase
 		 *     block
 		 *     extern-body
 		 */
-		if acceptExtension(i, ContextualType.extern):
+		if acceptExtension(i, ContextualType.extern) {
 			return parseExternBody(ref i);
+		}
 		return parseBlock(ref i);
 	}
 
@@ -1353,25 +1357,27 @@ public inheritable Parser is ParserBase
 		 *   The only extern-parameter so far is "locals".
 		 */
 		var start = lex[i];
-		if not acceptExtension(i, ContextualType.extern):
+		if not acceptExtension(i, ContextualType.extern) {
 			fatalError(start, ErrorCode.err_x_ExpectedExternKeyword);
+		}
 		i += 1;
 
 		expectr(ref i, TokenType.parenOpen);
 		var externName = expectr(ref i, TokenType.string, ErrorCode.err_x_ExpectedExternMethodName);
 
 		var locals;
-		while acceptr(ref i, TokenType.comma)
-		{
+		while acceptr(ref i, TokenType.comma) {
 			var param = expectr(ref i, TokenType.identifier);
 			expectr(ref i, TokenType.assign);
 			var value = parseExpression(ref i);
 
 			var paramName = param.identifier;
-			if paramName == "locals":
+			if paramName == "locals" {
 				locals = value;
-			else:
+			}
+			else {
 				fatalError(param, ErrorCode.err_x_UnknownExternParameter, [paramName]);
+			}
 		}
 
 		expectr(ref i, TokenType.parenClose);
@@ -1400,8 +1406,9 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.curlyOpen);
 
 		var statements = new List(4);
-		while not accept(i, TokenType.curlyClose):
+		while not accept(i, TokenType.curlyClose) {
 			statements.add(parseStatement(ref i));
+		}
 		statements = new NodeList(statements);
 
 		var end = expectr(ref i, TokenType.curlyClose);
@@ -1426,12 +1433,15 @@ public inheritable Parser is ParserBase
 		 *     local-function-declaration
 		 */
 		var token = lex[i];
-		if token.match(TokenType.\var):
+		if token.match(TokenType.\var) {
 			return parseLocalVariableDeclaration(ref i);
-		if token.match(TokenType.\const):
+		}
+		if token.match(TokenType.\const) {
 			return parseLocalConstantDeclaration(ref i);
-		if token.match(TokenType.\function):
+		}
+		if token.match(TokenType.\function) {
 			return parseLocalFunctionDeclaration(ref i);
+		}
 		return parseEmbeddedStatement(ref i);
 	}
 
@@ -1458,12 +1468,12 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\var);
 
 		var variables = new List(1);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			var value;
-			if acceptr(ref i, TokenType.assign):
+			if acceptr(ref i, TokenType.assign) {
 				value = parseExpression(ref i);
+			}
 
 			var location = value ?
 				getLocation(name, value) :
@@ -1504,8 +1514,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\const);
 
 		var constants = new List(1);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
 			var value = parseExpression(ref i);
@@ -1584,36 +1593,43 @@ public inheritable Parser is ParserBase
 
 		// Try to see if we have a loop label first
 		var loopLabel;
-		if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon)
-		{
+		if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon) {
 			loopLabel = lex[i];
 			i += 2; // skip label and ':'
 		}
 		var token = lex[i];
-		if token.match(TokenType.\for):
+		if token.match(TokenType.\for) {
 			return parseForStatement(ref i, loopLabel);
-		if token.match(TokenType.\while):
+		}
+		if token.match(TokenType.\while) {
 			return parseWhileStatement(ref i, loopLabel);
-		if token.match(TokenType.\do):
+		}
+		if token.match(TokenType.\do) {
 			return parseDoWhileStatement(ref i, loopLabel);
+		}
 		// If there is a label and we didn't find an iteration statement, that's a paddlin'.
 		// I mean, that's an error.
-		if loopLabel:
+		if loopLabel {
 			fatalError(loopLabel, ErrorCode.err_ExpectedLoopAfterLabel);
+		}
 
 		// Other statement kinds!
-		if token.match(TokenType.\if):
+		if token.match(TokenType.\if) {
 			return parseIfStatement(ref i);
-		if jumpStatementTypes.contains(token.type):
+		}
+		if jumpStatementTypes.contains(token.type) {
 			return parseJumpStatement(ref i);
-		if token.match(TokenType.\try):
+		}
+		if token.match(TokenType.\try) {
 			return parseTryStatement(ref i);
-		if token.match(TokenType.\with):
+		}
+		if token.match(TokenType.\with) {
 			return parseWithStatement(ref i);
-		if token.match(TokenType.\new) and accept(i + 1, TokenType.\this, TokenType.\base):
+		}
+		if token.match(TokenType.\new) and accept(i + 1, TokenType.\this, TokenType.\base) {
 			return parseConstructorCall(ref i);
-		if token.match(TokenType.semicolon)
-		{
+		}
+		if token.match(TokenType.semicolon) {
 			i += 1;
 			return new EmptyStatement(getLocation(token, token));
 		}
@@ -1637,8 +1653,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\for);
 
 		var variables = new List(1);
-		do
-		{
+		do {
 			variables.add(expectr(ref i, TokenType.identifier));
 		} while acceptr(ref i, TokenType.comma);
 		variables = new SyntaxList(variables);
@@ -1650,8 +1665,9 @@ public inheritable Parser is ParserBase
 		var body = parseControlStatement(ref i);
 
 		var elseClause;
-		if accept(i, TokenType.\else):
+		if accept(i, TokenType.\else) {
 			elseClause = parseElseClause(ref i);
+		}
 
 		return new ForStatement(
 			getLocation(start, elseClause ?? body),
@@ -1707,8 +1723,9 @@ public inheritable Parser is ParserBase
 		var body = parseBlock(ref i);
 
 		var condition;
-		if acceptr(ref i, TokenType.\while):
+		if acceptr(ref i, TokenType.\while) {
 			condition = parseExpression(ref i);
+		}
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
@@ -1734,8 +1751,9 @@ public inheritable Parser is ParserBase
 		var condition = parseExpression(ref i);
 		var consequence = parseControlStatement(ref i);
 		var alternative;
-		if accept(i, TokenType.\else):
+		if accept(i, TokenType.\else) {
 			alternative = parseElseClause(ref i);
+		}
 
 		return new IfStatement(
 			getLocation(start, alternative ?? consequence),
@@ -1757,8 +1775,9 @@ public inheritable Parser is ParserBase
 		 */
 		expectr(ref i, TokenType.\else);
 
-		if accept(i, TokenType.curlyOpen):
+		if accept(i, TokenType.curlyOpen) {
 			return parseBlock(ref i);
+		}
 
 		acceptr(ref i, TokenType.colon);
 		return parseEmbeddedStatement(ref i);
@@ -1781,16 +1800,21 @@ public inheritable Parser is ParserBase
 		 *     throw-statement
 		 */
 		var token = lex[i];
-		if token.match(TokenType.\return):
+		if token.match(TokenType.\return) {
 			return parseReturnStatement(ref i);
-		if token.match(TokenType.\yield):
+		}
+		if token.match(TokenType.\yield) {
 			return parseYieldStatement(ref i);
-		if token.match(TokenType.\next):
+		}
+		if token.match(TokenType.\next) {
 			return parseNextStatement(ref i);
-		if token.match(TokenType.\break):
+		}
+		if token.match(TokenType.\break) {
 			return parseBreakStatement(ref i);
-		if token.match(TokenType.\throw):
+		}
+		if token.match(TokenType.\throw) {
 			return parseThrowStatement(ref i);
+		}
 		fatalError(token, ErrorCode.err_ExpectedJumpStatement);
 	}
 
@@ -1808,8 +1832,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\return);
 
 		var value = null;
-		if not accept(i, TokenType.semicolon)
-		{
+		if not accept(i, TokenType.semicolon) {
 			value = parseExpression(ref i);
 		}
 
@@ -1852,8 +1875,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\next);
 
 		var label;
-		if accept(i, TokenType.identifier)
-		{
+		if accept(i, TokenType.identifier) {
 			label = lex[i];
 			i += 1;
 		}
@@ -1877,8 +1899,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\break);
 
 		var label;
-		if accept(i, TokenType.identifier)
-		{
+		if accept(i, TokenType.identifier) {
 			label = lex[i];
 			i += 1;
 		}
@@ -1902,8 +1923,9 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\throw);
 
 		var expr;
-		if not accept(i, TokenType.semicolon):
+		if not accept(i, TokenType.semicolon) {
 			expr = parseExpression(ref i);
+		}
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
@@ -1928,8 +1950,9 @@ public inheritable Parser is ParserBase
 		var catchClauses = parseCatchClauses(ref i);
 		var finallyClause = parseFinallyClause(ref i);
 
-		if catchClauses.length == 0 and finallyClause is null:
+		if catchClauses.length == 0 and finallyClause is null {
 			recoverableError(tryClause, ErrorCode.err_TryStatementMustHaveCatchOrFinally);
+		}
 
 		return new TryStatement(
 			getLocation(tryClause, lex[i - 1]),
@@ -1950,8 +1973,9 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.curlyOpen);
 
 		var statements = new List(2);
-		while not accept(i, TokenType.curlyClose):
+		while not accept(i, TokenType.curlyClose) {
 			statements.add(parseStatement(ref i));
+		}
 		statements = new NodeList(statements);
 
 		var end = expectr(ref i, TokenType.curlyClose);
@@ -1974,37 +1998,38 @@ public inheritable Parser is ParserBase
 		 *   generic-catch-clause:
 		 *     'catch' block
 		 */
-		if not accept(i, TokenType.\catch):
+		if not accept(i, TokenType.\catch) {
 			return EmptyLists.node;
+		}
 
 		var clauses = new List(1);
 		var haveGeneric = false;
-		while accept(i, TokenType.\catch)
-		{
+		while accept(i, TokenType.\catch) {
 			var start = lex[i];
 			i += 1;
 
 			var type, variable;
-			if not accept(i, TokenType.curlyOpen)
-			{
+			if not accept(i, TokenType.curlyOpen) {
 				type = parseTypeName(ref i);
-				if acceptr(ref i, TokenType.\in):
+				if acceptr(ref i, TokenType.\in) {
 					variable = expectr(ref i, TokenType.identifier);
+				}
 			}
 
 			expectr(ref i, TokenType.curlyOpen);
 
 			var statements = new List(1);
-			while not accept(i, TokenType.curlyClose):
+			while not accept(i, TokenType.curlyClose) {
 				statements.add(parseStatement(ref i));
+			}
 			statements = new NodeList(statements);
 
 			var end = expectr(ref i, TokenType.curlyClose);
 			var catchClause;
-			if type
-			{
-				if haveGeneric:
+			if type {
+				if haveGeneric {
 					recoverableError(type, ErrorCode.err_SpecificCatchClauseAfterGeneric);
+				}
 				catchClause = new SpecificCatchClause(
 					getLocation(start, end),
 					type,
@@ -2012,10 +2037,10 @@ public inheritable Parser is ParserBase
 					statements
 				);
 			}
-			else
-			{
-				if haveGeneric:
+			else {
+				if haveGeneric {
 					recoverableError(start, ErrorCode.err_MultipleGenericCatchClauses);
+				}
 				haveGeneric = true;
 				catchClause = new GenericCatchClause(
 					getLocation(start, end),
@@ -2034,15 +2059,15 @@ public inheritable Parser is ParserBase
 		 *   finally-clause:
 		 *     'finally' block
 		 */
-		if accept(i, TokenType.\finally)
-		{
+		if accept(i, TokenType.\finally) {
 			var start = lex[i];
 			i += 1;
 			expectr(ref i, TokenType.curlyOpen);
 
 			var statements = new List(1);
-			while not accept(i, TokenType.curlyClose):
+			while not accept(i, TokenType.curlyClose) {
 				statements.add(parseStatement(ref i));
+			}
 			statements = new NodeList(statements);
 
 			var end = expectr(ref i, TokenType.curlyClose);
@@ -2094,8 +2119,9 @@ public inheritable Parser is ParserBase
 		 *     ':' embedded-statement
 		 *     block
 		 */
-		if acceptr(ref i, TokenType.colon):
+		if acceptr(ref i, TokenType.colon) {
 			return parseEmbeddedStatement(ref i);
+		}
 		return parseBlock(ref i);
 	}
 
@@ -2118,16 +2144,18 @@ public inheritable Parser is ParserBase
 		 */
 		var start = expectr(ref i, TokenType.\new);
 		var isBase = acceptr(ref i, TokenType.\base);
-		if not isBase:
+		if not isBase {
 			expectr(ref i, TokenType.\this);
+		}
 
 		expectr(ref i, TokenType.parenOpen);
 		var arguments = parseArgumentList(ref i);
 		expectr(ref i, TokenType.parenClose);
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		if isBase:
+		if isBase {
 			return new BaseConstructorCall(getLocation(start, end), arguments);
+		}
 		return new ThisConstructorCall(getLocation(start, end), arguments);
 	}
 
@@ -2165,20 +2193,24 @@ public inheritable Parser is ParserBase
 		 */
 		var expr = parseExpression(ref i);
 
-		if accept(i, TokenType.assign):
+		if accept(i, TokenType.assign) {
 			// simple-assignment-statement
 			return parseSimpleAssignment(ref i, expr);
-		if accept(i, TokenType.compoundAssign):
+		}
+		if accept(i, TokenType.compoundAssign) {
 			// compound-assignment-statement
 			return parseCompoundAssignment(ref i, expr);
-		if accept(i, TokenType.comma):
+		}
+		if accept(i, TokenType.comma) {
 			// parallel-assignment-statement
 			return parseParallelAssignment(ref i, expr);
+		}
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		if not isStatementExpression(expr):
+		if not isStatementExpression(expr) {
 			recoverableError(expr, ErrorCode.err_InvalidStatementExpression);
+		}
 
 		return new ExpressionStatement(getLocation(expr, end), expr);
 	}
@@ -2243,8 +2275,9 @@ public inheritable Parser is ParserBase
 
 		var targets = new List(2);
 		targets.add(firstTarget);
-		while acceptr(ref i, TokenType.comma):
+		while acceptr(ref i, TokenType.comma) {
 			targets.add(parsePrimaryExpression(ref i));
+		}
 
 		expectr(ref i, TokenType.assign, ErrorCode.err_ExpectedParallelAssignment);
 
@@ -2252,16 +2285,16 @@ public inheritable Parser is ParserBase
 		targets = new NodeList(targets);
 
 		var values = new List(1);
-		do
-		{
+		do {
 			values.add(parseExpression(ref i));
 		} while acceptr(ref i, TokenType.comma);
 		values = new NodeList(values);
 
 		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
 
-		if values.length != 1 and values.length != targets.length:
+		if values.length != 1 and values.length != targets.length {
 			recoverableError(end, ErrorCode.err_ParallelAssignmentWrongValueCount, [targets.length, values.length]);
+		}
 
 		return new ParallelAssignment(
 			getLocation(firstTarget, end),
@@ -2303,29 +2336,27 @@ public inheritable Parser is ParserBase
 		 *   can be used to disable 'ref' arguments, which are not permitted in indexer
 		 *   access expressions.
 		 */
-		if accept(i, endToken)
-		{
+		if accept(i, endToken) {
 			// Note: don't skip the end token
-			if not allowEmpty:
+			if not allowEmpty {
 				recoverableError(lex[i], ErrorCode.err_ExpectedArgument);
+			}
 			return EmptyLists.argument;
 		}
 
 		var arguments = new List(2);
 		var hasRefArguments = false;
-		do
-		{
+		do {
 			var arg;
-			if accept(i, TokenType.\ref)
-			{
-				if not allowRefArgs:
+			if accept(i, TokenType.\ref) {
+				if not allowRefArgs {
 					recoverableError(lex[i], ErrorCode.err_RefArgumentNotAllowed);
+				}
 
 				arg = parseRefExpression(ref i);
 				hasRefArguments = true;
 			}
-			else
-			{
+			else {
 				arg = parseExpression(ref i);
 			}
 			arguments.add(arg);
@@ -2365,8 +2396,9 @@ public inheritable Parser is ParserBase
 		 *     conditional-expression
 		 *     use-in-expression
 		 */
-		if accept(i, TokenType.\use):
+		if accept(i, TokenType.\use) {
 			return parseUseInExpression(ref i);
+		}
 
 		return parseConditionalExpression(ref i);
 	}
@@ -2386,8 +2418,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseNullCoalescingExpression(ref i);
 
-		if acceptr(ref i, TokenType.question)
-		{
+		if acceptr(ref i, TokenType.question) {
 			var truePart = parseExpression(ref i);
 			expectr(ref i, TokenType.colon);
 			var falsePart = parseExpression(ref i);
@@ -2416,8 +2447,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseNullOrExpression(ref i);
 
-		if acceptr(ref i, TokenType.nullCoalescing)
-		{
+		if acceptr(ref i, TokenType.nullCoalescing) {
 			var right = parseNullCoalescingExpression(ref i);
 			left = new NullCoalescingExpression(
 				getLocation(left, right),
@@ -2442,8 +2472,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseConditionalOrExpression(ref i);
 
-		if acceptr(ref i, TokenType.nullOr)
-		{
+		if acceptr(ref i, TokenType.nullOr) {
 			var right = parseNullOrExpression(ref i);
 			left = new NullOrExpression(
 				getLocation(left, right),
@@ -2468,8 +2497,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseConditionalXorExpression(ref i);
 
-		while acceptr(ref i, TokenType.\or)
-		{
+		while acceptr(ref i, TokenType.\or) {
 			var right = parseConditionalXorExpression(ref i);
 			left = new ConditionalOrExpression(
 				getLocation(left, right),
@@ -2494,8 +2522,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseConditionalAndExpression(ref i);
 
-		while acceptr(ref i, TokenType.\xor)
-		{
+		while acceptr(ref i, TokenType.\xor) {
 			var right = parseConditionalAndExpression(ref i);
 			left = new ConditionalXorExpression(
 				getLocation(left, right),
@@ -2520,8 +2547,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseEqualityExpression(ref i);
 
-		while acceptr(ref i, TokenType.\and)
-		{
+		while acceptr(ref i, TokenType.\and) {
 			var right = parseEqualityExpression(ref i);
 			left = new ConditionalAndExpression(
 				getLocation(left, right),
@@ -2550,12 +2576,12 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseRelationalExpression(ref i);
 
-		if acceptr(ref i, TokenType.\is)
-		{
+		if acceptr(ref i, TokenType.\is) {
 			var negated = acceptr(ref i, TokenType.\not);
 			var type;
-			if not acceptr(ref i, TokenType.\null):
+			if not acceptr(ref i, TokenType.\null) {
 				type = parseTypeName(ref i);
+			}
 
 			return new TypeTestExpression(
 				getLocation(left, lex[i - 1]),
@@ -2568,14 +2594,12 @@ public inheritable Parser is ParserBase
 		{
 			var type = lex[i].type;
 			var op;
-			if type == TokenType.\not
-			{
+			if type == TokenType.\not {
 				// not refeq
 				i += 2; // skip 'not refeq'
 				op = BinaryOperator.refInequality;
 			}
-			else
-			{
+			else {
 				i += 1; // skip operator
 				op = typeToBinaryOperator[type];
 			}
@@ -2609,8 +2633,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseShiftExpression(ref i);
 
-		while acceptAny(i, relationalOperators)
-		{
+		while acceptAny(i, relationalOperators) {
 			var op = typeToBinaryOperator[lex[i].type];
 			i += 1;
 
@@ -2640,8 +2663,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseAdditiveExpression(ref i);
 
-		while accept(i, TokenType.shiftLeft, TokenType.shiftRight)
-		{
+		while accept(i, TokenType.shiftLeft, TokenType.shiftRight) {
 			var op = typeToBinaryOperator[lex[i].type];
 			i += 1;
 
@@ -2672,8 +2694,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseXorExpression(ref i);
 
-		while accept(i, TokenType.plus, TokenType.minus, TokenType.pipe)
-		{
+		while accept(i, TokenType.plus, TokenType.minus, TokenType.pipe) {
 			var op = typeToBinaryOperator[lex[i].type];
 			i += 1;
 
@@ -2702,8 +2723,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseMultiplicativeExpression(ref i);
 
-		while acceptr(ref i, TokenType.caret)
-		{
+		while acceptr(ref i, TokenType.caret) {
 			var right = parseMultiplicativeExpression(ref i);
 			left = new BinaryExpression(
 				getLocation(left, right),
@@ -2731,8 +2751,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseConcatenationExpression(ref i);
 
-		while acceptAny(i, multiplicativeOperators)
-		{
+		while acceptAny(i, multiplicativeOperators) {
 			var op = typeToBinaryOperator[lex[i].type];
 			i += 1;
 
@@ -2761,8 +2780,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseUnaryExpression(ref i);
 
-		while acceptr(ref i, TokenType.concatenate)
-		{
+		while acceptr(ref i, TokenType.concatenate) {
 			var right = parseUnaryExpression(ref i);
 			left = new BinaryExpression(
 				getLocation(left, right),
@@ -2788,8 +2806,7 @@ public inheritable Parser is ParserBase
 		 *     '~' unary-expression
 		 *     'not' unary-expression
 		 */
-		if acceptAny(i, unaryOperators)
-		{
+		if acceptAny(i, unaryOperators) {
 			var start = lex[i];
 			var op = typeToUnaryOperator[start.type];
 			i += 1;
@@ -2818,8 +2835,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parseFunctionApplicationExpression(ref i);
 
-		if acceptr(ref i, TokenType.power)
-		{
+		if acceptr(ref i, TokenType.power) {
 			var right = parseExponentialExpression(ref i);
 			left = new BinaryExpression(
 				getLocation(left, right),
@@ -2845,8 +2861,7 @@ public inheritable Parser is ParserBase
 		 */
 		var left = parsePrimaryExpression(ref i);
 
-		if acceptr(ref i, TokenType.funcApplication)
-		{
+		if acceptr(ref i, TokenType.funcApplication) {
 			var right = parseConcatenationExpression(ref i);
 			left = new BinaryExpression(
 				getLocation(left, right),
@@ -2927,20 +2942,16 @@ public inheritable Parser is ParserBase
 		 */
 		var inner = parseAtomicExpression(ref i);
 
-		while acceptAny(i, primaryExpressionStarters)
-		{
-			if acceptr(ref i, TokenType.dot)
-			{
+		while acceptAny(i, primaryExpressionStarters) {
+			if acceptr(ref i, TokenType.dot) {
 				// member-access or iterator-lookup-expression
-				if acceptr(ref i, TokenType.\iter)
-				{
+				if acceptr(ref i, TokenType.\iter) {
 					inner = new IteratorAccessExpression(
 						getLocation(inner, lex[i - 1]),
 						inner
 					);
 				}
-				else
-				{
+				else {
 					var name = expectr(ref i, TokenType.identifier, ErrorCode.err_ExpectedMemberToAccess);
 					inner = new MemberAccessExpression(
 						getLocation(inner, name),
@@ -2948,8 +2959,7 @@ public inheritable Parser is ParserBase
 					);
 				}
 			}
-			else if acceptr(ref i, TokenType.parenOpen)
-			{
+			else if acceptr(ref i, TokenType.parenOpen) {
 				// invocation-expression
 				var arguments = parseArgumentList(ref i);
 				var end = expectr(ref i, TokenType.parenClose);
@@ -2958,8 +2968,7 @@ public inheritable Parser is ParserBase
 					inner, arguments
 				);
 			}
-			else if acceptr(ref i, TokenType.squareOpen)
-			{
+			else if acceptr(ref i, TokenType.squareOpen) {
 				// indexer-access
 				var arguments = parseArgumentList(
 					ref i,
@@ -2973,8 +2982,7 @@ public inheritable Parser is ParserBase
 					inner, arguments
 				);
 			}
-			else
-			{
+			else {
 				// safe-access
 				var chain = parseSafeAccessChain(ref i);
 				inner = new SafeAccessExpression(
@@ -3027,14 +3035,18 @@ public inheritable Parser is ParserBase
 		var start = lex[i];
 
 		var type = start.type;
-		if type == TokenType.\new:
+		if type == TokenType.\new {
 			return parseObjectCreationExpression(ref i);
-		if type == TokenType.squareOpen:
+		}
+		if type == TokenType.squareOpen {
 			return parseListCreationExpression(ref i);
-		if type == TokenType.curlyOpen:
+		}
+		if type == TokenType.curlyOpen {
 			return parseHashCreationExpression(ref i);
-		if type == TokenType.at:
+		}
+		if type == TokenType.at {
 			return parseLambdaExpression(ref i);
+		}
 
 		// Remaining: simple-name, parenthesized-expression, this-access, base-access,
 		//            typeof-expression, global-access, named-constant-expression,
@@ -3042,38 +3054,38 @@ public inheritable Parser is ParserBase
 		// We can always skip the first token of these.
 		i += 1; // See?
 
-		if start.match(TokenType.literal):
+		if start.match(TokenType.literal) {
 			return literalFuncs[type](start);
-		if type == TokenType.identifier
-		{
-			if useExtensions
-			{
-				if start.contextualType == ContextualType.namedConst:
+		}
+		if type == TokenType.identifier{
+			if useExtensions {
+				if start.contextualType == ContextualType.namedConst {
 					return parseNamedConstantExpression(ref i);
-				if start.contextualType == ContextualType.getArgc:
+				}
+				if start.contextualType == ContextualType.getArgc {
 					return new GetArgumentCountExpression(start.location);
+				}
 			}
 			return new SimpleNameExpression(start.location, start);
 		}
-		if type == TokenType.parenOpen
-		{
+		if type == TokenType.parenOpen {
 			var inner = parseExpression(ref i);
 			var end = expectr(ref i, TokenType.parenClose);
 			return new ParenthesizedExpression(getLocation(start, end), inner);
 		}
-		if type == TokenType.\this:
+		if type == TokenType.\this {
 			return new ThisAccessExpression(start.location);
-		if type == TokenType.\base:
+		}
+		if type == TokenType.\base {
 			return new BaseAccessExpression(start.location);
-		if type == TokenType.\typeof
-		{
+		}
+		if type == TokenType.\typeof {
 			expectr(ref i, TokenType.parenOpen);
 			var inner = parseExpression(ref i);
 			var end = expectr(ref i, TokenType.parenClose);
 			return new TypeOfExpression(getLocation(start, end), inner);
 		}
-		if type == TokenType.\global
-		{
+		if type == TokenType.\global {
 			expectr(ref i, TokenType.dot);
 			var end = expectr(ref i, TokenType.identifier);
 			return new GlobalAccessExpression(getLocation(start, end), end);
@@ -3125,20 +3137,17 @@ public inheritable Parser is ParserBase
 		var type = parseTypeName(ref i);
 
 		var arguments, end;
-		if acceptr(ref i, TokenType.parenOpen)
-		{
+		if acceptr(ref i, TokenType.parenOpen) {
 			arguments = parseArgumentList(ref i);
 			end = expectr(ref i, TokenType.parenClose);
 		}
-		else
-		{
+		else {
 			arguments = EmptyLists.argument;
 			expect(i, TokenType.\with, ErrorCode.err_ExpectedConstructorArgumentsOrInitializer);
 		}
 
 		var initializer;
-		if acceptr(ref i, TokenType.\with)
-		{
+		if acceptr(ref i, TokenType.\with) {
 			initializer = parseObjectOrCollectionInitializer(ref i);
 			end = initializer;
 		}
@@ -3159,10 +3168,12 @@ public inheritable Parser is ParserBase
 		 *   This method is called with 'i' just past the 'with' keyword. We should therefore
 		 *   not expect it here.
 		 */
-		if accept(i, TokenType.squareOpen):
+		if accept(i, TokenType.squareOpen) {
 			return parseCollectionInitializer(ref i);
-		else:
+		}
+		else {
 			return parseObjectInitializer(ref i);
+		}
 	}
 
 	private parseObjectInitializer(ref i)
@@ -3183,11 +3194,9 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.curlyOpen);
 
 		var members = EmptyLists.node;
-		if not accept(i, TokenType.curlyClose)
-		{
+		if not accept(i, TokenType.curlyClose) {
 			members = new List(2);
-			do
-			{
+			do {
 				var memberName = expectr(ref i, TokenType.identifier);
 				expectr(ref i, TokenType.colon);
 				var memberValue = parseExpression(ref i);
@@ -3221,13 +3230,11 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.squareOpen);
 
 		var elements = EmptyLists.node;
-		if not accept(i, TokenType.squareClose)
-		{
+		if not accept(i, TokenType.squareClose) {
 			elements = parseElementInitializers(ref i);
 		}
 
-		do
-		{
+		do {
 			var end = expectr(ref i, TokenType.squareClose);
 			return new CollectionInitializer(getLocation(start, end), elements);
 		};
@@ -3244,24 +3251,21 @@ public inheritable Parser is ParserBase
 		 *     '(' expression-list ')'
 		 */
 		var elements = new List(2);
-		do
-		{
+		do {
 			var argStart = lex[i], argEnd;
 			var arguments;
-			if acceptr(ref i, TokenType.parenOpen)
-			{
+			if acceptr(ref i, TokenType.parenOpen) {
 				arguments = new List(2);
-				if not accept(i, TokenType.parenClose):
-					do
-					{
+				if not accept(i, TokenType.parenClose) {
+					do {
 						arguments.add(parseExpression(ref i));
 					} while acceptr(ref i, TokenType.comma) and
 						not accept(i, TokenType.parenClose);
+				}
 
 				argEnd = expectr(ref i, TokenType.parenClose);
 			}
-			else
-			{
+			else {
 				arguments = parseExpression(ref i);
 				argEnd = arguments;
 			}
@@ -3291,16 +3295,14 @@ public inheritable Parser is ParserBase
 		 */
 		var start = expectr(ref i, TokenType.squareOpen), end;
 
-		if accept(i, TokenType.squareClose)
-		{
+		if accept(i, TokenType.squareClose) {
 			end = lex[i];
 			i += 1;
 			return new ListCreationExpression(getLocation(start, end), EmptyLists.node);
 		}
 
 		var values = new List(3);
-		do
-		{
+		do {
 			values.add(parseExpression(ref i));
 		} while acceptr(ref i, TokenType.comma) and
 			not accept(i, TokenType.squareClose);
@@ -3330,16 +3332,14 @@ public inheritable Parser is ParserBase
 		 *     hash-member-list ',' hash-member
 		 */
 		var start = expectr(ref i, TokenType.curlyOpen), end;
-		if accept(i, TokenType.curlyClose)
-		{
+		if accept(i, TokenType.curlyClose) {
 			end = lex[i];
 			i += 1;
 			return new HashCreationExpression(getLocation(start, end), EmptyLists.node);
 		}
 
 		var members = new List(2);
-		do
-		{
+		do {
 			members.add(parseHashMember(ref i));
 		} while acceptr(ref i, TokenType.comma) and
 			not accept(i, TokenType.curlyClose);
@@ -3405,8 +3405,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.at);
 
 		// Is it a lambda-operator-expression?
-		if accept(i, TokenType.lambdaOperator)
-		{
+		if accept(i, TokenType.lambdaOperator) {
 			var op = lex[i];
 			i += 1;
 			return new LambdaOperatorExpression(
@@ -3416,8 +3415,7 @@ public inheritable Parser is ParserBase
 		}
 
 		// How about a lambda-member-expression?
-		if accept(i, TokenType.dot, TokenType.safeAccess)
-		{
+		if accept(i, TokenType.dot, TokenType.safeAccess) {
 			var members = parseSafeAccessChain(ref i);
 			return new LambdaMemberExpression(
 				getLocation(start, lex[i - 1]),
@@ -3425,8 +3423,9 @@ public inheritable Parser is ParserBase
 			);
 		}
 
-		if not acceptAny(i, lambdaStarters):
+		if not acceptAny(i, lambdaStarters) {
 			fatalError(lex[i], ErrorCode.err_InvalidLambdaExpression);
+		}
 
 		// Must be a simple-lambda-expression
 
@@ -3435,10 +3434,12 @@ public inheritable Parser is ParserBase
 
 		// Body
 		var body;
-		if acceptr(ref i, TokenType.fatArrow):
+		if acceptr(ref i, TokenType.fatArrow) {
 			body = parseExpression(ref i);
-		else:
+		}
+		else {
 			body = parseBlock(ref i);
+		}
 
 		return new SimpleLambdaExpression(
 			getLocation(start, body),
@@ -3458,8 +3459,7 @@ public inheritable Parser is ParserBase
 		 */
 		var parameters;
 
-		if accept(i, TokenType.identifier)
-		{
+		if accept(i, TokenType.identifier) {
 			var paramName = lex[i];
 			parameters = new ParameterList([
 				new Parameter(
@@ -3469,13 +3469,11 @@ public inheritable Parser is ParserBase
 			]);
 			i += 1;
 		}
-		else if acceptr(ref i, TokenType.parenOpen)
-		{
+		else if acceptr(ref i, TokenType.parenOpen) {
 			parameters = parseParameterList(ref i);
 			expectr(ref i, TokenType.parenClose);
 		}
-		else
-		{
+		else {
 			parameters = EmptyLists.parameter;
 		}
 
@@ -3520,8 +3518,7 @@ public inheritable Parser is ParserBase
 		 *     '.' 'iter'
 		 */
 		var links = new List(1);
-		while acceptAny(i, safeNodeStarters)
-		{
+		while acceptAny(i, safeNodeStarters) {
 			var start = lex[i];
 			var type = start.type;
 			i += 1;
@@ -3530,19 +3527,16 @@ public inheritable Parser is ParserBase
 				type == TokenType.parenOpenSafe or
 				type == TokenType.squareOpenSafe;
 			var link;
-			if type == TokenType.dot or type == TokenType.safeAccess
-			{
+			if type == TokenType.dot or type == TokenType.safeAccess {
 				// safe-member-access, unsafe-member-access,
 				// safe-iterator-lookup or unsafe-iterator-lookup
-				if acceptr(ref i, TokenType.\iter)
-				{
+				if acceptr(ref i, TokenType.\iter) {
 					link = new SafeIteratorAccess(
 						getLocation(start, lex[i - 1]),
 						isSafe
 					);
 				}
-				else
-				{
+				else {
 					var member = expectr(ref i, TokenType.identifier, ErrorCode.err_ExpectedMemberToAccess);
 					link = new SafeMemberAccess(
 						getLocation(start, member),
@@ -3550,8 +3544,7 @@ public inheritable Parser is ParserBase
 					);
 				}
 			}
-			else if type == TokenType.parenOpen or type == TokenType.parenOpenSafe
-			{
+			else if type == TokenType.parenOpen or type == TokenType.parenOpenSafe {
 				// safe-invocation or unsafe-invocation
 				var arguments = parseArgumentList(ref i);
 				var end = expectr(ref i, TokenType.parenClose);
@@ -3560,8 +3553,7 @@ public inheritable Parser is ParserBase
 					isSafe, arguments
 				);
 			}
-			else
-			{
+			else {
 				// safe-indexer-access or unsafe-indexer-access
 				var arguments = parseArgumentList(
 					ref i,
@@ -3600,8 +3592,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\use);
 
 		var variables = new List(1);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			expectr(ref i, TokenType.assign, ErrorCode.err_UseInVariableWithoutValue);
 			var value = parseExpression(ref i);
@@ -3640,8 +3631,7 @@ public inheritable Parser is ParserBase
 		 *     qualified-name '.' identifier
 		 */
 		var names = new List(3);
-		do
-		{
+		do {
 			var name = expectr(ref i, TokenType.identifier);
 			names.add(name);
 		} while acceptr(ref i, TokenType.dot);
@@ -3663,8 +3653,7 @@ public inheritable Parser is ParserBase
 		 */
 		var start = lex[i];
 		var globalToken;
-		if accept(i, TokenType.\global)
-		{
+		if accept(i, TokenType.\global) {
 			globalToken = start;
 			i += 1;
 			expectr(ref i, TokenType.dot);
@@ -3724,18 +3713,17 @@ public inheritable Parser is ParserBase
 		 *   as expression, we use parseExpression to parse optional-parameter-value, and
 		 *   verify the value later.
 		 */
-		if accept(i, endToken)
-		{
-			if not allowEmpty:
+		if accept(i, endToken) {
+			if not allowEmpty {
 				recoverableError(lex[i], ErrorCode.err_ExpectedParameter);
+			}
 			return EmptyLists.parameter;
 		}
 
 		var hasVariadicParam = false, optionalCount = 0;
 
 		var parameters = new List(2);
-		do
-		{
+		do {
 			var start = lex[i];
 			var isRef = acceptr(ref i, TokenType.\ref);
 			var isVariadic = acceptr(ref i, TokenType.splat);
@@ -3743,22 +3731,21 @@ public inheritable Parser is ParserBase
 			var name = expectr(ref i, TokenType.identifier);
 
 			var defaultValue = null;
-			if acceptr(ref i, TokenType.assign)
-			{
+			if acceptr(ref i, TokenType.assign) {
 				defaultValue = parseExpression(ref i);
 				optionalCount += 1;
 			}
-			else if optionalCount > 0
-			{
+			else if optionalCount > 0 {
 				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
 			}
 
-			if isVariadic
-			{
-				if accept(i, TokenType.comma):
+			if isVariadic {
+				if accept(i, TokenType.comma) {
 					recoverableError(lex[i], ErrorCode.err_VariadicMustBeLastParameter);
-				if hasVariadicParam:
+				}
+				if hasVariadicParam {
 					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
+				}
 				hasVariadicParam = true;
 			}
 
@@ -3820,42 +3807,42 @@ public inheritable Parser is ParserBase
 		 *     'this' '.' identifier
 		 *     '...' 'this' '.' identifier
 		 */
-		if accept(i, TokenType.parenClose):
+		if accept(i, TokenType.parenClose) {
 			return EmptyLists.parameter;
+		}
 
 		var hasVariadicParam = false, optionalCount = 0;
 
 		var parameters = new List(2);
-		do
-		{
+		do {
 			var start = lex[i];
 
 			var isRef = acceptr(ref i, TokenType.\ref);
 			var isVariadic = acceptr(ref i, TokenType.splat);
 
 			var hasThisPrefix = acceptr(ref i, TokenType.\this);
-			if hasThisPrefix:
+			if hasThisPrefix {
 				expectr(ref i, TokenType.dot);
+			}
 
 			var name = expectr(ref i, TokenType.identifier);
 
 			var defaultValue;
-			if acceptr(ref i, TokenType.assign)
-			{
+			if acceptr(ref i, TokenType.assign) {
 				defaultValue = parseExpression(ref i);
 				optionalCount += 1;
 			}
-			else if optionalCount
-			{
+			else if optionalCount {
 				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
 			}
 
-			if isVariadic
-			{
-				if accept(i, TokenType.comma):
+			if isVariadic {
+				if accept(i, TokenType.comma) {
 					recoverableError(lex[i], ErrorCode.err_VariadicMustBeLastParameter);
-				if hasVariadicParam:
+				}
+				if hasVariadicParam {
 					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
+				}
 				hasVariadicParam = true;
 			}
 
@@ -3870,16 +3857,18 @@ public inheritable Parser is ParserBase
 			);
 
 			var param;
-			if hasThisPrefix:
+			if hasThisPrefix {
 				param = new ThisParameter(
 					getLocation(start, lex[i - 1]),
 					name, defaultValue, isVariadic
 				);
-			else:
+			}
+			else {
 				param = new Parameter(
 					getLocation(start, lex[i - 1]),
 					name, defaultValue, isVariadic, isRef
 				);
+			}
 			parameters.add(param);
 		} while acceptr(ref i, TokenType.comma);
 
@@ -3894,21 +3883,25 @@ public inheritable Parser is ParserBase
 	private verifyParameter(errorNode, isRef, isVariadic, defaultValue, hasThisPrefix, optionalCount, hasVariadicParam)
 	{
 			// Variadic, optional and 'this' parameters cannot be passed by reference
-			if isRef
-			{
-				if isVariadic:
+			if isRef {
+				if isVariadic {
 					recoverableError(errorNode, ErrorCode.err_CannotPassVariadicByRef);
-				else if defaultValue:
+				}
+				else if defaultValue {
 					recoverableError(defaultValue, ErrorCode.err_CannotPassOptionalByRef);
-				else if hasThisPrefix:
+				}
+				else if hasThisPrefix {
 					recoverableError(errorNode, ErrorCode.err_CannotPassThisParameterByRef);
+				}
 			}
 			// Variadic parameters cannot have a default value
-			if isVariadic and defaultValue:
+			if isVariadic and defaultValue {
 				recoverableError(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
+			}
 			// Cannot mix optional parameters and variadic parameters in the same parameter list
-			if optionalCount and hasVariadicParam:
+			if optionalCount and hasVariadicParam {
 				recoverableError(errorNode, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
+			}
 	}
 
 	/// Summary: Parses zero or more member modifiers at the specified index.
@@ -3930,15 +3923,16 @@ public inheritable Parser is ParserBase
 		 *   The `verify*` methods on `Modifiers` should be used to
 		 *   verify that the modifiers are correct for the member.
 		 */
-		if modifiers is null:
+		if modifiers is null {
 			modifiers = new Modifiers();
-		else:
+		}
+		else {
 			modifiers.clear();
+		}
 
 		modifiers.annotations = parseAnnotations(ref i);
 
-		while accept(i, TokenType.memberModifier)
-		{
+		while accept(i, TokenType.memberModifier) {
 			var modifier = lex[i];
 			modifierFuncs[modifier.type](this, modifiers, modifier);
 
@@ -3964,15 +3958,15 @@ public inheritable Parser is ParserBase
 	///          This method is called indirectly through {modifierFuncs}.
 	private addModifier(modifiers, token, name, ref field)
 	{
-		if field is not null
-		{
+		if field is not null {
 			recoverableError(token, ErrorCode.err_DuplicateModifier, [name]);
 			return false;
 		}
 
 		field = token;
-		if modifiers.start is null:
+		if modifiers.start is null {
 			modifiers.start = token;
+		}
 
 		return true;
 	}
@@ -3994,20 +3988,19 @@ public inheritable Parser is ParserBase
 	///          This method is called indirectly through {modifierFuncs}.
 	private addAccessibilityModifier(modifiers, token, name, ref field)
 	{
-		if field is not null
-		{
+		if field is not null {
 			recoverableError(token, ErrorCode.err_DuplicateModifier, [name]);
 			return false;
 		}
-		else if modifiers.hasAccessibility
-		{
+		else if modifiers.hasAccessibility {
 			recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
 			return false;
 		}
 
 		field = token;
-		if modifiers.start is null:
+		if modifiers.start is null {
 			modifiers.start = token;
+		}
 
 		return true;
 	}
@@ -4024,8 +4017,9 @@ public inheritable Parser is ParserBase
 		 *     global-annotation
 		 *     global-annotations global-annotation
 		 */
-		if not accept(i, TokenType.exclam):
+		if not accept(i, TokenType.exclam) {
 			return EmptyLists.node;
+		}
 
 		var annotations = new List(1);
 		while accept(i, TokenType.exclam) and
@@ -4057,12 +4051,12 @@ public inheritable Parser is ParserBase
 		 *     member-annotation
 		 *     annotations member-annotation
 		 */
-		if not accept(i, TokenType.exclam):
+		if not accept(i, TokenType.exclam) {
 			return EmptyLists.node;
+		}
 
 		var annotations = new List(1);
-		while accept(i, TokenType.exclam)
-		{
+		while accept(i, TokenType.exclam) {
 			var annotation = parseAnnotationHelper(ref i, false);
 			annotations.add(annotation);
 		}
@@ -4088,8 +4082,7 @@ public inheritable Parser is ParserBase
 		 */
 		var start = expectr(ref i, TokenType.exclam);
 
-		if isGlobal
-		{
+		if isGlobal {
 			expectr(ref i, TokenType.\global);
 			expectr(ref i, TokenType.colon);
 		}
@@ -4099,8 +4092,7 @@ public inheritable Parser is ParserBase
 		var positionalArguments = EmptyLists.argument;
 		var namedArguments = EmptyLists.node;
 
-		if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose)
-		{
+		if acceptr(ref i, TokenType.parenOpen) and not acceptr(ref i, TokenType.parenClose) {
 			parseAnnotationArguments(ref i, ref positionalArguments, ref namedArguments);
 			expectr(ref i, TokenType.parenClose);
 		}
@@ -4135,29 +4127,30 @@ public inheritable Parser is ParserBase
 		var _positionalArguments = new List(1);
 		var _namedArguments = new List(1);
 
-		do
-		{
+		do {
 			var memberName;
-			if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon)
-			{
+			if accept(i, TokenType.identifier) and accept(i + 1, TokenType.colon) {
 				memberName = lex[i];
 				i += 2; // skip name and colon
 			}
 
 			var argument = parseExpression(ref i);
 
-			if not memberName and not _namedArguments.isEmpty:
+			if not memberName and not _namedArguments.isEmpty {
 				recoverableError(argument, ErrorCode.err_PositionalAnnotationArgumentMustComeBeforeNamed);
+			}
 
-			if memberName:
+			if memberName {
 				_namedArguments.add(
 					new MemberInitializer(
 						getLocation(memberName, argument),
 						memberName, argument
 					)
 				);
-			else:
+			}
+			else {
 				_positionalArguments.add(argument);
+			}
 		} while acceptr(ref i, TokenType.comma);
 
 		positionalArguments = new ArgumentList(_positionalArguments);
@@ -4166,40 +4159,31 @@ public inheritable Parser is ParserBase
 
 	// Functions that set modifiers as they are being parsed.
 	private static modifierFuncs = {
-		TokenType.\public: @(parser, modifiers, token)
-		{
+		TokenType.\public: @(parser, modifiers, token) {
 			parser.addAccessibilityModifier(modifiers, token, "public", ref modifiers.\public);
 		},
-		TokenType.\internal: @(parser, modifiers, token)
-		{
+		TokenType.\internal: @(parser, modifiers, token) {
 			parser.addAccessibilityModifier(modifiers, token, "internal", ref modifiers.\internal);
 		},
-		TokenType.\protected: @(parser, modifiers, token)
-		{
+		TokenType.\protected: @(parser, modifiers, token) {
 			parser.addAccessibilityModifier(modifiers, token, "protected", ref modifiers.\protected);
 		},
-		TokenType.\private: @(parser, modifiers, token)
-		{
+		TokenType.\private: @(parser, modifiers, token) {
 			parser.addAccessibilityModifier(modifiers, token, "private", ref modifiers.\private);
 		},
-		TokenType.\static: @(parser, modifiers, token)
-		{
+		TokenType.\static: @(parser, modifiers, token) {
 			parser.addModifier(modifiers, token, "static", ref modifiers.\static);
 		},
-		TokenType.\abstract: @(parser, modifiers, token)
-		{
+		TokenType.\abstract: @(parser, modifiers, token) {
 			parser.addModifier(modifiers, token, "abstract", ref modifiers.\abstract);
 		},
-		TokenType.\inheritable: @(parser, modifiers, token)
-		{
+		TokenType.\inheritable: @(parser, modifiers, token) {
 			parser.addModifier(modifiers, token, "inheritable", ref modifiers.\inheritable);
 		},
-		TokenType.\overridable: @(parser, modifiers, token)
-		{
+		TokenType.\overridable: @(parser, modifiers, token) {
 			parser.addModifier(modifiers, token, "overridable", ref modifiers.\overridable);
 		},
-		TokenType.\override: @(parser, modifiers, token)
-		{
+		TokenType.\override: @(parser, modifiers, token) {
 			parser.addModifier(modifiers, token, "override", ref modifiers.\override);
 		},
 	};

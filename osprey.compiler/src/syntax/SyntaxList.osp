@@ -39,11 +39,13 @@ public inheritable class SyntaxList is Collection
 	private static getItems(items)
 	{
 		// Wrap a single Syntax in a list
-		if items is Syntax:
+		if items is Syntax {
 			items = [items];
+		}
 		// Otherwise, copy the items to a List, if necessary.
-		else if typeof(items) != typeof(List):
+		else if typeof(items) != typeof(List) {
 			items = items.iter.toList();
+		}
 
 		return items;
 	}

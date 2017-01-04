@@ -255,8 +255,7 @@ internal static class LexicalFacts
 	{
 		var longestKeyword = 0;
 		typeToKeyword = new Hash(keywordToType.length);
-		for kw, type in keywordToType
-		{
+		for kw, type in keywordToType {
 			typeToKeyword.add(type, kw);
 			longestKeyword = math.max(longestKeyword, kw.length);
 		}
@@ -265,8 +264,7 @@ internal static class LexicalFacts
 
 		var longestContextual = 0;
 		typeToContextual = new Hash(contextualToType.length);
-		for kw, type in contextualToType
-		{
+		for kw, type in contextualToType {
 			typeToContextual.add(type, kw);
 			longestContextual = math.max(longestContextual, kw.length);
 		}
@@ -302,10 +300,12 @@ internal class PunctInfo
 
 	public accepts(nextChar, ref nextType)
 	{
-		if _nextChars is not null:
+		if _nextChars is not null {
 			return _nextChars.tryGet(nextChar, ref nextType);
-		else:
+		}
+		else {
 			return false;
+		}
 	}
 
 	public static acceptEqual(baseType, equalType)

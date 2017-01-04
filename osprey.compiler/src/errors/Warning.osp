@@ -26,12 +26,13 @@ public inheritable Warning
 	///          {message} could not be converted to a string.
 	public new(source, errorCode, message)
 	{
-		if source is not null
-		{
-			if source is Syntax:
+		if source is not null {
+			if source is Syntax {
 				source = source.location;
-			else if source is not SourceLocation:
+			}
+			else if source is not SourceLocation {
 				throw new ArgumentTypeError("source", [typeof(SourceLocation), typeof(Syntax)]);
+			}
 		}
 		errorCode = int(errorCode);
 		message = string(message);
@@ -57,8 +58,7 @@ public inheritable Warning
 
 	override toString()
 	{
-		if source
-		{
+		if source {
 			var column;
 			var line = source.getLineNumber(1, ref column);
 			return "Warning in {0} (ln {1}, col {2}): {3}"

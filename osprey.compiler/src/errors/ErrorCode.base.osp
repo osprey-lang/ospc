@@ -37,8 +37,7 @@ public static class ErrorCode
 		// of error codes.
 
 		var i = 0;
-		while not parser.accept(i, TokenType.eof)
-		{
+		while not parser.accept(i, TokenType.eof) {
 			var code = parser.expectr(ref i, TokenType.int).literalValue;
 			parser.expectr(ref i, TokenType.identifier);
 
@@ -60,8 +59,9 @@ public static class ErrorCode
 	/// Returns: A string containing a message for the error code.
 	public static getMessage(errorCode)
 	{
-		if errorMessages is null:
+		if errorMessages is null {
 			loadMessages();
+		}
 
 		var message = fallbackMessage;
 		errorMessages.tryGet(errorCode, ref message);

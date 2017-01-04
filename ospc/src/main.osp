@@ -12,8 +12,7 @@ internal const continuationLabel = ".. ";
 /// Param args: Command-line arguments passed to the application.
 public function main(args)
 {
-	if not args.isEmpty
-	{
+	if not args.isEmpty {
 		function parse(file)
 		{
 			var p = new Parser(SourceFile.open(file), ParseFlags.useExtensions);
@@ -29,49 +28,40 @@ public function main(args)
 		ParseMode.document: "D> ",
 	};
 	var parsers = {
-		ParseMode.expression: @parser
-		{
+		ParseMode.expression: @parser {
 			var i = 0;
 			var expr = parser.parseExpression(ref i);
 			parser.expect(i, TokenType.eof);
 			return expr;
 		},
-		ParseMode.statement: @parser
-		{
+		ParseMode.statement: @parser {
 			var i = 0;
 			var stmt = parser.parseStatement(ref i);
 			parser.expect(i, TokenType.eof);
 			return stmt;
 		},
-		ParseMode.document: @parser
-		{
+		ParseMode.document: @parser {
 			return parser.parseDocument();
 		}
 	};
 	var commands = {
-		"!clear": @(ref mode, ref multiLine)
-		{
+		"!clear": @(ref mode, ref multiLine) {
 			Console.clear();
 		},
-		"!expr": @(ref mode, ref multiLine)
-		{
+		"!expr": @(ref mode, ref multiLine) {
 			mode = ParseMode.expression;
 		},
-		"!stmt": @(ref mode, ref multiLine)
-		{
+		"!stmt": @(ref mode, ref multiLine) {
 			mode = ParseMode.statement;
 		},
-		"!doc": @(ref mode, ref multiLine)
-		{
+		"!doc": @(ref mode, ref multiLine) {
 			mode = ParseMode.document;
 		},
-		"!+": @(ref mode, ref multiLine)
-		{
+		"!+": @(ref mode, ref multiLine) {
 			multiLine = true;
 			print("Entering multi-line mode");
 		},
-		"!1": @(ref mode, ref multiLine)
-		{
+		"!1": @(ref mode, ref multiLine) {
 			multiLine = false;
 			print("Entering single-line mode");
 		},
@@ -89,11 +79,11 @@ internal function mainLoop(parsers, labels, commands)
 
 	writeLabel(labels[mode]);
 	var input = "";
-	while true
-	{
+	while true {
 		var line = Console.readLine();
-		if not line:
+		if not line {
 			break;
+		}
 
 		err.clearAll();
 
@@ -103,26 +93,22 @@ internal function mainLoop(parsers, labels, commands)
 		{
 			command(ref mode, ref multiLine);
 		}
-		else
-		{
-			if multiLine
-			{
-				if line.isEmpty
-				{
+		else {
+			if multiLine {
+				if line.isEmpty {
 					// Commit!
 					parseAndPrint(input, parsers[mode], err);
 					input = "";
 				}
-				else
-				{
+				else {
 					input ::= Env.newline :: line;
 				}
 			}
-			else
-			{
+			else {
 				line = line.trim();
-				if not line.isEmpty:
+				if not line.isEmpty {
 					parseAndPrint(line, parsers[mode], err);
+				}
 			}
 		}
 
@@ -142,30 +128,25 @@ internal function parseAndPrint(text, parseFunc, err)
 	var file = SourceFile.createAnon(text, "<stdin>");
 	var parser = new Parser(file, ParseFlags.useExtensions, err);
 	var node;
-	try
-	{
+	try {
 		// Make sure errors and warnings become red
 		Console.textColor = ConsoleColor.red;
 
 		node = parseFunc(parser);
 	}
-	catch CompileTimeError in e
-	{
+	catch CompileTimeError in e {
 		err.addError(e);
 		node = null;
 	}
-	catch Error in e
-	{
+	catch Error in e {
 		print(e);
 		node = null;
 	}
-	finally
-	{
+	finally {
 		Console.resetColors();
 	}
 
-	if node and not err.hasErrors
-	{
+	if node and not err.hasErrors {
 		SyntaxPrinter.print(node);
 	}
 }
@@ -183,13 +164,11 @@ internal static class SyntaxPrinter
 
 	public static print(syntax)
 	{
-		try
-		{
+		try {
 			Console.setColors -> printColors;
 			printInner(syntax, "  ");
 		}
-		finally
-		{
+		finally {
 			Console.resetColors();
 		}
 	}
@@ -206,62 +185,59 @@ internal static class SyntaxPrinter
 			.concat(type.getFields(publicInstance))
 			.sortBy(@.name);
 
-		for member in members
-		{
+		for member in members {
 			var memberName = member.name;
-			if ignoreMembers.contains(memberName):
+			if ignoreMembers.contains(memberName) {
 				next;
+			}
 			if member.kind == MemberKind.property and
-				(not member.canRead or member.canWrite):
+				(not member.canRead or member.canWrite)
+			{
 				next;
+			}
 
 			Console.write(indent);
 			writeFieldName(memberName);
 			Console.write(": ");
 
 			var value;
-			if member.kind == MemberKind.property:
+			if member.kind == MemberKind.property {
 				value = member.getterMethod.invoke(syntax, null);
-			else:
+			}
+			else {
 				value = member.getValue(syntax);
+			}
 			printFieldValue(value, indent);
 		}
 	}
 
 	private static printFieldValue(value, indent)
 	{
-		if value is Token
-		{
+		if value is Token {
 			writeToken(value);
 			Console.writeLine();
 		}
-		else if value is Syntax
-		{
+		else if value is Syntax {
 			printInner(value, indent :: "  ");
 		}
-		else if value is SyntaxList
-		{
+		else if value is SyntaxList {
 			writeTypeName(typeof(value));
 			Console.writeLine("[{0}]", [value.length]);
 			indent ::= "  ";
-			for syn in value
-			{
+			for syn in value {
 				Console.write(indent);
 				printFieldValue(syn, indent);
 			}
 		}
-		else if value is Enum
-		{
+		else if value is Enum {
 			writeEnumValue(value);
 			Console.writeLine();
 		}
-		else if value is null
-		{
+		else if value is null {
 			writeNull();
 			Console.writeLine();
 		}
-		else
-		{
+		else {
 			Console.write(value);
 			Console.write(" (");
 			writeTypeName(typeof(value));
@@ -285,14 +261,12 @@ internal static class SyntaxPrinter
 
 	private static writeToken(token)
 	{
-		if token is Identifier
-		{
+		if token is Identifier {
 			Console.setColors -> tokenColors;
 			Console.write(token.identifier);
 			Console.setColors -> printColors;
 		}
-		else
-		{
+		else {
 			Console.write(token);
 		}
 	}

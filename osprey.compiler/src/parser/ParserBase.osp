@@ -55,22 +55,23 @@ public abstract class ParserBase
 	///          {errorManager} is not null or an {ErrorManager}.
 	public new(source, flags, errorManager)
 	{
-		if flags is not ParseFlags:
+		if flags is not ParseFlags {
 			throw new ArgumentTypeError("flags", typeof(ParseFlags));
+		}
 
 		// Check this first so that we can initialize the lexer with a proper ErrorManager.
-		if errorManager is null:
+		if errorManager is null {
 			errorManager = new ParserErrorManager();
-		else if errorManager is not ErrorManager:
+		}
+		else if errorManager is not ErrorManager {
 			throw new ArgumentTypeError("errorManager", typeof(ErrorManager));
+		}
 
-		if source is Lexer
-		{
+		if source is Lexer {
 			this.file = source.sourceFile;
 			this.lex = source;
 		}
-		else if source is SourceFile
-		{
+		else if source is SourceFile {
 			this.file = source;
 			this.lex = new Lexer(
 				source,
@@ -80,8 +81,7 @@ public abstract class ParserBase
 				errorManager
 			);
 		}
-		else
-		{
+		else {
 			throw new ArgumentTypeError("source", [typeof(Lexer), typeof(SourceFile)]);
 		}
 
@@ -168,8 +168,7 @@ public abstract class ParserBase
 	/// Returns: True if the token matches the specified type; otherwise, false.
 	public acceptr(ref i, type)
 	{
-		if lex[i].match(type)
-		{
+		if lex[i].match(type) {
 			i += 1;
 			return true;
 		}
@@ -184,8 +183,7 @@ public abstract class ParserBase
 	public acceptr(ref i, t1, t2)
 	{
 		var tok = lex[i];
-		if tok.match(t1) or tok.match(t2)
-		{
+		if tok.match(t1) or tok.match(t2) {
 			i += 1;
 			return true;
 		}
@@ -200,8 +198,7 @@ public abstract class ParserBase
 	public acceptr(ref i, t1, t2, t3)
 	{
 		var tok = lex[i];
-		if tok.match(t1) or tok.match(t2) or tok.match(t3)
-		{
+		if tok.match(t1) or tok.match(t2) or tok.match(t3) {
 			i += 1;
 			return true;
 		}
@@ -215,8 +212,7 @@ public abstract class ParserBase
 	/// Returns: True if the token matches any of the specified types; otherwise, false.
 	public acceptrAny(ref i, types)
 	{
-		if types.any(lex[i].match)
-		{
+		if types.any(lex[i].match) {
 			i += 1;
 			return true;
 		}
@@ -234,8 +230,9 @@ public abstract class ParserBase
 	///          This method never matches escaped identifiers.
 	public acceptContextual(i, keyword)
 	{
-		if lex[i].contextualType == keyword:
+		if lex[i].contextualType == keyword {
 			return true;
+		}
 		return false;
 	}
 
@@ -251,8 +248,7 @@ public abstract class ParserBase
 	///          This method never matches escaped identifiers.
 	public acceptrContextual(ref i, keyword)
 	{
-		if lex[i].contextualType == keyword
-		{
+		if lex[i].contextualType == keyword {
 			i += 1;
 			return true;
 		}
@@ -308,10 +304,10 @@ public abstract class ParserBase
 	public expect(i, type, errorCode = null)
 	{
 		var tok = lex[i];
-		if not tok.match(type)
-		{
-			if errorCode is null:
+		if not tok.match(type) {
+			if errorCode is null {
 				errorCode = ErrorCode.err_UnexpectedToken;
+			}
 			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(
 				errorCode, tok, type,
@@ -331,10 +327,10 @@ public abstract class ParserBase
 	public expectr(ref i, type, errorCode = null)
 	{
 		var tok = lex[i];
-		if not tok.match(type)
-		{
-			if errorCode is null:
+		if not tok.match(type) {
+			if errorCode is null {
 				errorCode = ErrorCode.err_UnexpectedToken;
+			}
 			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(
 				errorCode, tok, type,
@@ -358,19 +354,25 @@ public abstract class ParserBase
 	///          not be converted to an Int.
 	public getLocation(start, end)
 	{
-		if start is Syntax:
+		if start is Syntax {
 			start = start.location.startIndex;
-		else if start is SourceLocation:
+		}
+		else if start is SourceLocation {
 			start = start.startIndex;
-		else:
+		}
+		else {
 			start = int(start);
+		}
 
-		if end is Syntax:
+		if end is Syntax {
 			end = end.location.endIndex;
-		else if end is SourceLocation:
+		}
+		else if end is SourceLocation {
 			end = end.endIndex;
-		else:
+		}
+		else {
 			end = int(end);
+		}
 
 		return new SourceLocation(file, start, end);
 	}

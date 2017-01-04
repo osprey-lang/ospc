@@ -22,8 +22,9 @@ public inheritable NodeList is SyntaxList
 	/// Param arg:     An object that is passed to the `accept` method of each node.
 	public acceptAll(visitor, arg)
 	{
-		for node in collection:
+		for node in collection {
 			node.accept(visitor, arg);
+		}
 	}
 
 	/// Summary: Calls `accept` on each {ParseNode} in the collection, passing the specified
@@ -39,11 +40,13 @@ public inheritable NodeList is SyntaxList
 	///          Otherwise, returns null.
 	public acceptAll(visitor, arg, updateArg)
 	{
-		if not updateArg:
+		if not updateArg {
 			return acceptAll(visitor, arg);
+		}
 
-		for node in collection:
+		for node in collection {
 			arg = node.accept(visitor, arg);
+		}
 
 		return arg;
 	}

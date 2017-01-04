@@ -29,8 +29,9 @@ public inheritable ParameterList is NodeList
 	/// Summary: Gets the total number of optional parameters in this parameter list.
 	public get optionalParameterCount
 	{
-		if _optionalParameterCount is null:
+		if _optionalParameterCount is null {
 			_optionalParameterCount = count(@.isOptional);
+		}
 		return _optionalParameterCount;
 	}
 
@@ -42,8 +43,9 @@ public inheritable ParameterList is NodeList
 	/// Remarks: Variadic parameters can only appear at the end of the parameter list.
 	public get hasVariadicParameter
 	{
-		if _hasVariadicParameter is null:
+		if _hasVariadicParameter is null {
 			_hasVariadicParameter = any(@.isVariadic);
+		}
 		return _hasVariadicParameter;
 	}
 
@@ -51,8 +53,9 @@ public inheritable ParameterList is NodeList
 	/// Summary: Gets the total number of ref parameters in this parameter list.
 	public get refParameterCount
 	{
-		if _refParameterCount is null:
+		if _refParameterCount is null {
 			_refParameterCount = count(@.isRef);
+		}
 		return _refParameterCount;
 	}
 

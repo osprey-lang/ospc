@@ -55,12 +55,13 @@ public inheritable CompileTimeError is Error
 	{
 		new base(message ?? defaultMessage, innerError);
 
-		if source is not null
-		{
-			if source is Syntax:
+		if source is not null {
+			if source is Syntax {
 				source = source.location;
-			else if source is not SourceLocation:
+			}
+			else if source is not SourceLocation {
 				throw new ArgumentTypeError("source", [typeof(SourceLocation), typeof(Syntax)]);
+			}
 		}
 
 		this._source = source;

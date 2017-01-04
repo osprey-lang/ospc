@@ -28,8 +28,9 @@ public abstract class ParseNode is Syntax
 	///          that the method can be called with optional parameters.
 	protected claim(node)
 	{
-		if node is not null:
+		if node is not null {
 			node._parent = this;
+		}
 		return node;
 	}
 
@@ -43,8 +44,9 @@ public abstract class ParseNode is Syntax
 	///          removed from the collection first.
 	protected claimAll(nodes)
 	{
-		for node in nodes:
+		for node in nodes {
 			node._parent = this;
+		}
 		return nodes;
 	}
 
@@ -58,10 +60,10 @@ public abstract class ParseNode is Syntax
 	public findNearest(predicate)
 	{
 		var ancestor = _parent;
-		while ancestor is not null
-		{
-			if predicate(ancestor):
+		while ancestor is not null {
+			if predicate(ancestor) {
 				return ancestor;
+			}
 			ancestor = ancestor._parent;
 		}
 		return null;
@@ -77,10 +79,10 @@ public abstract class ParseNode is Syntax
 	public findNearestOfType(type)
 	{
 		var ancestor = _parent;
-		while ancestor is not null
-		{
-			if type.isInstance(ancestor):
+		while ancestor is not null {
+			if type.isInstance(ancestor) {
 				return ancestor;
+			}
 			ancestor = ancestor._parent;
 		}
 		return null;
