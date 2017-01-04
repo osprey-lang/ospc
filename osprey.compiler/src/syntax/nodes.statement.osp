@@ -401,7 +401,7 @@ public class WithStatement is Statement
 	}
 }
 
-public class SimpleAssignment is Expression
+public class SimpleAssignment is Statement
 {
 	public new(location, target, value)
 	{
