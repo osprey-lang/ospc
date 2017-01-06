@@ -1648,7 +1648,7 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   for-statement:
-		 *     'for' identifier-list 'in' expression control-statement else-clause?
+		 *     'for' identifier-list 'in' expression block else-clause?
 		 */
 		var start = expectr(ref i, TokenType.\for);
 
@@ -1662,7 +1662,7 @@ public inheritable Parser is ParserBase
 
 		var expression = parseExpression(ref i);
 
-		var body = parseControlStatement(ref i);
+		var body = parseBlock(ref i);
 
 		var elseClause;
 		if accept(i, TokenType.\else) {
@@ -1690,13 +1690,13 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   while-statement:
-		 *     'while' expression control-statement
+		 *     'while' expression block
 		 */
 		var start = expectr(ref i, TokenType.\while);
 
 		var condition = parseExpression(ref i);
 
-		var body = parseControlStatement(ref i);
+		var body = parseBlock(ref i);
 
 		return new WhileStatement(
 			getLocation(start, body),
@@ -1744,12 +1744,12 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   if-statement:
-		 *     'if' expression control-statement else-clause?
+		 *     'if' expression block else-clause?
 		 */
 		var start = expectr(ref i, TokenType.\if);
 
 		var condition = parseExpression(ref i);
-		var consequence = parseControlStatement(ref i);
+		var consequence = parseBlock(ref i);
 		var alternative;
 		if accept(i, TokenType.\else) {
 			alternative = parseElseClause(ref i);
@@ -1770,17 +1770,16 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   else-clause:
-		 *     'else' ':'? embedded-statement
+		 *     'else' if-statement
 		 *     'else' block
 		 */
 		expectr(ref i, TokenType.\else);
 
-		if accept(i, TokenType.curlyOpen) {
-			return parseBlock(ref i);
+		if accept(i, TokenType.\if) {
+			return parseIfStatement(ref i);
 		}
 
-		acceptr(ref i, TokenType.colon);
-		return parseEmbeddedStatement(ref i);
+		return parseBlock(ref i);
 	}
 
 	/// Summary: Parses a jump statement (`return`, `yield`, `next`, `break` or `throw`)
@@ -2087,7 +2086,7 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   with-statement:
-		 *     'with' identifier '=' expression control-statement
+		 *     'with' identifier '=' expression block
 		 */
 		var start = expectr(ref i, TokenType.\with);
 
@@ -2095,7 +2094,7 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.assign, ErrorCode.err_WithStatementVariableWithoutValue);
 		var expression = parseExpression(ref i);
 
-		var body = parseControlStatement(ref i);
+		var body = parseBlock(ref i);
 
 		return new WithStatement(
 			getLocation(start, body),
@@ -2103,26 +2102,6 @@ public inheritable Parser is ParserBase
 			expression,
 			body
 		);
-	}
-
-	/// Summary: Parses a control statement at the specified token index. A control
-	///          statement is the body of another statement, and consists of either
-	///          a block, or a colon followed by an embedded statement.
-	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
-	///          the index of the token that immediately follows the returned parse tree.
-	/// Returns: A {Statement} that represents the control statement.
-	/// Remarks: This method parses the grammar of the 'control-statement' nonterminal.
-	public parseControlStatement(ref i)
-	{
-		/* Syntax:
-		 *   control-statement:
-		 *     ':' embedded-statement
-		 *     block
-		 */
-		if acceptr(ref i, TokenType.colon) {
-			return parseEmbeddedStatement(ref i);
-		}
-		return parseBlock(ref i);
 	}
 
 	/// Summary: Parses a constructor call at the specified token index.

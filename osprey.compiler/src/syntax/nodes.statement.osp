@@ -74,12 +74,13 @@ public class IfStatement is Statement
 	public get condition => _condition;
 
 	private _consequence;
-	/// Summary: Gets a {Statement} that contains the body of the if statement.
+	/// Summary: Gets a {Block} that contains the body of the if statement.
 	public get consequence => _consequence;
 
 	private _alternative;
 	/// Summary: Gets a {Statement} that contains the else clause of the if statement,
 	///          or null if it has none.
+	/// Remarks: The body of an else clause is either an {IfStatement} or a {Block}.
 	public get alternative => _alternative;
 
 	override accept(visitor, arg)
@@ -104,7 +105,7 @@ public abstract class IterationStatement is Statement
 	public get label => _label;
 
 	private _body;
-	/// Summary: Gets a {Statement} that contains the body of the iteration statement.
+	/// Summary: Gets a {Block} that contains the body of the iteration statement.
 	public get body => _body;
 
 	abstract override accept(visitor, arg);
@@ -134,6 +135,7 @@ public class ForStatement is IterationStatement
 	private _elseClause;
 	/// Summary: Gets a {Statement} containing the else clause of the for statement,
 	///          or null if it has none.
+	/// Remarks: The body of an else clause is either an {IfStatement} or a {Block}.
 	public get elseClause => _elseClause;
 
 	override accept(visitor, arg)
@@ -392,7 +394,7 @@ public class WithStatement is Statement
 	public get expression => _expression;
 
 	private _body;
-	/// Summary: Gets the {Statement} that is the body of the with statement.
+	/// Summary: Gets the {Block} that is the body of the with statement.
 	public get body => _body;
 
 	override accept(visitor, arg)
