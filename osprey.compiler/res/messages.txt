@@ -121,6 +121,7 @@
 1808 err_ExpectedStatementTerminator = "Expected a semicolon (';') at the end of the statement.";
 1809 err_ConstantWithoutValue = "Expected '=' followed by a constant value. A constant cannot be declared without a value.";
 1811 err_WithStatementVariableWithoutValue = "Expected '=' followed by an expression. A 'with' statement variable must be assigned a value.";
+1812 err_InvalidElseClause = "The body of an 'else' clause must be a block or an 'if' statement.";
 
 // Expression errors
 1851 err_ExpectedPrimaryExpression = "Expected an expression; got {0}.";

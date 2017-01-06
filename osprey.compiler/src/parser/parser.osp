@@ -1778,8 +1778,11 @@ public inheritable Parser is ParserBase
 		if accept(i, TokenType.\if) {
 			return parseIfStatement(ref i);
 		}
+		if accept(i, TokenType.curlyOpen) {
+			return parseBlock(ref i);
+		}
 
-		return parseBlock(ref i);
+		fatalError(lex[i], ErrorCode.err_InvalidElseClause);
 	}
 
 	/// Summary: Parses a jump statement (`return`, `yield`, `next`, `break` or `throw`)
