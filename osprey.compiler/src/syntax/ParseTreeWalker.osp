@@ -236,11 +236,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitEmptyStatement(stmt, arg)
-	{
-		return null;
-	}
-
 	overridable override visitExpressionStatement(stmt, arg)
 	{
 		stmt.expression.accept(this, arg);

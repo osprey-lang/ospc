@@ -1571,7 +1571,6 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   embedded-statement:
-		 *     empty-statement
 		 *     expression-statement
 		 *     if-statement
 		 *     iteration-statement
@@ -1628,10 +1627,6 @@ public inheritable Parser is ParserBase
 		}
 		if token.match(TokenType.\new) and accept(i + 1, TokenType.\this, TokenType.\base) {
 			return parseConstructorCall(ref i);
-		}
-		if token.match(TokenType.semicolon) {
-			i += 1;
-			return new EmptyStatement(getLocation(token, token));
 		}
 
 		return parseExpressionStatement(ref i);
@@ -2300,8 +2295,12 @@ public inheritable Parser is ParserBase
 	///          is true.
 	/// Returns: An {ArgumentList} from the tokens at the starting index.
 	/// Remarks: This method parses the grammar of the 'argument-list' nonterminal.
-	public parseArgumentList(ref i, endToken = TokenType.parenClose,
-		allowEmpty = true, allowRefArgs = true)
+	public parseArgumentList(
+		ref i,
+		endToken = TokenType.parenClose,
+		allowEmpty = true,
+		allowRefArgs = true
+	)
 	{
 		/* Syntax:
 		 *   argument-list:

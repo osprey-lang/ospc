@@ -79,8 +79,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitDoWhileStatement(stmt, arg);
 
-	public abstract visitEmptyStatement(stmt, arg);
-
 	public abstract visitExpressionStatement(stmt, arg);
 
 	public abstract visitForStatement(stmt, arg);

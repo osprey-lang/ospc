@@ -26,19 +26,6 @@ public inheritable Block is Statement
 	}
 }
 
-public class EmptyStatement is Statement
-{
-	public new(location)
-	{
-		new base(location);
-	}
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitEmptyStatement(this, arg);
-	}
-}
-
 public class ExpressionStatement is Statement
 {
 	public new(location, expression)
