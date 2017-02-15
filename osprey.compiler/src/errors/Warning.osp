@@ -58,7 +58,7 @@ public inheritable Warning
 
 	override toString()
 	{
-		if source {
+		if source is not null {
 			var column;
 			var line = source.getLineNumber(1, ref column);
 			return "Warning in {0} (ln {1}, col {2}): {3}"

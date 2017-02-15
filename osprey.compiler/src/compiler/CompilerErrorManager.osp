@@ -23,7 +23,7 @@ public class CompilerErrorManager is ErrorManager
 	private printMessage(kind, message)
 	{
 		var code = message.errorCode.toString("D4");
-		if message.source {
+		if message.source is not null {
 			var loc = message.source;
 			var col;
 			var line = loc.getLineNumber(1, ref col);
