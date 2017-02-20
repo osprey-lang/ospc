@@ -22,8 +22,7 @@ public class UseFileDirective is UseDirective
 	}
 
 	private _fileName;
-	/// Summary: Gets a string {LiteralToken} containing the name of the file
-	///          that is referenced by this directive.
+	/// Summary: Gets a string {LiteralToken} containing the name of the referenced file.
 	public get fileName => _fileName;
 
 	override accept(visitor, arg)
@@ -42,8 +41,7 @@ public class UseNamespaceDirective is UseDirective
 	}
 
 	private _name;
-	/// Summary: Gets the {QualifiedName} of the namespace that is imported
-	///          by this directive.
+	/// Summary: Gets the {QualifiedName} of the namespace whose members are imported.
 	public get name => _name;
 
 	override accept(visitor, arg)
@@ -52,27 +50,78 @@ public class UseNamespaceDirective is UseDirective
 	}
 }
 
-public class UseAliasDirective is UseDirective
+public class UseSingleMemberDirective is UseDirective
 {
-	public new(location, alias, fullName)
+	public new(location, fullName, alias)
 	{
 		new base(location);
 
-		this._alias = alias;
 		this._fullName = fullName;
+		this._alias = alias;
 	}
 
-	private _alias;
-	/// Summary: Gets an {Identifier} corresponding to the alias name introduced
-	///          by this directive.
-	public get alias => _alias;
-
 	private _fullName;
-	/// Summary: Gets the {QualifiedName} of the member that is aliased.
+	/// Summary: Gets the {QualifiedName} of the member that is imported.
 	public get fullName => _fullName;
+
+	private _alias;
+	/// Summary: Gets an {Identifier} containing the alias under which the member is imported,
+	///          or null to use the member's original name.
+	public get alias => _alias;
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitUseAliasDirective(this, arg);
+		return visitor.visitUseSingleMemberDirective(this, arg);
+	}
+}
+
+public class UseMemberListDirective is UseDirective
+{
+	public new(location, parentName, importedMembers)
+	{
+		new base(location);
+
+		this._parentName = parentName;
+		this._importedMembers = claimAll(importedMembers);
+	}
+
+	private _parentName;
+	/// Summary: Gets the {QualifiedName} of the namespace or type from which multiple members
+	///          are imported.
+	public get parentName => _parentName;
+
+	private _importedMembers;
+	/// Summary: Gets a {NodeList} containing {ImportedMember} instances for each imported
+	///          member.
+	public get importedMembers => _importedMembers;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitUseMemberListDirective(this, arg);
+	}
+}
+
+public class ImportedMember is ParseNode
+{
+	public new(location, memberName, alias)
+	{
+		new base(location);
+
+		this._memberName = memberName;
+		this._alias = alias;
+	}
+
+	private _memberName;
+	/// Summary: Gets an {Identifier} containing the name of the member that is imported.
+	public get memberName => _memberName;
+
+	private _alias;
+	/// Summary: Gets an {Identifier} containing the alias under which the member is imported,
+	///          or null to use the member's original name.
+	public get alias => _alias;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitImportedMember(this, arg);
 	}
 }

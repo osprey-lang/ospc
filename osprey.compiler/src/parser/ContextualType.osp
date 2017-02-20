@@ -6,10 +6,12 @@ public enum ContextualType
 {
 	/// Summary: The token is not a keyword in any context.
 	none = 0,
+	/// Summary: as
+	as = 1,
 	/// Summary: get
-	get = 1,
+	get = 2,
 	/// Summary: set
-	set = 2,
+	set = 3,
 
 	// Extension keywords use values above 100, so as to reserve
 	// some spaces for future standard contextual keywords.

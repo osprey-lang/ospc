@@ -73,6 +73,8 @@ public static class ErrorCode
 	public const err_WrongParameterCountForBinaryOperator = 1675;
 	public const err_WrongParameterCountForUnaryOrBinaryOperator = 1676;
 	public const err_InvalidUseDirective = 1681;
+	public const err_InvalidUseMemberDirective = 1682;
+	public const err_InvalidUseMemberDirectiveAfterDot = 1683;
 	public const err_VariadicParameterCannotBeOptional = 1701;
 	public const err_VariadicMustBeLastParameter = 1702;
 	public const err_CannotMixVariadicAndOptionalParameters = 1703;

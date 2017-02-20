@@ -21,17 +21,28 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitUseAliasDirective(directive, arg)
-	{
-		return null;
-	}
-
 	overridable override visitUseFileDirective(directive, arg)
 	{
 		return null;
 	}
 
 	overridable override visitUseNamespaceDirective(directive, arg)
+	{
+		return null;
+	}
+
+	overridable override visitUseSingleMemberDirective(directive, arg)
+	{
+		return null;
+	}
+
+	overridable override visitUseMemberListDirective(directive, arg)
+	{
+		directive.importedMembers.acceptAll(this, arg);
+		return null;
+	}
+
+	overridable override visitImportedMember(importedMember, arg)
 	{
 		return null;
 	}

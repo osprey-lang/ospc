@@ -92,7 +92,9 @@
 1676 err_WrongParameterCountForUnaryOrBinaryOperator = "Wrong parameter count for operator overload (expected 1 or 2, got {0}).";
 
 // Use directive errors
-1681 err_InvalidUseDirective = "Expected an identifier (for 'use x;' or 'use alias = name;') or string (for 'use \"file.osp\";').";
+1681 err_InvalidUseDirective = "Expected an identifier (for 'use x;', 'use x.*' or 'use x.{...};') or string literal (for 'use \"file.osp\";').";
+1682 err_InvalidUseMemberDirective = "Expected a dot (for 'use x.*;' or 'use x.{...};') or keyword 'as' (for 'use x as y;').";
+1683 err_InvalidUseMemberDirectiveAfterDot = "Expected an asterisk (for 'use x.*;') or curly brace (for 'use x.{...};') after dot.";
 
 // Parameter list errors
 1701 err_VariadicParameterCannotBeOptional = "A variadic parameter cannot be optional.";

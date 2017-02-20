@@ -309,15 +309,14 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   use-directive:
-		 *     use-namespace-directive
 		 *     use-file-directive
-		 *     use-alias-directive
-		 *   use-namespace-directive:
-		 *     'use' qualified-name ';'
+		 *     use-namespace-directive
+		 *     use-member-directive
 		 *   use-file-directive:
-		 *     'use' string-literal ';'
-		 *   use-alias-directive:
-		 *     'use' identifier '=' qualified-name ';'
+		 *     'use' string ';'
+		 * Additional notes:
+		 *   use-namespace-directive and use-member-directive are both parsed by
+		 *   parseUseMemberDirective.
 		 */
 		var start = expectr(ref i, TokenType.\use);
 
@@ -330,26 +329,109 @@ public inheritable Parser is ParserBase
 		}
 
 		if accept(i, TokenType.identifier) {
-			// UseNamespaceDirective or UseAliasDirective: if we find an '=' after
-			// the identifier, it must be a member alias; otherwise, we parse it
-			// as a UseNamespaceDirective.
-			if accept(i + 1, TokenType.assign) {
-				// UseAliasDirective
-				var alias = lex[i];
-				i += 2; // skip alias and '='
-				var fullName = parseQualifiedName(ref i);
-				var end = expectr(ref i, TokenType.semicolon);
-				return new UseAliasDirective(getLocation(start, end), alias, fullName);
-			}
-			else {
-				// UseNamespaceDirective
-				var name = parseQualifiedName(ref i);
-				var end = expectr(ref i, TokenType.semicolon);
-				return new UseNamespaceDirective(getLocation(start, end), name);
-			}
+			return parseUseMemberDirective(ref i, start);
 		}
 
 		fatalError(lex[i], ErrorCode.err_InvalidUseDirective);
+	}
+
+	private parseUseMemberDirective(ref i, start)
+	{
+		/* Syntax:
+		 *   use-namespace-directive:
+		 *     'use' qualified-name '.' '*' ';'
+		 *   use-member-directive:
+		 *     'use' qualified-name ';'
+		 *     'use' qualified-name 'as' identifier ';'
+		 *     'use' qualified-name '.' imported-member-list ';'
+		 * Additional notes:
+		 *   This method parses both use-namespace-directive and use-member-directive, because
+		 *   they both start with a qualified-name.
+		 *
+		 *   This method is called with 'i' just past the 'use'.
+		 */
+
+		// No matter what we're dealing with, we have to parse a qualified-name first.
+		// Since two of the forms we parse here allow a '.' following the qualified-name,
+		// we must use parseQualifiedNameLazy.
+		var fullName = parseQualifiedNameLazy(ref i);
+
+		// If we find a dot now, it must be 'foo.*' or 'foo.{...}'.
+		if acceptr(ref i, TokenType.dot) {
+			if acceptr(ref i, TokenType.multiply) {
+				// use foo.*;
+				var end = expectr(ref i, TokenType.semicolon);
+				return new UseNamespaceDirective(getLocation(start, end), fullName);
+			}
+
+			if acceptr(ref i, TokenType.curlyOpen) {
+				// use foo.{...};
+				var importedMembers = parseImportedMemberList(ref i);
+
+				expectr(ref i, TokenType.curlyClose);
+				var end = expectr(ref i, TokenType.semicolon);
+
+				return new UseMemberListDirective(
+					getLocation(start, end),
+					fullName,
+					importedMembers
+				);
+			}
+
+			fatalError(lex[i], ErrorCode.err_InvalidUseMemberDirectiveAfterDot);
+		}
+		else {
+			// use foo;   or   use foo as bar;
+			var alias = null;
+			if acceptrContextual(ref i, ContextualType.as) {
+				alias = expectr(ref i, TokenType.identifier);
+			}
+
+			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_InvalidUseMemberDirective);
+
+			return new UseSingleMemberDirective(
+				getLocation(start, end),
+				fullName,
+				alias
+			);
+		}
+	}
+
+	private parseImportedMemberList(ref i)
+	{
+		/* Syntax:
+		 *   imported-member-list:
+		 *     '{' imported-member-names ','? '}'
+		 *   imported-member-names:
+		 *     imported-member-name
+		 *     imported-member-names ',' imported-member-name
+		 *   imported-member-name:
+		 *     identifier
+		 *     identifier 'as' identifier
+		 * Additional notes:
+		 *   This method does not parse the curly braces. They are expected to be taken care of
+		 *   by the caller.
+		 */
+		var importedMembers = new List(3);
+
+		do {
+			var memberName = expectr(ref i, TokenType.identifier);
+			var alias = null;
+			if acceptrContextual(ref i, ContextualType.as) {
+				alias = expectr(ref i, TokenType.identifier);
+			}
+
+			importedMembers.add(
+				new ImportedMember(
+					getLocation(memberName, alias ?? memberName),
+					memberName,
+					alias
+				)
+			);
+		} while acceptr(ref i, TokenType.comma) and
+			not accept(i, TokenType.curlyClose);
+
+		return new NodeList(importedMembers);
 	}
 
 	/// Summary: Tries to parse a file namespace declaration at the specified token
@@ -3616,6 +3698,41 @@ public inheritable Parser is ParserBase
 			var name = expectr(ref i, TokenType.identifier);
 			names.add(name);
 		} while acceptr(ref i, TokenType.dot);
+
+		return new QualifiedName(names);
+	}
+
+	/// Summary: Parses a qualified name at the specified token index, in a lazy fashion. That
+	///          is, the method continues until it finds a dot that is not followed by an
+	///          identifier.
+	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
+	///          the index of the token that immediately follows the returned parse tree.
+	/// Returns: A {QualifiedName} containing one or more identifiers.
+	/// Remarks: This method parses the grammar of the 'qualified-name' nonterminal.
+	///
+	///          This method is intended for situations where the qualified name may be followed
+	///          by a dot and a non-identifier. For example, use directives allow `foo.bar.*`,
+	///          or `foo.bar.{...}`.
+	///
+	///          At least one identifier is still required; this method never parses an empty
+	///          qualified-name.
+	///
+	///          Since it does not conform strictly to the grammar, this is a private helper.
+	private parseQualifiedNameLazy(ref i)
+	{
+		/* Syntax:
+		 *   qualified-name:
+		 *     identifier
+		 *     qualified-name '.' identifier
+		 */
+		var names = new List(3);
+		names.add(expectr(ref i, TokenType.identifier));
+		while accept(i, TokenType.dot) and
+			accept(i + 1, TokenType.identifier)
+		{
+			names.add(lex[i + 1]);
+			i += 2; // skip '.' and identifier
+		}
 
 		return new QualifiedName(names);
 	}

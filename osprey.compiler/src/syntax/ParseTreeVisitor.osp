@@ -15,11 +15,15 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitDocument(document, arg);
 
-	public abstract visitUseAliasDirective(directive, arg);
-
 	public abstract visitUseFileDirective(directive, arg);
 
 	public abstract visitUseNamespaceDirective(directive, arg);
+
+	public abstract visitUseSingleMemberDirective(directive, arg);
+
+	public abstract visitUseMemberListDirective(directive, arg);
+
+	public abstract visitImportedMember(importedMember, arg);
 
 	// Declarations
 

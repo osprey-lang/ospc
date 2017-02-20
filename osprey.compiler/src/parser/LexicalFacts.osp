@@ -89,6 +89,7 @@ internal static class LexicalFacts
 	};
 
 	internal static contextualToType = {
+		"as":            ContextualType.as,
 		"get":           ContextualType.get,
 		"set":           ContextualType.set,
 		"__primitive":   ContextualType.primitive,

@@ -307,7 +307,7 @@ public class LexerTests is TestFixture
 	public test_ContextualKeywords()
 	{
 		var source = r"
-			get  set
+			as  get  set
 			__primitive  __init_type  __extern
 			__named_const  __get_argc
 		";
@@ -315,7 +315,7 @@ public class LexerTests is TestFixture
 
 		// Same order as the source, of course.
 		var tokens = [
-			CT.get, CT.set,
+			CT.as, CT.get, CT.set,
 			CT.primitive, CT.initType, CT.extern,
 			CT.namedConst, CT.getArgc
 		];
@@ -331,7 +331,7 @@ public class LexerTests is TestFixture
 	public test_ContextualKeywordEscapes()
 	{
 		var source = r"
-			\get  \set
+			\as  \get  \set
 			\__primitive  \__init_type  \__extern
 			\__named_const  \__get_argc
 		";
@@ -344,7 +344,7 @@ public class LexerTests is TestFixture
 			Assert.areEqual(token.contextualType, CT.none);
 			count += 1;
 		}
-		Assert.areEqual(count, 7);
+		Assert.areEqual(count, 8);
 	}
 
 	public test_SimpleDecimalIntegerLiteral()
