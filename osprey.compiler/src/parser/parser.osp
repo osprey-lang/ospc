@@ -16,8 +16,8 @@ use "TokenType.osp";
 
 // We can't put osprey.compiler.Parser in its own file, because of Windows.
 
-use aves;
-use osprey.compiler.syntax;
+use aves.*;
+use osprey.compiler.syntax.*;
 
 namespace osprey.compiler.parser;
 

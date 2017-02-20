@@ -1,8 +1,8 @@
-use aves;
-use testing.unit;
-use osprey.compiler.tests;
-use TT = osprey.compiler.parser.TokenType; // For brevity in some long lists
-use CT = osprey.compiler.parser.ContextualType; // Also for brevity
+use aves.*;
+use testing.unit.*;
+use osprey.compiler.tests.*;
+use osprey.compiler.parser.TokenType as TT; // For brevity in some long lists
+use osprey.compiler.parser.ContextualType as CT; // Also for brevity
 
 namespace osprey.compiler.parser.tests;
 

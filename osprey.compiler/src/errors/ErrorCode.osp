@@ -1,7 +1,7 @@
-use aves;
-use aves.reflection; // for Module
-use io;
-use osprey.compiler.parser;
+use aves.*;
+use io.*;
+use osprey.compiler.parser.*;
+use aves.reflection.Module;
 
 namespace osprey.compiler;
 
