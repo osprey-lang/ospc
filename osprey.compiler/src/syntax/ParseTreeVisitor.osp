@@ -47,8 +47,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitGlobalFunctionDeclaration(decl, arg);
 
-	public abstract visitGlobalVariableDeclaration(decl, arg);
-
 	public abstract visitPropertyDeclaration(decl, arg);
 
 	public abstract visitIndexerDeclaration(decl, arg);

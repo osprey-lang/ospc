@@ -17,7 +17,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		document.useDirectives.acceptAll(this, arg);
 		document.globalAnnotations.acceptAll(this, arg);
 		document.members.acceptAll(this, arg);
-		document.statements.acceptAll(this, arg);
 		return null;
 	}
 
@@ -119,12 +118,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		decl.annotations.acceptAll(this, arg);
 		decl.parameters.acceptAll(this, arg);
 		decl.body.accept(this, arg);
-		return null;
-	}
-
-	overridable override visitGlobalVariableDeclaration(decl, arg)
-	{
-		decl.declaration.accept(this, arg);
 		return null;
 	}
 

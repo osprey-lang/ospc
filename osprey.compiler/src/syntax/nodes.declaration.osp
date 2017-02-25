@@ -672,26 +672,6 @@ public class ThisParameter is Parameter
 	}
 }
 
-public class GlobalVariableDeclaration is LocalDeclaration
-{
-	public new(location, declaration)
-	{
-		new base(location);
-
-		this._declaration = claim(declaration);
-	}
-
-	private _declaration;
-	/// Summary: Gets the {SimpleLocalVariableDeclaration} or that this global variable
-	///          declaration wraps.
-	public get declaration => _declaration;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitGlobalVariableDeclaration(this, arg);
-	}
-}
-
 public class Annotation is ParseNode
 {
 	public new(location, isGlobal, type, positionalArguments, namedArguments)

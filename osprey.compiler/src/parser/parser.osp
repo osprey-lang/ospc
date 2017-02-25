@@ -195,19 +195,8 @@ public inheritable Parser is ParserBase
 		/* Syntax:
 		 *   compilation-unit:
 		 *     use-directives? global-annotations? file-namespace-declaration?
-		 *       top-level-members?
-		 *   top-level-members:
-		 *     top-level-member
-		 *     top-level-members top-level-member
-		 *   top-level-member:
-		 *     global-statement
-		 *     global-variable-declaration ';'
-		 *     namespace-member
-		 *   global-statement:
-		 *     embedded-statement
-		 *   global-variable-declaration:
-		 *     local-variable-declaration
-		 * namespace-member is defined in parseNamespaceMember.
+		 *       namespace-members?
+		 * namespace-members is defined in parseNamespaceMember.
 		 */
 
 		var start = lex[i];
@@ -226,8 +215,8 @@ public inheritable Parser is ParserBase
 		// file-namespace-declaration
 		var fileNamespace = tryParseFileNamespaceDeclaration(ref i);
 
-		// top-level-members, grouped into global-statements and everything else.
-		var members = new List(5), statements = [];
+		// namespace-members
+		var members = new List(5);
 		var modifiers = new Modifiers();
 		while not accept(i, TokenType.eof) {
 			parseModifiers(ref i, modifiers);
@@ -254,24 +243,12 @@ public inheritable Parser is ParserBase
 			else if token.match(TokenType.\function) {
 				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
 			}
-			else if not modifiers.isEmpty {
-				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
-			}
 			else {
-				if token.match(TokenType.\var) {
-					construct = parseLocalVariableDeclaration(ref i);
-					construct = new GlobalVariableDeclaration(construct.location, construct);
-				}
-				else {
-					construct = parseEmbeddedStatement(ref i);
-				}
-				statements.add(construct);
-				next;
+				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
 			}
 			members.add(construct);
 		}
 		members = new NodeList(members);
-		statements = new NodeList(statements);
 
 		var end = lex[i];
 		return new Document(
@@ -279,8 +256,7 @@ public inheritable Parser is ParserBase
 			uses,
 			globalAnnotations,
 			fileNamespace,
-			members,
-			statements
+			members
 		);
 	}
 
@@ -3120,7 +3096,7 @@ public inheritable Parser is ParserBase
 		if start.match(TokenType.literal) {
 			return literalFuncs[type](start);
 		}
-		if type == TokenType.identifier{
+		if type == TokenType.identifier {
 			if useExtensions {
 				if start.contextualType == ContextualType.namedConst {
 					return parseNamedConstantExpression(ref i);
