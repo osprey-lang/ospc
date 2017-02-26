@@ -240,7 +240,10 @@ public inheritable Parser is ParserBase
 			else if token.match(TokenType.\const) {
 				construct = parseGlobalConstantDeclaration(ref i, modifiers);
 			}
-			else if token.match(TokenType.\function) {
+			else if token.match(TokenType.\function) or
+				// Global function can be declared without the 'function' keyword
+				token.match(TokenType.identifier) and accept(i + 1, TokenType.parenOpen)
+			{
 				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
 			}
 			else {
@@ -595,7 +598,7 @@ public inheritable Parser is ParserBase
 	{
 		/* Syntax:
 		 *   global-function-declaration:
-		 *     global-modifier? 'function' identifier '(' parameter-list? ')' block
+		 *     global-modifier? 'function'? identifier '(' parameter-list? ')' block
 		 * Additional notes:
 		 *   If extensions are in use, the body block can also be an __extern reference.
 		 */
@@ -604,7 +607,8 @@ public inheritable Parser is ParserBase
 		}
 		modifiers.verifyForGlobalFunctionOrConstant(this);
 
-		var start = expectr(ref i, TokenType.\function);
+		var start = lex[i];
+		acceptr(ref i, TokenType.\function);
 		var name = expectr(ref i, TokenType.identifier);
 
 		expectr(ref i, TokenType.parenOpen);
