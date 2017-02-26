@@ -3,19 +3,18 @@ use osprey.compiler.parser.*;
 
 namespace osprey.compiler.syntax;
 
-public inheritable NamespaceDeclaration is ParseNode
+public class NamespaceDeclaration is ParseNode
 {
 	public new(location, name, members)
 	{
 		new base(location);
 
-		this._name    = name;
-		this._members = claimAll(members ?? EmptyLists.node);
+		this._name = name;
+		this._members = members ?? EmptyLists.node;
 	}
 
 	private _name;
-	/// Summary: Gets a {QualifiedName} corresponding to the declared name
-	///          of the namespace.
+	/// Summary: Gets a {QualifiedName} containing the declared name of the namespace.
 	public get name => _name;
 
 	private _members;
@@ -34,14 +33,14 @@ public class GlobalConstantDeclaration is ParseNode
 	{
 		new base(location);
 
-		this._annotations   = claimAll(annotations ?? EmptyLists.node);
+		this._annotations = annotations ?? EmptyLists.node;
 		this._accessibility = accessibility;
-		this._constants     = claimAll(constants);
+		this._constants = constants;
 	}
 
 	private _annotations;
-	/// Summary: Gets the annotations associated with the global constant,
-	///          as a {NodeList} of {Annotation} instances.
+	/// Summary: Gets the annotations associated with the global constant, as a {NodeList} of
+	///          {Annotation} instances.
 	public get annotations => _annotations;
 
 	private _accessibility;
@@ -49,8 +48,8 @@ public class GlobalConstantDeclaration is ParseNode
 	public get accessibility => _accessibility;
 
 	private _constants;
-	/// Summary: Gets a {NodeList} containing {VariableDeclarator}s that represent
-	///          the constants declared in this declaration.
+	/// Summary: Gets a {NodeList} containing {VariableDeclarator}s that represent the constants
+	///          declared in this declaration.
 	public get constants => _constants;
 
 	override accept(visitor, arg)
@@ -65,16 +64,16 @@ public class GlobalFunctionDeclaration is ParseNode
 	{
 		new base(location);
 
-		this._annotations   = claimAll(annotations ?? EmptyLists.node);
+		this._annotations = annotations ?? EmptyLists.node;
 		this._accessibility = accessibility;
-		this._name          = name;
-		this._parameters    = claimAll(parameters);
-		this._body          = claim(body);
+		this._name = name;
+		this._parameters = parameters;
+		this._body = body;
 	}
 
 	private _annotations;
-	/// Summary: Gets the annotations associated with the global function,
-	///          as a {NodeList} of {Annotation} instances.
+	/// Summary: Gets the annotations associated with the global function, as a {NodeList} of
+	///          {Annotation} instances.
 	public get annotations => _annotations;
 
 	private _accessibility;
@@ -82,7 +81,7 @@ public class GlobalFunctionDeclaration is ParseNode
 	public get accessibility => _accessibility;
 
 	private _name;
-	/// Summary: Gets an {Identifier} corresponding to the name of the global function.
+	/// Summary: Gets an {Identifier} containing the name of the global function.
 	public get name => _name;
 
 	private _parameters;
@@ -90,9 +89,8 @@ public class GlobalFunctionDeclaration is ParseNode
 	public get parameters => _parameters;
 
 	private _body;
-	/// Summary: Gets a {ParseNode} containing the function’s body. This is usually
-	///          a {Block}, but may be an {ExternBody} if non-standard extensions
-	///          are enabled.
+	/// Summary: Gets a {ParseNode} containing the function’s body. This is usually a {Block},
+	///          but may be an {ExternBody} if non-standard extensions are enabled.
 	public get body => _body;
 
 	override accept(visitor, arg)
@@ -107,14 +105,14 @@ public abstract class TypeDeclaration is ParseNode
 	{
 		new base(location);
 
-		this._annotations = claimAll(annotations ?? EmptyLists.node);
+		this._annotations = annotations ?? EmptyLists.node;
 		this._accessibility = accessibility;
 		this._name = name;
 	}
 
 	private _annotations;
-	/// Summary: Gets the annotations associated with the type,
-	///          as a {NodeList} of {Annotation} instances.
+	/// Summary: Gets the annotations associated with the type, as a {NodeList} of {Annotation}
+	///          instances.
 	public get annotations => _annotations;
 
 	private _accessibility;
@@ -122,7 +120,7 @@ public abstract class TypeDeclaration is ParseNode
 	public get accessibility => _accessibility;
 
 	private _name;
-	/// Summary: Gets an {Identifier} corresponding to the name of the type declaration.
+	/// Summary: Gets an {Identifier} containing the name of the type declaration.
 	public get name => _name;
 
 	abstract override accept(visitor, arg);
@@ -132,27 +130,39 @@ public class ClassDeclaration is TypeDeclaration
 {
 	public new(location, modifiers, name, baseType, members, typeInitializer = null)
 	{
-		new this(location, modifiers.annotations, modifiers.accessibility,
+		new this(
+			location,
+			modifiers.annotations,
+			modifiers.accessibility,
 			modifiers.\static is not null,
 			modifiers.\abstract is not null,
 			modifiers.\inheritable is not null,
-			name, baseType, members, typeInitializer);
+			name,
+			baseType,
+			members,
+			typeInitializer
+		);
 	}
-	public new(location, annotations, accessibility, isStatic,
-		isAbstract, isInheritable, name, baseType, members,
-		typeInitializer = null)
+	public new(
+		location,
+		annotations,
+		accessibility,
+		isStatic,
+		isAbstract,
+		isInheritable,
+		name,
+		baseType,
+		members,
+		typeInitializer = null
+	)
 	{
 		new base(location, annotations, accessibility, name);
 
-		if baseType is TypeName {
-			claim(baseType);
-		}
-
-		this._isStatic      = isStatic;
-		this._isAbstract    = isAbstract;
+		this._isStatic = isStatic;
+		this._isAbstract = isAbstract;
 		this._isInheritable = isInheritable;
-		this._baseType      = baseType;
-		this._members       = claimAll(members ?? EmptyLists.node);
+		this._baseType = baseType;
+		this._members = members ?? EmptyLists.node;
 		this._typeInitializer = typeInitializer;
 	}
 
@@ -169,8 +179,8 @@ public class ClassDeclaration is TypeDeclaration
 	public get isInheritable => _isInheritable;
 
 	private _baseType;
-	/// Summary: Gets the base type of the class. This is either a {TypeName},
-	///          or the same reference as {ClassDeclaration.primitive}, or null.
+	/// Summary: Gets the base type of the class. This is either a {TypeName}, or the same
+	///          reference as {ClassDeclaration.primitive}, or null.
 	public get baseType => _baseType;
 
 	private _members;
@@ -178,13 +188,13 @@ public class ClassDeclaration is TypeDeclaration
 	public get members => _members;
 
 	private _typeInitializer;
-	/// Summary: Gets a string {LiteralToken} containing the type initializer name,
-	///          if specified, or null otherwise. This is a non-standard extension.
+	/// Summary: Gets a string {LiteralToken} containing the type initializer name, if specified,
+	///          or null otherwise. This is a non-standard extension.
 	public get typeInitializer => _typeInitializer;
 
 	private static _primitive = new Object();
-	/// Summary: Gets an object that represents the base type specifier `__primitive`.
-	///          This is a non-standard extension.
+	/// Summary: Gets an object that represents the base type specifier `__primitive`. This is a
+	///          non-standard extension.
 	public static get primitive => _primitive;
 
 	override accept(visitor, arg)
@@ -199,15 +209,15 @@ public abstract class ClassMember is ParseNode
 	{
 		new base(location);
 
-		this._annotations   = claimAll(annotations ?? EmptyLists.node);
+		this._annotations = annotations ?? EmptyLists.node;
 		this._accessibility = accessibility;
-		this._isStatic      = isStatic;
-		this._name          = name;
+		this._isStatic = isStatic;
+		this._name  = name;
 	}
 
 	private _annotations;
-	/// Summary: Gets the annotations associated with the member,
-	///          as a {NodeList} of {Annotation} instances.
+	/// Summary: Gets the annotations associated with the member, as a {NodeList} of {Annotation}
+	///          instances.
 	public get annotations => _annotations;
 
 	private _accessibility;
@@ -219,10 +229,9 @@ public abstract class ClassMember is ParseNode
 	public get isStatic => _isStatic;
 
 	private _name;
-	/// Summary: Gets an {Identifier} corresponding to the name of the member.
-	///          If the member is unnamed, such as a constructor or iterator,
-	///          or declares multiple members, such as a field declaration,
-	///          this property returns null.
+	/// Summary: Gets an {Identifier} containing the name of the member. If the member is
+	///          unnamed, such as a constructor or iterator, or declares multiple members, such
+	///          as a field declaration, this property returns null.
 	public get name => _name;
 
 	abstract override accept(visitor, arg);
@@ -234,8 +243,8 @@ public class ConstructorDeclaration is ClassMember
 	{
 		new base(location, annotations, accessibility, false, null);
 
-		this._parameters = claimAll(parameters);
-		this._body       = claim(body);
+		this._parameters = parameters;
+		this._body = body;
 	}
 
 	private _parameters;
@@ -243,8 +252,8 @@ public class ConstructorDeclaration is ClassMember
 	public get parameters => _parameters;
 
 	private _body;
-	/// Summary: Gets a {Block} containing the body of the constructor, or null
-	///          if the constructor lacks a body.
+	/// Summary: Gets a {Block} containing the body of the constructor, or null if the
+	///          constructor lacks a body.
 	public get body => _body;
 
 	override accept(visitor, arg)
@@ -259,7 +268,7 @@ public class StaticConstructorDeclaration is ClassMember
 	{
 		new base(location, annotations, Accessibility.\private, true, null);
 
-		this._body = claim(body);
+		this._body = body;
 	}
 
 	private _body;
@@ -276,20 +285,24 @@ public class FieldDeclaration is ClassMember
 {
 	public new(location, modifiers, fields)
 	{
-		new this(location, modifiers.annotations, modifiers.accessibility,
+		new this(
+			location,
+			modifiers.annotations,
+			modifiers.accessibility,
 			modifiers.\static is not null,
-			fields);
+			fields
+		);
 	}
 	public new(location, annotations, accessibility, isStatic, fields)
 	{
 		new base(location, annotations, accessibility, isStatic, null);
 
-		this._fields = claimAll(fields);
+		this._fields = fields;
 	}
 
 	private _fields;
-	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this
-	///          field declaration.
+	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this field
+	///          declaration.
 	public get fields => _fields;
 
 	override accept(visitor, arg)
@@ -298,28 +311,43 @@ public class FieldDeclaration is ClassMember
 	}
 }
 
-public inheritable PropertyDeclaration is ClassMember
+public class PropertyDeclaration is ClassMember
 {
 	public new(location, modifiers, isSetter, name, body)
 	{
-		new this(location, modifiers.annotations, modifiers.accessibility,
+		new this(
+			location,
+			modifiers.annotations,
+			modifiers.accessibility,
 			modifiers.\static is not null,
 			modifiers.\abstract is not null,
 			modifiers.\override is not null,
 			modifiers.\overridable is not null,
-			isSetter, name, body);
+			isSetter,
+			name,
+			body
+		);
 	}
-	public new(location, annotations, accessibility,
-		isStatic, isAbstract, isOverride, isOverridable,
-		isSetter, name, body)
+	public new(
+		location,
+		annotations,
+		accessibility,
+		isStatic,
+		isAbstract,
+		isOverride,
+		isOverridable,
+		isSetter,
+		name,
+		body
+	)
 	{
 		new base(location, annotations, accessibility, isStatic, name);
 
-		this._isAbstract    = isAbstract;
-		this._isOverride    = isOverride;
+		this._isAbstract = isAbstract;
+		this._isOverride = isOverride;
 		this._isOverridable = isOverridable;
-		this._isSetter      = isSetter;
-		this._body          = claim(body);
+		this._isSetter = isSetter;
+		this._body = body;
 	}
 
 	private _isAbstract;
@@ -342,37 +370,75 @@ public inheritable PropertyDeclaration is ClassMember
 	public get isGetter => not _isSetter;
 
 	private _body;
-	/// Summary: Gets a {Block} or {Expression} that contains the body
-	///          of the property accessor.
+	/// Summary: Gets a {Block} or {Expression} that contains the body of the property accessor.
 	public get body => _body;
 
-	overridable override accept(visitor, arg)
+	override accept(visitor, arg)
 	{
 		return visitor.visitPropertyDeclaration(this, arg);
 	}
 }
 
-public class IndexerDeclaration is PropertyDeclaration
+public class IndexerDeclaration is ClassMember
 {
 	public new(location, modifiers, isSetter, parameters, body)
 	{
-		new this(location, modifiers.annotations, modifiers.accessibility,
+		new this(
+			location,
+			modifiers.annotations,
+			modifiers.accessibility,
 			modifiers.\abstract is not null,
 			modifiers.\override is not null,
 			modifiers.\overridable is not null,
-			isSetter, parameters, body);
+			isSetter,
+			parameters,
+			body
+		);
 	}
-	public new(location, annotations, accessibility,
-		isAbstract, isOverride, isOverridable,
-		isSetter, parameters, body)
+	public new(
+		location,
+		annotations,
+		accessibility,
+		isAbstract,
+		isOverride,
+		isOverridable,
+		isSetter,
+		parameters,
+		body
+	)
 	{
-		new base(location, annotations, accessibility,
-			/*isStatic=*/ false,
-			isAbstract, isOverride, isOverridable,
-			isSetter, null, body);
+		new base(location, annotations, accessibility, false, null);
 
-		this._parameters = claimAll(parameters);
+		this._isAbstract = isAbstract;
+		this._isOverride = isOverride;
+		this._isOverridable = isOverridable;
+		this._isSetter = isSetter;
+		this._parameters = parameters;
+		this._body = body;
 	}
+
+	private _isAbstract;
+	/// Summary: Determines whether the indexer accessor is abstract.
+	public get isAbstract => _isAbstract;
+
+	private _isOverride;
+	/// Summary: Determines whether the indexer accessor is an override.
+	public get isOverride => _isOverride;
+
+	private _isOverridable;
+	/// Summary: Determines whether the indexer accessor is overridable.
+	public get isOverridable => _isOverridable;
+
+	private _isSetter;
+	/// Summary: Determines whether the indexer accessor is a setter.
+	public get isSetter => _isSetter;
+
+	/// Summary: Determines whether the indexer accessor is a getter.
+	public get isGetter => not _isSetter;
+
+	private _body;
+	/// Summary: Gets a {Block} or {Expression} that contains the body of the indexer accessor.
+	public get body => _body;
 
 	private _parameters;
 	/// Summary: Gets a {ParameterList} containing the indexer accessor’s parameters.
@@ -388,24 +454,39 @@ public inheritable MethodDeclaration is ClassMember
 {
 	public new(location, modifiers, name, parameters, body)
 	{
-		new this(location, modifiers.annotations, modifiers.accessibility,
+		new this(
+			location,
+			modifiers.annotations,
+			modifiers.accessibility,
 			modifiers.\static is not null,
 			modifiers.\abstract is not null,
 			modifiers.\override is not null,
 			modifiers.\overridable is not null,
-			name, parameters, body);
+			name,
+			parameters,
+			body
+		);
 	}
-	public new(location, annotations, accessibility,
-		isStatic, isAbstract, isOverride, isOverridable,
-		name, parameters, body)
+	public new(
+		location,
+		annotations,
+		accessibility,
+		isStatic,
+		isAbstract,
+		isOverride,
+		isOverridable,
+		name,
+		parameters,
+		body
+	)
 	{
 		new base(location, annotations, accessibility, isStatic, name);
 
-		this._isAbstract    = isAbstract;
-		this._isOverride    = isOverride;
+		this._isAbstract = isAbstract;
+		this._isOverride = isOverride;
 		this._isOverridable = isOverridable;
-		this._parameters    = claimAll(parameters);
-		this._body          = claim(body);
+		this._parameters = parameters;
+		this._body = body;
 	}
 
 	private _isAbstract;
@@ -425,8 +506,7 @@ public inheritable MethodDeclaration is ClassMember
 	public get parameters => _parameters;
 
 	private _body;
-	/// Summary: Gets a {Block} containing the body of the method, or null if
-	///          it has none.
+	/// Summary: Gets a {Block} containing the body of the method, or null if it has none.
 	public get body => _body;
 
 	overridable override accept(visitor, arg)
@@ -439,20 +519,40 @@ public class InvocatorDeclaration is MethodDeclaration
 {
 	public new(location, modifiers, parameters, body)
 	{
-		new this(location, modifiers.annotations, modifiers.accessibility,
+		new this(
+			location,
+			modifiers.annotations,
+			modifiers.accessibility,
 			modifiers.\abstract is not null,
 			modifiers.\override is not null,
 			modifiers.\overridable is not null,
-			parameters, body);
+			parameters,
+			body
+		);
 	}
-	public new(location, annotations, accessibility,
-		isAbstract, isOverride, isOverridable,
-		parameters, body)
+	public new(
+		location,
+		annotations,
+		accessibility,
+		isAbstract,
+		isOverride,
+		isOverridable,
+		parameters,
+		body
+	)
 	{
-		new base(location, annotations, accessibility,
+		new base(
+			location,
+			annotations,
+			accessibility,
 			/*isStatic=*/ false,
-			isAbstract, isOverride, isOverridable,
-			null, parameters, body);
+			isAbstract,
+			isOverride,
+			isOverridable,
+			null,
+			parameters,
+			body
+		);
 	}
 
 	override accept(visitor, arg)
@@ -467,12 +567,12 @@ public class ClassConstantDeclaration is ClassMember
 	{
 		new base(location, annotations, accessibility, true, null);
 
-		this._constants = claimAll(constants);
+		this._constants = constants;
 	}
 
 	private _constants;
-	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s
-	///          of the class constant declaration.
+	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of the class constant
+	///          declaration.
 	public get constants => _constants;
 
 	override accept(visitor, arg)
@@ -506,19 +606,18 @@ public class OperatorDeclaration is ClassMember
 	{
 		new base(location, annotations, Accessibility.notApplicable, true, null);
 
-		this._op         = op;
-		this._parameters = claimAll(parameters);
-		this._body       = claim(body);
+		this._op = op;
+		this._parameters = parameters;
+		this._body = body;
 	}
 
 	private _op;
-	/// Summary: Gets the {BinaryOperator} or {UnaryOperator} that this
-	///          operator declaration overloads.
+	/// Summary: Gets the {BinaryOperator} or {UnaryOperator} that this operator declaration
+	///          overloads.
 	public get op => _op;
 
 	private _parameters;
-	/// Summary: Gets a {ParameterList} containing the parameters of the
-	///          operator declaration.
+	/// Summary: Gets a {ParameterList} containing the parameters of the operator declaration.
 	public get parameters => _parameters;
 
 	/// Summary: Determines whether this operator overloads a unary operator.
@@ -543,8 +642,8 @@ public class EnumDeclaration is TypeDeclaration
 	{
 		new base(location, annotations, accessibility, name);
 
-		this._isSet   = isSet;
-		this._members = claimAll(members ?? EmptyLists.node);
+		this._isSet = isSet;
+		this._members = members ?? EmptyLists.node;
 	}
 
 	private _isSet;
@@ -567,18 +666,18 @@ public class EnumMember is ParseNode
 	{
 		new base(location);
 
-		this._annotations = claimAll(annotations ?? EmptyLists.node);
+		this._annotations = annotations ?? EmptyLists.node;
 		this._name = name;
-		this._value = claim(value);
+		this._value = value;
 	}
 
 	private _annotations;
-	/// Summary: Gets the annotations associated with the enum member,
-	///          as a {NodeList} of {Annotation} instances.
+	/// Summary: Gets the annotations associated with the enum member, as a {NodeList} of
+	///          {Annotation} instances.
 	public get annotations => _annotations;
 
 	private _name;
-	/// Summary: Gets an {Identifier} corresponding to the name of the member.
+	/// Summary: Gets an {Identifier} containing the name of the member.
 	public get name => _name;
 
 	private _value;
@@ -597,18 +696,17 @@ public class VariableDeclarator is ParseNode
 	{
 		new base(location);
 
-		this._name        = name;
-		this._initializer = claim(initializer);
+		this._name = name;
+		this._initializer = initializer;
 	}
 
 	private _name;
-	/// Summary: Gets an {Identifier} corresponding to the declared name
-	///          of the variable.
+	/// Summary: Gets an {Identifier} containing the declared name of the variable.
 	public get name => _name;
 
 	private _initializer;
-	/// Summary: Gets the initializer {Expression} of the variable, or null if
-	///          the declarator has no initializer.
+	/// Summary: Gets the initializer {Expression} of the variable, or null if the declarator has
+	///          no initializer.
 	public get initializer => _initializer;
 
 	override accept(visitor, arg)
@@ -624,18 +722,18 @@ public inheritable Parameter is ParseNode
 		new base(location);
 
 		this._name = name;
-		this._defaultValue = claim(defaultValue);
+		this._defaultValue = defaultValue;
 		this._isVariadic = isVariadic;
 		this._isRef = isRef;
 	}
 
 	private _name;
-	/// Summary: Gets an {Identifier} corresponding to the name of the parameter.
+	/// Summary: Gets an {Identifier} containing the name of the parameter.
 	public get name => _name;
 
 	private _defaultValue;
-	/// Summary: Gets the {Expression} that makes up the default value of
-	///          the parameter, or null if the parameter is not optional.
+	/// Summary: Gets the {Expression} that defines the default value of the parameter, or null
+	///          if the parameter is not optional.
 	public get defaultValue => _defaultValue;
 
 	/// Summary: Determines whether the parameter is optional.
@@ -679,14 +777,14 @@ public class Annotation is ParseNode
 		new base(location);
 
 		this._isGlobal = isGlobal;
-		this._type = claim(type);
-		this._positionalArguments = claimAll(positionalArguments);
-		this._namedArguments = claimAll(namedArguments);
+		this._type = type;
+		this._positionalArguments = positionalArguments;
+		this._namedArguments = namedArguments;
 	}
 
 	private _isGlobal;
-	/// Summary: Determines whether the annotation is targeted at the module, rather
-	///          than at a member.
+	/// Summary: Determines whether the annotation is targeted at the module, rather than at a
+	///          member.
 	public get isGlobal => _isGlobal;
 
 	private _type;
@@ -694,13 +792,12 @@ public class Annotation is ParseNode
 	public get type => _type;
 
 	private _positionalArguments;
-	/// Summary: Gets an {ArgumentList} containing the positional arguments
-	///          of this annotation.
+	/// Summary: Gets an {ArgumentList} containing the positional arguments of this annotation.
 	public get positionalArguments => _positionalArguments;
 
 	private _namedArguments;
-	/// Summary: Gets a {NodeList} containing the named arguments of this annotation,
-	///          represented by {MemberInitializer}s.
+	/// Summary: Gets a {NodeList} containing the named arguments of this annotation, represented
+	///          by {MemberInitializer}s.
 	public get namedArguments => _namedArguments;
 
 	override accept(visitor, arg)

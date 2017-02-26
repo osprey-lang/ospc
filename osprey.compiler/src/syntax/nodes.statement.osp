@@ -13,7 +13,7 @@ public inheritable Block is Statement
 	{
 		new base(location);
 
-		this._statements = claimAll(statements ?? EmptyLists.node);
+		this._statements = statements ?? EmptyLists.node;
 	}
 
 	private _statements;
@@ -32,7 +32,7 @@ public class ExpressionStatement is Statement
 	{
 		new base(location);
 
-		this._expression = claim(expression);
+		this._expression = expression;
 	}
 
 	private _expression;
@@ -51,9 +51,9 @@ public class IfStatement is Statement
 	{
 		new base(location);
 
-		this._condition   = claim(condition);
-		this._consequence = claim(consequence);
-		this._alternative = claim(alternative);
+		this._condition = condition;
+		this._consequence = consequence;
+		this._alternative = alternative;
 	}
 
 	private _condition;
@@ -65,8 +65,8 @@ public class IfStatement is Statement
 	public get consequence => _consequence;
 
 	private _alternative;
-	/// Summary: Gets a {Statement} that contains the else clause of the if statement,
-	///          or null if it has none.
+	/// Summary: Gets a {Statement} that contains the else clause of the if statement, or null if
+	///          it has none.
 	/// Remarks: The body of an else clause is either an {IfStatement} or a {Block}.
 	public get alternative => _alternative;
 
@@ -83,12 +83,12 @@ public abstract class IterationStatement is Statement
 		new base(location);
 
 		this._label = label;
-		this._body  = claim(body);
+		this._body = body;
 	}
 
 	private _label;
-	/// Summary: Gets the label attached to the iteration statement, as an {Identifier}
-	///          token, or null if the loop is unlabelled.
+	/// Summary: Gets the label attached to the iteration statement, as an {Identifier} token, or
+	///          null if the loop is unlabelled.
 	public get label => _label;
 
 	private _body;
@@ -104,24 +104,24 @@ public class ForStatement is IterationStatement
 	{
 		new base(location, label, body);
 
-		this._variables  = variables;
-		this._expression = claim(expression);
-		this._elseClause = claim(elseClause);
+		this._variables = variables;
+		this._expression = expression;
+		this._elseClause = elseClause;
 	}
 
 	private _variables;
-	/// Summary: Gets a collection of the variable names declared by this statement,
-	///          as a {SyntaxList} of {Identifier} tokens.
+	/// Summary: Gets a collection of the variable names declared by this statement, as a
+	///          {SyntaxList} of {Identifier} tokens.
 	public get variables => _variables;
 
 	private _expression;
-	/// Summary: Gets the {Expression} that is evaluated to produce the collection
-	///          iterated over by the for statement.
+	/// Summary: Gets the {Expression} that is evaluated to produce the collection iterated over
+	///          by the for statement.
 	public get expression => _expression;
 
 	private _elseClause;
-	/// Summary: Gets a {Statement} containing the else clause of the for statement,
-	///          or null if it has none.
+	/// Summary: Gets a {Statement} containing the else clause of the for statement, or null if
+	///          it has none.
 	/// Remarks: The body of an else clause is either an {IfStatement} or a {Block}.
 	public get elseClause => _elseClause;
 
@@ -137,7 +137,7 @@ public class WhileStatement is IterationStatement
 	{
 		new base(location, label, body);
 
-		this._condition = claim(condition);
+		this._condition = condition;
 	}
 
 	private _condition;
@@ -156,7 +156,7 @@ public class DoWhileStatement is IterationStatement
 	{
 		new base(location, label, body);
 
-		this._condition = claim(condition);
+		this._condition = condition;
 	}
 
 	private _condition;
@@ -175,7 +175,7 @@ public class ReturnStatement is Statement
 	{
 		new base(location);
 
-		this._returnValue = claim(returnValue);
+		this._returnValue = returnValue;
 	}
 
 	private _returnValue;
@@ -195,7 +195,7 @@ public class YieldStatement is Statement
 	{
 		new base(location);
 
-		this._returnValue = claim(returnValue);
+		this._returnValue = returnValue;
 	}
 
 	private _returnValue;
@@ -218,8 +218,8 @@ public class NextStatement is Statement
 	}
 
 	private _label;
-	/// Summary: Gets the name of the loop label that this statement refers to,
-	///          as an {Identifier} token, or null if the statement is unlabelled.
+	/// Summary: Gets the name of the loop label that this statement refers to, as an
+	///          {Identifier} token, or null if the statement is unlabelled.
 	public get label => _label;
 
 	override accept(visitor, arg)
@@ -238,8 +238,8 @@ public class BreakStatement is Statement
 	}
 
 	private _label;
-	/// Summary: Gets the name of the loop label that this statement refers to,
-	///          as an {Identifier} token, or null if the statement is unlabelled.
+	/// Summary: Gets the name of the loop label that this statement refers to, as an
+	///          {Identifier} token, or null if the statement is unlabelled.
 	public get label => _label;
 
 	override accept(visitor, arg)
@@ -254,7 +254,7 @@ public class ThrowStatement is Statement
 	{
 		new base(location);
 
-		this._expression = claim(expression);
+		this._expression = expression;
 	}
 
 	private _expression;
@@ -273,9 +273,9 @@ public class TryStatement is Statement
 	{
 		new base(location);
 
-		this._tryClause     = claim(tryClause);
-		this._catchClauses  = claimAll(catchClauses ?? EmptyLists.node);
-		this._finallyClause = claim(finallyClause);
+		this._tryClause = tryClause;
+		this._catchClauses = catchClauses ?? EmptyLists.node;
+		this._finallyClause = finallyClause;
 	}
 
 	private _tryClause;
@@ -309,27 +309,27 @@ public class TryClause is Block
 	}
 }
 
-public inheritable GenericCatchClause is Block
+public class GenericCatchClause is Block
 {
 	public new(location, statements)
 	{
 		new base(location, statements);
 	}
 
-	overridable override accept(visitor, arg)
+	override accept(visitor, arg)
 	{
 		return visitor.visitGenericCatchClause(this, arg);
 	}
 }
 
-public class SpecificCatchClause is GenericCatchClause
+public class SpecificCatchClause is Block
 {
 	public new(location, caughtType, variable, statements)
 	{
 		new base(location, statements);
 
-		this._caughtType = claim(caughtType);
-		this._variable   = variable;
+		this._caughtType = caughtType;
+		this._variable = variable;
 	}
 
 	private _caughtType;
@@ -337,8 +337,8 @@ public class SpecificCatchClause is GenericCatchClause
 	public get caughtType => _caughtType;
 
 	private _variable;
-	/// Summary: Gets an {Identifier} token containing the name of the catch variable,
-	///          or null if the catch clause specifies no variable name.
+	/// Summary: Gets an {Identifier} token containing the name of the catch variable, or null if
+	///          the catch clause specifies no variable name.
 	public get variable => _variable;
 
 	override accept(visitor, arg)
@@ -366,14 +366,14 @@ public class WithStatement is Statement
 	{
 		new base(location);
 
-		this._variable   = variable;
-		this._expression = claim(expression);
-		this._body       = claim(body);
+		this._variable = variable;
+		this._expression = expression;
+		this._body = body;
 	}
 
 	private _variable;
-	/// Summary: Gets the name of the variable declared by the statement,
-	///          as an {Identifier} token.
+	/// Summary: Gets an {Identifier} that contains the name of the variable declared by the
+	///          statement.
 	public get variable => _variable;
 
 	private _expression;
@@ -396,8 +396,8 @@ public class SimpleAssignment is Statement
 	{
 		new base(location);
 
-		this._target = claim(target);
-		this._value  = claim(value);
+		this._target = target;
+		this._value = value;
 	}
 
 	private _target;
@@ -420,9 +420,9 @@ public class CompoundAssignment is Statement
 	{
 		new base(location);
 
-		this._left  = claim(left);
-		this._op    = op;
-		this._right = claim(right);
+		this._left = left;
+		this._op = op;
+		this._right = right;
 	}
 
 	private _left;
@@ -449,8 +449,8 @@ public class ParallelAssignment is Statement
 	{
 		new base(location);
 
-		this._targets = claimAll(targets);
-		this._values  = claimAll(values);
+		this._targets = targets;
+		this._values = values;
 	}
 
 	private _targets;
@@ -473,7 +473,7 @@ public class BaseConstructorCall is Statement
 	{
 		new base(location);
 
-		this._arguments = claimAll(arguments);
+		this._arguments = arguments;
 	}
 
 	private _arguments;
@@ -492,7 +492,7 @@ public class ThisConstructorCall is Statement
 	{
 		new base(location);
 
-		this._arguments = claimAll(arguments);
+		this._arguments = arguments;
 	}
 
 	private _arguments;
@@ -521,12 +521,12 @@ public class LocalVariableDeclaration is LocalDeclaration
 	{
 		new base(location);
 
-		this._variables = claimAll(variables);
+		this._variables = variables;
 	}
 
 	private _variables;
-	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this
-	///          local variable declaration.
+	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this local variable
+	///          declaration.
 	public get variables => _variables;
 
 	override accept(visitor, arg)
@@ -541,12 +541,12 @@ public class LocalConstantDeclaration is LocalDeclaration
 	{
 		new base(location);
 
-		this._constants = claimAll(constants);
+		this._constants = constants;
 	}
 
 	private _constants;
-	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this
-	///          local constant declaration.
+	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this local constant
+	///          declaration.
 	public get constants => _constants;
 
 	override accept(visitor, arg)
@@ -561,9 +561,9 @@ public class LocalFunctionDeclaration is LocalDeclaration
 	{
 		new base(location);
 
-		this._name       = name;
-		this._parameters = claimAll(parameters);
-		this._body       = claim(body);
+		this._name = name;
+		this._parameters = parameters;
+		this._body = body;
 	}
 
 	private _name;

@@ -9,7 +9,7 @@ public class ExternBody is ParseNode
 		new base(location);
 
 		this._externName = externName;
-		this._locals     = claim(locals);
+		this._locals = locals;
 	}
 
 	private _externName;
@@ -17,8 +17,8 @@ public class ExternBody is ParseNode
 	public get externName => _externName;
 
 	private _locals;
-	/// Summary: Gets the {Expression} that represents the `locals` parameter, or null
-	///          if unspecified.
+	/// Summary: Gets the {Expression} that represents the `locals` parameter, or null if
+	///          unspecified.
 	public get locals => _locals;
 
 	override accept(visitor, arg)

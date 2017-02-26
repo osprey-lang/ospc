@@ -9,9 +9,9 @@ public inheritable BinaryExpression is Expression
 	{
 		new base(location);
 
-		this._left  = claim(left);
-		this._op    = op;
-		this._right = claim(right);
+		this._left = left;
+		this._op = op;
+		this._right = right;
 	}
 
 	private _left;
@@ -39,7 +39,7 @@ public inheritable UnaryExpression is Expression
 		new base(location);
 
 		this._op = op;
-		this._inner = claim(inner);
+		this._inner = inner;
 	}
 
 	private _op;
@@ -62,9 +62,9 @@ public class TypeTestExpression is Expression
 	{
 		new base(location);
 
-		this._expression = claim(expression);
-		this._type       = claim(type);
-		this._negated    = bool(negated);
+		this._expression = expression;
+		this._type = type;
+		this._negated = bool(negated);
 	}
 
 	private _expression;
@@ -72,8 +72,8 @@ public class TypeTestExpression is Expression
 	public get expression => _expression;
 
 	private _type;
-	/// Summary: Gets the {TypeName} of the type that is being tested for, or null
-	///          if the expression is being tested against null.
+	/// Summary: Gets the {TypeName} of the type that is being tested for, or null if the
+	///          expression is being tested against null.
 	public get type => _type;
 
 	private _negated;
@@ -92,9 +92,9 @@ public class ConditionalExpression is Expression
 	{
 		new base(location);
 
-		this._condition = claim(condition);
-		this._truePart  = claim(truePart);
-		this._falsePart = claim(falsePart);
+		this._condition = condition;
+		this._truePart = truePart;
+		this._falsePart = falsePart;
 	}
 
 	private _condition;
@@ -186,13 +186,13 @@ public class UseInExpression is Expression
 	{
 		new base(location);
 
-		this._variables  = claimAll(variables);
-		this._expression = claim(expression);
+		this._variables = variables;
+		this._expression = expression;
 	}
 
 	private _variables;
-	/// Summary: Gets a {NodeList} with the {VariableDeclarator}s associated with
-	///          this use-in expression.
+	/// Summary: Gets a {NodeList} with the {VariableDeclarator}s associated with this use-in
+	///          expression.
 	public get variables => _variables;
 
 	private _expression;
@@ -221,8 +221,8 @@ public class SimpleLambdaExpression is LambdaExpression
 	{
 		new base(location);
 
-		this._parameters = claimAll(parameters);
-		this._body       = claim(body);
+		this._parameters = parameters;
+		this._body = body;
 	}
 
 	private _parameters;
@@ -231,9 +231,9 @@ public class SimpleLambdaExpression is LambdaExpression
 
 	private _body;
 	/// Summary: Gets a {Statement} or {Expression} with the body of the lambda expression.
-	/// Remarks: When the body is a {Statement}, it corresponds to a lambda expression with
-	///          a `block` for its body, of the form `@x { ... }`. When it’s an {Expression},
-	///          the lambda expression is of the form `@x => ...`.
+	/// Remarks: When the body is a {Statement}, it corresponds to a lambda expression with a
+	///          `block` for its body, of the form `@x { ... }`. When it’s an {Expression}, the
+	///          lambda expression is of the form `@x => ...`.
 	public get body => _body;
 
 	override accept(visitor, arg)
@@ -248,7 +248,7 @@ public class LambdaMemberExpression is LambdaExpression
 	{
 		new base(location);
 
-		this._members = claimAll(members);
+		this._members = members;
 	}
 
 	private _members;
@@ -387,7 +387,7 @@ public class SimpleNameExpression is Expression
 	}
 
 	private _name;
-	/// Summary: Gets the {Identifier} associated with this expression.
+	/// Summary: Gets an {Identifier} that contains the name accessed by this expression.
 	public get name => _name;
 
 	override accept(visitor, arg)
@@ -402,7 +402,7 @@ public class ParenthesizedExpression is Expression
 	{
 		new base(location);
 
-		this._inner = claim(inner);
+		this._inner = inner;
 	}
 
 	private _inner;
@@ -421,7 +421,7 @@ public class MemberAccessExpression is Expression
 	{
 		new base(location);
 
-		this._inner  = claim(inner);
+		this._inner = inner;
 		this._member = member;
 	}
 
@@ -430,7 +430,7 @@ public class MemberAccessExpression is Expression
 	public get inner => _inner;
 
 	private _member;
-	/// Summary: Gets the {Identifier} corresponding to the member name.
+	/// Summary: Gets an {Identifier} that contains the member name that is accessed.
 	public get member => _member;
 
 	override accept(visitor, arg)
@@ -445,8 +445,8 @@ public class InvocationExpression is Expression
 	{
 		new base(location);
 
-		this._inner     = claim(inner);
-		this._arguments = claimAll(arguments ?? EmptyLists.argument);
+		this._inner = inner;
+		this._arguments = arguments ?? EmptyLists.argument;
 	}
 
 	private _inner;
@@ -469,8 +469,8 @@ public class IndexerAccessExpression is Expression
 	{
 		new base(location);
 
-		this._inner     = claim(inner);
-		this._arguments = claimAll(arguments);
+		this._inner = inner;
+		this._arguments = arguments;
 	}
 
 	private _inner;
@@ -512,8 +512,8 @@ public class SafeAccessExpression is Expression
 	{
 		new base(location);
 
-		this._inner = claim(inner);
-		this._chain = claimAll(chain);
+		this._inner = inner;
+		this._chain = chain;
 	}
 
 	private _inner;
@@ -521,8 +521,8 @@ public class SafeAccessExpression is Expression
 	public get inner => _inner;
 
 	private _chain;
-	/// Summary: Gets a {NodeList} containing the {SafeAccessNode}s associated with
-	///          this expression’s safe access chain.
+	/// Summary: Gets a {NodeList} containing the {SafeAccessNode}s associated with this
+	///          expression’s safe access chain.
 	public get chain => _chain;
 
 	override accept(visitor, arg)
@@ -555,7 +555,7 @@ public class SafeMemberAccess is SafeAccessNode
 	}
 
 	private _member;
-	/// Summary: Gets the {Identifier} that corresponds to the member name.
+	/// Summary: Gets an {Identifier} that contains the member name that is accessed.
 	public get member => _member;
 
 	override accept(visitor, arg)
@@ -570,7 +570,7 @@ public class SafeInvocation is SafeAccessNode
 	{
 		new base(location, isSafe);
 
-		this._arguments = claimAll(arguments ?? EmptyLists.argument);
+		this._arguments = arguments ?? EmptyLists.argument;
 	}
 
 	private _arguments;
@@ -589,7 +589,7 @@ public class SafeIndexerAccess is SafeAccessNode
 	{
 		new base(location, isSafe);
 
-		this._arguments = claimAll(arguments);
+		this._arguments = arguments;
 	}
 
 	private _arguments;
@@ -625,7 +625,8 @@ public class GlobalAccessExpression is Expression
 	}
 
 	private _member;
-	/// Summary: Gets the {Identifier} corresponding to the name of the global member.
+	/// Summary: Gets an {Identifier} that contains the name of the global member that is
+	///          accessed.
 	public get member => _member;
 
 	override accept(visitor, arg)
@@ -666,9 +667,9 @@ public class ObjectCreationExpression is Expression
 	{
 		new base(location);
 
-		this._type        = claim(type);
-		this._arguments   = claimAll(arguments ?? EmptyLists.argument);
-		this._initializer = claim(initializer);
+		this._type = type;
+		this._arguments = arguments ?? EmptyLists.argument;
+		this._initializer = initializer;
 	}
 
 	private _type;
@@ -680,8 +681,8 @@ public class ObjectCreationExpression is Expression
 	public get arguments => _arguments;
 
 	private _initializer;
-	/// Summary: Gets the {Initializer} associated with the object creation expression,
-	///          or null if it has none.
+	/// Summary: Gets the {Initializer} associated with the object creation expression, or null
+	///          if it has none.
 	public get initializer => _initializer;
 
 	override accept(visitor, arg)
@@ -706,7 +707,7 @@ public class ObjectInitializer is Initializer
 	{
 		new base(location);
 
-		this._members = claimAll(members);
+		this._members = members;
 	}
 
 	private _members;
@@ -725,17 +726,16 @@ public class MemberInitializer is ParseNode
 	{
 		new base(location);
 
-		this._member     = member;
-		this._expression = claim(expression);
+		this._member = member;
+		this._expression = expression;
 	}
 
 	private _member;
-	/// Summary: Gets an {Identifier} corresponding to the name of the member
-	///          that is initialized.
+	/// Summary: Gets an {Identifier} that contains the name of the member that is initialized.
 	public get member => _member;
 
 	private _expression;
-	/// Summary: Gets the expression that the member is initialized to.
+	/// Summary: Gets the {Expression} that the member is initialized to.
 	public get expression => _expression;
 
 	override accept(visitor, arg)
@@ -750,7 +750,7 @@ public inheritable CollectionInitializer is Initializer
 	{
 		new base(location);
 
-		this._elements = claimAll(elements);
+		this._elements = elements;
 	}
 
 	private _elements;
@@ -769,12 +769,12 @@ public class ElementInitializer is ParseNode
 	{
 		new base(location);
 
-		this._arguments = claimAll(arguments);
+		this._arguments = arguments;
 	}
 
 	private _arguments;
-	/// Summary: Gets a {NodeList} containing this initializer’s arguments to
-	///          the newly constructed value’s `add` method.
+	/// Summary: Gets a {NodeList} containing this initializer’s arguments to the newly
+	///          constructed value’s `add` method.
 	public get arguments => _arguments;
 
 	override accept(visitor, arg)
@@ -789,7 +789,7 @@ public class ListCreationExpression is Expression
 	{
 		new base(location);
 
-		this._values = claimAll(values ?? EmptyLists.node);
+		this._values = values ?? EmptyLists.node;
 	}
 
 	private _values;
@@ -808,7 +808,7 @@ public class HashCreationExpression is Expression
 	{
 		new base(location);
 
-		this._members = claimAll(members);
+		this._members = members;
 	}
 
 	private _members;
@@ -827,8 +827,8 @@ public class HashMember is ParseNode
 	{
 		new base(location);
 
-		this._key   = claim(key);
-		this._value = claim(value);
+		this._key = key;
+		this._value = value;
 	}
 
 	private _key;
@@ -851,7 +851,7 @@ public class TypeOfExpression is Expression
 	{
 		new base(location);
 
-		this._inner = claim(inner);
+		this._inner = inner;
 	}
 
 	private _inner;
@@ -870,7 +870,7 @@ public class RefExpression is Expression
 	{
 		new base(location);
 
-		this._inner = claim(inner);
+		this._inner = inner;
 	}
 
 	private _inner;
@@ -896,13 +896,13 @@ public class NamedConstantExpression is Expression
 	}
 
 	private _type;
-	/// Summary: Gets the first {Identifier} of the named constant, which specifies
-	///          the constant type.
+	/// Summary: Gets the first {Identifier} of the named constant, which specifies the constant
+	///          type.
 	public get type => _type;
 
 	private _value;
-	/// Summary: Gets the second {Identifier} of the named constant, which specifies
-	///          the constant value together with {type}.
+	/// Summary: Gets the second {Identifier} of the named constant, which specifies the constant
+	///          value together with {type}.
 	public get value => _value;
 
 	override accept(visitor, arg)

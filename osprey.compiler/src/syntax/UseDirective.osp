@@ -65,8 +65,8 @@ public class UseSingleMemberDirective is UseDirective
 	public get fullName => _fullName;
 
 	private _alias;
-	/// Summary: Gets an {Identifier} containing the alias under which the member is imported,
-	///          or null to use the member's original name.
+	/// Summary: Gets an {Identifier} containing the alias under which the member is imported, or
+	///          null to use the member's original name.
 	public get alias => _alias;
 
 	override accept(visitor, arg)
@@ -82,7 +82,7 @@ public class UseMemberListDirective is UseDirective
 		new base(location);
 
 		this._parentName = parentName;
-		this._importedMembers = claimAll(importedMembers);
+		this._importedMembers = importedMembers;
 	}
 
 	private _parentName;
@@ -116,8 +116,8 @@ public class ImportedMember is ParseNode
 	public get memberName => _memberName;
 
 	private _alias;
-	/// Summary: Gets an {Identifier} containing the alias under which the member is imported,
-	///          or null to use the member's original name.
+	/// Summary: Gets an {Identifier} containing the alias under which the member is imported, or
+	///          null to use the member's original name.
 	public get alias => _alias;
 
 	override accept(visitor, arg)

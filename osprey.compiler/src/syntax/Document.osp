@@ -8,30 +8,29 @@ public class Document is ParseNode
 	{
 		new base(location);
 
-		this._useDirectives     = claimAll(useDirectives ?? EmptyLists.node);
-		this._globalAnnotations = claimAll(globalAnnotations ?? EmptyLists.node);
+		this._useDirectives = useDirectives ?? EmptyLists.node;
+		this._globalAnnotations = globalAnnotations ?? EmptyLists.node;
 		this._fileNamespaceName = fileNamespaceName;
-		this._members           = claimAll(members ?? EmptyLists.node);
+		this._members = members ?? EmptyLists.node;
 	}
 
 	private _useDirectives;
-	/// Summary: Gets a {NodeList} containing the {UseDirective}s in
-	///          this compilation unit.
+	/// Summary: Gets a {NodeList} containing the {UseDirective}s in this compilation unit.
 	public get useDirectives => _useDirectives;
 
 	private _globalAnnotations;
-	/// Summary: Gets a {NodeList} containing the {Annotation}s targeted
-	///          at the module.
+	/// Summary: Gets a {NodeList} containing the {Annotation}s targeted at the module.
 	public get globalAnnotations => _globalAnnotations;
 
 	private _fileNamespaceName;
-	/// Summary: Gets a {QualifiedName} containing the file namespace
-	///          name of this compilation unit.
+	/// Summary: Gets a {QualifiedName} containing the file namespace name of this compilation
+	///          unit, or null if none is specified.
+	/// Remarks: The file namespace name is set by a namespace declaration without a body, such
+	///          as `namespace foo.bar;`. The document can contain at most one such declaration.
 	public get fileNamespaceName => _fileNamespaceName;
 
 	private _members;
-	/// Summary: Gets a {NodeList} containing the members declared in
-	///          the compilation unit.
+	/// Summary: Gets a {NodeList} containing the members declared in the compilation unit.
 	public get members => _members;
 
 	override accept(visitor, arg)
