@@ -3068,9 +3068,6 @@ public inheritable Parser is ParserBase
 		 *     'typeof' '(' expression ')'
 		 *   extension-expression:
 		 *     named-constant-expression
-		 *     get-argc-expression
-		 *   get-argc-expression:
-		 *     '__get_argc'
 		 * Additional notes:
 		 *   An “atomic” expression is one that does not begin with a primary-expression.
 		 *   All expressions contain at least one atomic expression.
@@ -3092,8 +3089,7 @@ public inheritable Parser is ParserBase
 		}
 
 		// Remaining: simple-name, parenthesized-expression, this-access, base-access,
-		//            typeof-expression, global-access, named-constant-expression,
-		//            get-argc-expression.
+		//            typeof-expression, global-access, named-constant-expression.
 		// We can always skip the first token of these.
 		i += 1; // See?
 
@@ -3104,9 +3100,6 @@ public inheritable Parser is ParserBase
 			if useExtensions {
 				if start.contextualType == ContextualType.namedConst {
 					return parseNamedConstantExpression(ref i);
-				}
-				if start.contextualType == ContextualType.getArgc {
-					return new GetArgumentCountExpression(start.location);
 				}
 			}
 			return new SimpleNameExpression(start.location, start);

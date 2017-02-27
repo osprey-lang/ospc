@@ -147,8 +147,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitConditionalXorExpression(expr, arg);
 
-	public abstract visitGetArgumentCountExpression(expr, arg);
-
 	public abstract visitGlobalAccess(expr, arg);
 
 	public abstract visitHashCreationExpression(expr, arg);

@@ -448,11 +448,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitGetArgumentCountExpression(expr, arg)
-	{
-		return null;
-	}
-
 	overridable override visitGlobalAccess(expr, arg)
 	{
 		return null;

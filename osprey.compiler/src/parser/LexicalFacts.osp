@@ -96,7 +96,6 @@ internal static class LexicalFacts
 		"__init_type":   ContextualType.initType,
 		"__extern":      ContextualType.extern,
 		"__named_const": ContextualType.namedConst,
-		"__get_argc":    ContextualType.getArgc,
 	};
 
 	// Mapping from ContextualType to keyword string. Assigned by static constructor.

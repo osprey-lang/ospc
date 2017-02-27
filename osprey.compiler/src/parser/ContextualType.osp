@@ -24,6 +24,4 @@ public enum ContextualType
 	extern = 103,
 	/// Summary: __named_const (non-standard extension)
 	namedConst = 104,
-	/// Summary: __get_argc (non-standard extension)
-	getArgc = 105,
 }

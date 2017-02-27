@@ -311,7 +311,7 @@ public class LexerTests is TestFixture
 		var source = r"
 			as  get  set
 			__primitive  __init_type  __extern
-			__named_const  __get_argc
+			__named_const
 		";
 		var lexer = lex(source);
 
@@ -319,7 +319,7 @@ public class LexerTests is TestFixture
 		var tokens = [
 			CT.as, CT.get, CT.set,
 			CT.primitive, CT.initType, CT.extern,
-			CT.namedConst, CT.getArgc
+			CT.namedConst
 		];
 
 		Assert.collectionsMatch(lexer, tokens, @(token, contextualType) {
@@ -335,7 +335,7 @@ public class LexerTests is TestFixture
 		var source = r"
 			\as  \get  \set
 			\__primitive  \__init_type  \__extern
-			\__named_const  \__get_argc
+			\__named_const
 		";
 		var lexer = lex(source);
 
@@ -346,7 +346,7 @@ public class LexerTests is TestFixture
 			Assert.areEqual(token.contextualType, CT.none);
 			count += 1;
 		}
-		Assert.areEqual(count, 8);
+		Assert.areEqual(count, 7);
 	}
 
 	public test_SimpleDecimalIntegerLiteral()

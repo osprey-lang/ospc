@@ -910,16 +910,3 @@ public class NamedConstantExpression is Expression
 		return visitor.visitNamedConstantExpression(this, arg);
 	}
 }
-
-public class GetArgumentCountExpression is Expression
-{
-	public new(location)
-	{
-		new base(location);
-	}
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitGetArgumentCountExpression(this, arg);
-	}
-}
