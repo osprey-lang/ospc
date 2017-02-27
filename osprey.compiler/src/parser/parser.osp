@@ -7,6 +7,7 @@ use "Lexer.osp";
 use "LexerFlags.osp";
 use "LexicalFacts.osp";
 use "Modifiers.osp";
+use "NamedConstantValue.osp";
 use "ParserErrorManager.osp";
 use "ParseFlags.osp";
 use "ParserBase.osp";
@@ -3139,19 +3140,24 @@ public inheritable Parser is ParserBase
 		 *   This method is only ever called when '__named_const' has already been seen.
 		 *   Therefore, we don't check for that here. Also, this method is called with i
 		 *   set to one past the '__named_const' keyword.
+		 *
+		 *   Note: There is no parse node that corresponds to __named_const. This method
+		 *   resolves the constant name and returns a suitable LiteralExpression.
 		 */
 		var start = lex[i - 1];
 		expectr(ref i, TokenType.parenOpen);
 
 		var type = expectr(ref i, TokenType.identifier);
 		expectr(ref i, TokenType.colon);
-		var value = expectr(ref i, TokenType.identifier);
+		var name = expectr(ref i, TokenType.identifier);
 
 		var end = expectr(ref i, TokenType.parenClose);
 
-		return new NamedConstantExpression(
+		return NamedConstantValue.resolve(
+			this,
 			getLocation(start, end),
-			type, value
+			type.identifier,
+			name.identifier
 		);
 	}
 

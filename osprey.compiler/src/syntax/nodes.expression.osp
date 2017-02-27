@@ -882,31 +882,3 @@ public class RefExpression is Expression
 		return visitor.visitRefExpression(this, arg);
 	}
 }
-
-/* ** Extension expressions ** */
-
-public class NamedConstantExpression is Expression
-{
-	public new(location, type, value)
-	{
-		new base(location);
-
-		this._type  = type;
-		this._value = value;
-	}
-
-	private _type;
-	/// Summary: Gets the first {Identifier} of the named constant, which specifies the constant
-	///          type.
-	public get type => _type;
-
-	private _value;
-	/// Summary: Gets the second {Identifier} of the named constant, which specifies the constant
-	///          value together with {type}.
-	public get value => _value;
-
-	override accept(visitor, arg)
-	{
-		return visitor.visitNamedConstantExpression(this, arg);
-	}
-}

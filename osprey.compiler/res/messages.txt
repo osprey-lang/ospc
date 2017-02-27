@@ -138,6 +138,7 @@
 1901 err_x_ExpectedExternKeyword = "Expected the '__extern' keyword.";
 1902 err_x_UnknownExternParameter = "Unknown __extern parameter '{0}'.";
 1903 err_x_ExpectedExternMethodName = "Expected a string (the name of a native method name).";
+1904 err_x_UnknownNamedConstant = "There is no named constant matching '{0}: {1}'.";
 
 //## Compile-time errors (2000-5999) ##
 2001 err_NameError = "The name '{0}' caused an unspecified error.";

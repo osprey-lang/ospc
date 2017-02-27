@@ -1,0 +1,101 @@
+use aves.*;
+use osprey.compiler.syntax.*;
+
+namespace osprey.compiler.parser;
+
+/// Summary: Contains values for named constants, and resolves them, given a type and a name.
+///          Named constants are accessed by the `__named_const(...)` extension keyword, and
+///          are used for constant values that are cumbersome or impossible to represent in
+///          a constant expression.
+/// Remarks: The `__named_const` extension keyword is not intended for general use. Its
+///          purpose is to provide values for public constants such as {Int.min}, {UInt.max},
+///          {Real.epsilon}, {math.pi} and more. It should always be considered an unstable
+///          feature, and no module other than `aves` should rely on it.
+internal static class NamedConstantValue
+{
+	private static nameResolvers = {
+		"int": resolveIntValue,
+		"uint": resolveUIntValue,
+		"real": resolveRealValue,
+	};
+
+	private static intValues = {
+		"min": -9_223_372_036_854_775_807 - 1,
+		"max": 9_223_372_036_854_775_807,
+	};
+
+	private static uintValues = {
+		"min": 0u,
+		"max": 18_446_744_073_709_551_615u,
+	};
+
+	private static realValues = {
+		"min":     0xffefffffffffffffu.asReal(),
+		"max":     0x7fefffffffffffffu.asReal(),
+		"epsilon": 0x0000000000000001u.asReal(),
+		"NaN":     0xfff8000000000000u.asReal(),
+		"inf":     0x7ff0000000000000u.asReal(),
+		"pi":      0x400921fb54442d18u.asReal(),
+		"e":       0x4005bf0a8b145769u.asReal(),
+		"sqrt2":   0x3ff6a09e667f3bcdu.asReal(),
+		"phi":     0x3ff9e3779b97f4a8u.asReal(),
+	};
+
+	/// Summary: Resolves a named constant into a {LiteralExpression}.
+	/// Param parser: The {Parser} on which to trigger a recoverable error if the constant type
+	///          or name could not be resolved.
+	/// Param location: The {SourceLocation} of the entire `__named_const` expression.
+	/// Param type: A string containing the type name (`int`, `uint`, etc.).
+	/// Param name: A string containing the constant name (`min`, `max`, `epsilon`, etc.).
+	/// Returns: A {LiteralExpression} containing the value of the constant. If the constant
+	///          could not be resolved, the literal value of the expression is null, and a
+	///          recoverable error will have been triggered on {parser}.
+	internal static resolve(parser, location, type, name)
+	{
+		var nameResolver;
+		if not nameResolvers.tryGet(type, ref nameResolver) {
+			unknownConstantError(parser, location, type, name);
+			return new NullLiteralExpression(location);
+		}
+		return nameResolver(parser, location, name);
+	}
+
+	private static resolveIntValue(parser, location, name)
+	{
+		var value = 0;
+		if not intValues.tryGet(name, ref value) {
+			unknownConstantError(parser, location, "int", name);
+			return new NullLiteralExpression(location);
+		}
+		return new IntegerLiteralExpression(location, value);
+	}
+
+	private static resolveUIntValue(parser, location, name)
+	{
+		var value = 0u;
+		if not uintValues.tryGet(name, ref value) {
+			unknownConstantError(parser, location, "uint", name);
+			return new NullLiteralExpression(location);
+		}
+		return new IntegerLiteralExpression(location, value);
+	}
+
+	private static resolveRealValue(parser, location, name)
+	{
+		var value = 0.0;
+		if not realValues.tryGet(name, ref value) {
+			unknownConstantError(parser, location, "real", name);
+			return new NullLiteralExpression(location);
+		}
+		return new RealLiteralExpression(location, value);
+	}
+
+	private static unknownConstantError(parser, location, type, name)
+	{
+		parser.recoverableError(
+			location,
+			ErrorCode.err_x_UnknownNamedConstant,
+			[type, name]
+		);
+	}
+}

@@ -167,8 +167,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitMemberAccess(expr, arg);
 
-	public abstract visitNamedConstantExpression(expr, arg);
-
 	public abstract visitNullCoalescingExpression(expr, arg);
 
 	public abstract visitNullOrExpression(expr, arg);

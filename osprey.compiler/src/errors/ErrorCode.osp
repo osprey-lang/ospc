@@ -108,6 +108,7 @@ public static class ErrorCode
 	public const err_x_ExpectedExternKeyword = 1901;
 	public const err_x_UnknownExternParameter = 1902;
 	public const err_x_ExpectedExternMethodName = 1903;
+	public const err_x_UnknownNamedConstant = 1904;
 	public const err_NameError = 2001;
 	public const err_NameErrorWithoutName = 2002;
 	public const err_UndefinedName = 2003;
