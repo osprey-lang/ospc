@@ -343,10 +343,6 @@ public class Lexer
 		 *     decimal-digit-sections decimal-digit-section
 		 *   decimal-digit-section:
 		 *     '_' decimal-digits
-		 *   multiplier-suffix: one of
-		 *     'k'  'K'  'm'  'M'  'g'  'G'  't'  'T'
-		 *   unsigned-suffix: one of
-		 *     'u'  'U'
 		 *   real-literal:
 		 *     decimal-value '.' decimal-digits exponent-part?
 		 *     '.' decimal-digits exponent-part?
@@ -437,7 +433,39 @@ public class Lexer
 		// Everything after this is suffixes.
 		var literalEnd = i;
 
-		// I can has multiplier?
+		// Try to parse a multiplier and unsigned suffix even if it's a real literal.
+		// This lets us produce a better error message than if we were to ignore the
+		// suffix and later try to parse it as an identifier.
+		var multiplier = acceptMultiplierSuffix(ref i, hasDecimals);
+		var isUnsigned = acceptUnsignedSuffix(ref i, hasDecimals);
+
+		// Now, let's parse the value!
+		var location = getLocation(startIndex, i);
+		var value = source.substringTo(startIndex, literalEnd).replace("_", "");
+		var tokenType;
+		if hasDecimals {
+			tokenType = TokenType.real;
+			value = parseRealLiteral(value, location);
+		}
+		else {
+			tokenType = TokenType.int;
+			value = parseDecimalIntegerLiteral(
+				value,
+				isUnsigned,
+				multiplier,
+				location
+			);
+		}
+
+		return new LiteralToken(getLocation(startIndex, i), tokenType, value);
+	}
+
+	private acceptMultiplierSuffix(ref i, hasDecimals)
+	{
+		/* Syntax:
+		 *   multiplier-suffix: one of
+		 *     'k'  'K'  'm'  'M'  'g'  'G'  't'  'T'
+		 */
 		var multiplier = 1;
 		if not isEOF(i) {
 			var ch = source[i];
@@ -448,62 +476,80 @@ public class Lexer
 				i += 1; // skip multiplier
 			}
 		}
+		return multiplier;
+	}
 
-		// Maybe unsigned suffix?
-		var isUnsigned = false;
+	private acceptUnsignedSuffix(ref i, hasDecimals)
+	{
+		/* Syntax:
+		 *   unsigned-suffix: one of
+		 *     'u'  'U'
+		 */
 		if not isEOF(i) {
 			var ch = source[i];
 			if ch == 'u' or ch == 'U' {
 				if hasDecimals {
 					fatalError(ErrorCode.err_UnsignedOnReal, i, 1);
 				}
-				isUnsigned = true;
 				i += 1; // skip u/U
+				return true;
 			}
 		}
+		return false;
+	}
 
-		// Now, let's parse the value!
-		var value = source.substringTo(startIndex, literalEnd).replace("_", "");
-		var tokenType;
-		if hasDecimals {
-			value = Real.parse(value);
-			// Infinity = overflow = error condition.
-			// NaN is not possible in this situation.
-			if value.isInfinite {
-				value = null;
-			}
-			tokenType = TokenType.real;
-		}
-		else {
-			tokenType = TokenType.int;
-			if isUnsigned {
-				value = UInt.parse(value);
-			}
-			else {
-				value = Int.parse(value);
-			}
+	private parseRealLiteral(str, location)
+	{
+		// The number is guaranteed to be well-formed, since Osprey's grammar
+		// matches the format expected by Real.parse(), except for underscores
+		// which are stripped from 'str' by the caller.
+		var value = Real.parse(str);
 
-			if value is not null {
-				try { value *= multiplier; }
-				catch OverflowError { value = null; }
-			}
-		}
-
-		// The parsing can only ever fail due to an overflow. The number is
-		// otherwise guaranteed to be in the right format.
-		if value is null {
-			var type = hasDecimals ? "Real" :
-				isUnsigned ? "UInt" :
-				"Int";
+		// Infinity means overflow means error condition.
+		// NaN is not possible in this situation.
+		if value.isInfinite {
 			recoverableError(
 				ErrorCode.err_NumberOutOfRange,
-				[type, source.substringTo(startIndex, i)],
-				startIndex, i - startIndex
+				["Real", location.getText()],
+				location.startIndex,
+				location.endIndex - location.startIndex
 			);
-			value = LiteralToken.invalidValue;
+			return LiteralToken.invalidValue;
+		}
+		return value;
+	}
+
+	private parseDecimalIntegerLiteral(str, isUnsigned, multiplier, location)
+	{
+		// The number is guaranteed to be well-formed, since Osprey's grammar
+		// matches the format expected by Int.parse()/UInt.parse(), except for
+		// underscores which are stripped from 'str' by the caller. Note that
+		// 'str' also does not contain the unsigned suffix or multiplier.
+		// The only possible error here is an overflow.
+		var value = isUnsigned
+			? UInt.parse(str)
+			: Int.parse(str);
+
+		// If nothing overflowed and we have a multiplier, try to apply it.
+		if value is not null and multiplier != 1 {
+			try {
+				value *= multiplier;
+			}
+			catch OverflowError {
+				value = null;
+			}
 		}
 
-		return new LiteralToken(getLocation(startIndex, i), tokenType, value);
+		if value is null {
+			recoverableError(
+				ErrorCode.err_NumberOutOfRange,
+				[isUnsigned ? "UInt" : "Int", location.getText()],
+				location.startIndex,
+				location.endIndex - location.startIndex
+			);
+			return LiteralToken.invalidValue;
+		}
+		return value;
 	}
 
 	private scanHexNumber(ref i)
@@ -526,8 +572,6 @@ public class Lexer
 		 *     hex-digit-sections hex-digit-section
 		 *   hex-digit-section:
 		 *     '_' hex-digits
-		 *   unsigned-suffix: one of
-		 *     'u'  'U'
 		 */
 		var startIndex = i;
 		i += 2; // Skip 0x/0X
@@ -556,11 +600,15 @@ public class Lexer
 				if LexicalFacts.hexDigits.tryGet(ch, ref digitValue) {
 					emptySection = false;
 					if not overflow {
-						try { value = value * 16 + digitValue; }
+						try {
+							value = value * 16 + digitValue;
+						}
 						// If the operation overflows, do keep parsing the literal.
 						// That way, we can report the entire literal as the error
 						// source, rather than just part of it, which looks better.
-						catch OverflowError { overflow = true; }
+						catch OverflowError {
+							overflow = true;
+						}
 					}
 				}
 				else {
@@ -575,25 +623,23 @@ public class Lexer
 			fatalError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
 		}
 
-		var isUnsigned = false;
-		if not isEOF(i) {
-			var ch = source[i];
-			if ch == 'u' or ch == 'U' {
-				isUnsigned = true;
-				i += 1; // skip u/U
-			}
-		}
+		var isUnsigned = acceptUnsignedSuffix(ref i, false);
 
 		if not overflow and not isUnsigned {
-			try { value = int(value); }
-			catch OverflowError { overflow = true; }
+			try {
+				value = int(value);
+			}
+			catch OverflowError {
+				overflow = true;
+			}
 		}
 
 		if overflow {
 			recoverableError(
 				ErrorCode.err_NumberOutOfRange,
 				[isUnsigned ? "UInt" : "Int", source.substringTo(startIndex, i)],
-				startIndex, i - startIndex
+				startIndex,
+				i - startIndex
 			);
 			value = LiteralToken.invalidValue;
 		}
