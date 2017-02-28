@@ -24,8 +24,7 @@ public class LexerTests is TestFixture
 	public test_Constructor1()
 	{
 		var file = SourceFile.createAnon("");
-		var lexer;
-		Assert.doesNotThrow(@{ lexer = new Lexer(file); });
+		var lexer = new Lexer(file);
 		Assert.areSameRef(file, lexer.sourceFile);
 	}
 
@@ -38,8 +37,7 @@ public class LexerTests is TestFixture
 	public test_Constructor2()
 	{
 		var file = SourceFile.createAnon("");
-		var lexer;
-		Assert.doesNotThrow(@{ lexer = new Lexer(file, LexerFlags.none); });
+		var lexer = new Lexer(file, LexerFlags.none);
 		Assert.areSameRef(file, lexer.sourceFile);
 	}
 
@@ -60,8 +58,7 @@ public class LexerTests is TestFixture
 	{
 		var file = SourceFile.createAnon("");
 		var errors = new TestErrorManager();
-		var lexer;
-		Assert.doesNotThrow(@{ lexer = new Lexer(file, LexerFlags.none, errors); });
+		var lexer = new Lexer(file, LexerFlags.none, errors);
 		Assert.areSameRef(file, lexer.sourceFile);
 		Assert.areSameRef(errors, lexer.errorManager);
 	}
@@ -70,8 +67,7 @@ public class LexerTests is TestFixture
 	{
 		// When the ErrorManager is null, the lexer creates its own.
 		var file = SourceFile.createAnon("");
-		var lexer;
-		Assert.doesNotThrow(@{ lexer = new Lexer(file, LexerFlags.none, null); });
+		var lexer = new Lexer(file, LexerFlags.none, null);
 		Assert.areSameRef(file, lexer.sourceFile);
 		Assert.isNotNull(lexer.errorManager);
 	}
