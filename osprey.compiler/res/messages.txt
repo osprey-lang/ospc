@@ -132,7 +132,7 @@
 1854 err_ExpectedMemberToAccess = "Expected the name of a member (an identifier) or 'iter'.";
 1855 err_ExpectedConstructorArgumentsOrInitializer = "Expected an argument list ('new T(…)') or initializer ('new T with …').";
 1856 err_InvalidLambdaExpression = "Expected a parameter list, a single identifier, '.' or '?.' followed by an identifier, '=>', '{', or an operator.";
-1857 err_UseInVariableWithoutValue = "Expected '=' followed by an expression. A 'use–in' variable must be assigned a value.";
+1857 err_LetInVariableWithoutValue = "Expected '=' followed by an expression. A 'let–in' variable must be assigned a value.";
 
 // Extension errors
 1901 err_x_ExpectedExternKeyword = "Expected the '__extern' keyword.";

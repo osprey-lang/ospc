@@ -2438,10 +2438,10 @@ public inheritable Parser is ParserBase
 		/* Syntax:
 		 *   expression:
 		 *     conditional-expression
-		 *     use-in-expression
+		 *     let-in-expression
 		 */
-		if accept(i, TokenType.\use) {
-			return parseUseInExpression(ref i);
+		if accept(i, TokenType.\let) {
+			return parseLetInExpression(ref i);
 		}
 
 		return parseConditionalExpression(ref i);
@@ -3615,33 +3615,34 @@ public inheritable Parser is ParserBase
 		return new NodeList(links);
 	}
 
-	/// Summary: Parses a `use-in` expression at the specified token index.
+	/// Summary: Parses a `let-in` expression at the specified token index.
 	/// Param i: (ref) The token index to start parsing at. Upon returning, this contains
 	///          the index of the token that immediately follows the returned parse tree.
-	/// Returns: A {UseInExpression} from the tokens at the starting index.
-	/// Remarks: This method parses the grammar of the 'use-in-expression' nonterminal.
-	public parseUseInExpression(ref i)
+	/// Returns: A {LetInExpression} from the tokens at the starting index.
+	/// Remarks: This method parses the grammar of the 'let-in-expression' nonterminal.
+	public parseLetInExpression(ref i)
 	{
 		/* Syntax:
-		 *   use-in-expression:
-		 *     'use' use-in-variables 'in' expression
-		 *   use-in-variables:
-		 *     use-in-variable
-		 *     use-in-variables ',' use-in-variable
-		 *   use-in-variable:
+		 *   let-in-expression:
+		 *     'let' let-in-variables 'in' expression
+		 *   let-in-variables:
+		 *     let-in-variable
+		 *     let-in-variables ',' let-in-variable
+		 *   let-in-variable:
 		 *     identifier '=' expression
 		 */
-		var start = expectr(ref i, TokenType.\use);
+		var start = expectr(ref i, TokenType.\let);
 
 		var variables = new List(1);
 		do {
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign, ErrorCode.err_UseInVariableWithoutValue);
+			expectr(ref i, TokenType.assign, ErrorCode.err_LetInVariableWithoutValue);
 			var value = parseExpression(ref i);
 			variables.add(
 				new VariableDeclarator(
 					getLocation(name, value),
-					name, value
+					name,
+					value
 				)
 			);
 		} while acceptr(ref i, TokenType.comma);
@@ -3651,9 +3652,10 @@ public inheritable Parser is ParserBase
 
 		var expression = parseExpression(ref i);
 
-		return new UseInExpression(
+		return new LetInExpression(
 			getLocation(start, expression),
-			variables, expression
+			variables,
+			expression
 		);
 	}
 

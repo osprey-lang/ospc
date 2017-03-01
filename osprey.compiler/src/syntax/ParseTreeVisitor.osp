@@ -207,7 +207,7 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitUnaryExpression(expr, arg);
 
-	public abstract visitUseInExpression(expr, arg);
+	public abstract visitLetInExpression(expr, arg);
 
 	// Type names
 

@@ -104,7 +104,7 @@ public static class ErrorCode
 	public const err_ExpectedMemberToAccess = 1854;
 	public const err_ExpectedConstructorArgumentsOrInitializer = 1855;
 	public const err_InvalidLambdaExpression = 1856;
-	public const err_UseInVariableWithoutValue = 1857;
+	public const err_LetInVariableWithoutValue = 1857;
 	public const err_x_ExpectedExternKeyword = 1901;
 	public const err_x_UnknownExternParameter = 1902;
 	public const err_x_ExpectedExternMethodName = 1903;

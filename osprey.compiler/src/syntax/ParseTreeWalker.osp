@@ -632,7 +632,7 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitUseInExpression(expr, arg)
+	overridable override visitLetInExpression(expr, arg)
 	{
 		expr.variables.acceptAll(this, arg);
 		expr.expression.accept(this, arg);

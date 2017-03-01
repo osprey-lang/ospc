@@ -180,7 +180,7 @@ public class NullCoalescingExpression is BinaryExpression
 	}
 }
 
-public class UseInExpression is Expression
+public class LetInExpression is Expression
 {
 	public new(location, variables, expression)
 	{
@@ -191,17 +191,17 @@ public class UseInExpression is Expression
 	}
 
 	private _variables;
-	/// Summary: Gets a {NodeList} with the {VariableDeclarator}s associated with this use-in
+	/// Summary: Gets a {NodeList} with the {VariableDeclarator}s associated with this let-in
 	///          expression.
 	public get variables => _variables;
 
 	private _expression;
-	/// Summary: Gets the {Expression} that generates the value of this use-in expression.
+	/// Summary: Gets the {Expression} that generates the value of this let-in expression.
 	public get expression => _expression;
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitUseInExpression(this, arg);
+		return visitor.visitLetInExpression(this, arg);
 	}
 }
 
