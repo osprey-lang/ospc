@@ -31,6 +31,8 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitClassDeclaration(decl, arg);
 
+	public abstract visitConstantDeclarator(decl, arg);
+
 	public abstract visitConstructorDeclaration(decl, arg);
 
 	public abstract visitThisParameter(param, arg);

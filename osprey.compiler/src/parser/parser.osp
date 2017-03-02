@@ -569,9 +569,10 @@ public inheritable Parser is ParserBase
 			var value = parseExpression(ref i);
 
 			constants.add(
-				new VariableDeclarator(
+				new ConstantDeclarator(
 					getLocation(name, value),
-					name, value
+					name,
+					value
 				)
 			);
 		} while acceptr(ref i, TokenType.comma);
@@ -1005,7 +1006,8 @@ public inheritable Parser is ParserBase
 			fields.add(
 				new VariableDeclarator(
 					getLocation(name, value ?? name),
-					name, value
+					name,
+					value
 				)
 			);
 		} while acceptr(ref i, TokenType.comma);
@@ -1131,9 +1133,10 @@ public inheritable Parser is ParserBase
 			var value = parseExpression(ref i);
 
 			constants.add(
-				new VariableDeclarator(
+				new ConstantDeclarator(
 					getLocation(name, value),
-					name, value
+					name,
+					value
 				)
 			);
 		} while acceptr(ref i, TokenType.comma);
@@ -1583,7 +1586,7 @@ public inheritable Parser is ParserBase
 			var value = parseExpression(ref i);
 
 			constants.add(
-				new VariableDeclarator(getLocation(name, value), name, value)
+				new ConstantDeclarator(getLocation(name, value), name, value)
 			);
 		} while acceptr(ref i, TokenType.comma);
 		constants = new NodeList(constants);

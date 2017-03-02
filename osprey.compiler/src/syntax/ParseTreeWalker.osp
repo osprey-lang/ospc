@@ -65,6 +65,12 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
+	overridable override visitConstantDeclarator(decl, arg)
+	{
+		decl.value.accept(this, arg);
+		return null;
+	}
+
 	overridable override visitConstructorDeclaration(decl, arg)
 	{
 		decl.annotations.acceptAll(this, arg);

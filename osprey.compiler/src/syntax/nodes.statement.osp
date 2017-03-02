@@ -545,7 +545,7 @@ public class LocalConstantDeclaration is LocalDeclaration
 	}
 
 	private _constants;
-	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of this local constant
+	/// Summary: Gets a {NodeList} containing the {ConstantDeclarator}s of this local constant
 	///          declaration.
 	public get constants => _constants;
 

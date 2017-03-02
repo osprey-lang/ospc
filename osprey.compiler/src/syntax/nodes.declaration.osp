@@ -48,7 +48,7 @@ public class GlobalConstantDeclaration is ParseNode
 	public get accessibility => _accessibility;
 
 	private _constants;
-	/// Summary: Gets a {NodeList} containing {VariableDeclarator}s that represent the constants
+	/// Summary: Gets a {NodeList} containing {ConstantDeclarator}s that represent the constants
 	///          declared in this declaration.
 	public get constants => _constants;
 
@@ -571,7 +571,7 @@ public class ClassConstantDeclaration is ClassMember
 	}
 
 	private _constants;
-	/// Summary: Gets a {NodeList} containing the {VariableDeclarator}s of the class constant
+	/// Summary: Gets a {NodeList} containing the {ConstantDeclarator}s of the class constant
 	///          declaration.
 	public get constants => _constants;
 
@@ -687,6 +687,30 @@ public class EnumMember is ParseNode
 	override accept(visitor, arg)
 	{
 		return visitor.visitEnumMember(this, arg);
+	}
+}
+
+public class ConstantDeclarator is ParseNode
+{
+	public new(location, name, value)
+	{
+		new base(location);
+
+		this._name = name;
+		this._value = value;
+	}
+
+	private _name;
+	/// Summary: Gets an {Identifier} containing the declared name of the constant.
+	public get name => _name;
+
+	private _value;
+	/// Summary: Gets an {Expression} containing the value of the declared constant.
+	public get value => _value;
+
+	override accept(visitor, arg)
+	{
+		return visitor.visitConstantDeclarator(this, arg);
 	}
 }
 
