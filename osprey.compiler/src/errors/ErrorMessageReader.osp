@@ -1,0 +1,53 @@
+use aves.*;
+use io.Path;
+use aves.reflection.Module;
+use osprey.compiler.parser.*;
+
+namespace osprey.compiler;
+
+internal class ErrorMessageReader
+{
+	// Always loaded from the module's directory.
+	private const errorMessageFile = "messages.txt";
+
+	internal static loadMessages()
+	{
+		var module = Module.getCurrentModule();
+		var messageFile = Path.join(Path.getDirectory(module.fileName), errorMessageFile);
+		var parser = new Parser(SourceFile.open(messageFile, false), ParseFlags.none);
+
+		return parseMessages(parser);
+	}
+
+	private static parseMessages(parser)
+	{
+		// messages.txt uses Osprey tokens, according to the following grammar:
+		//   message-file:
+		//     messages
+		//   messages:
+		//     message
+		//     messages  message
+		//   message:
+		//     integer-literal  ':'  identifier  '='  string-literal  ';'
+		// With the additional restriction that the integer literal must be of
+		// type aves.Int. Unsigned integers are not allowed.
+		// The identifier in the message definition is used to generate a list
+		// of error codes.
+		var messages = new Hash(100);
+
+		var i = 0;
+		while not parser.accept(i, TokenType.eof) {
+			var code = parser.expectr(ref i, TokenType.int).literalValue;
+			parser.expectr(ref i, TokenType.identifier);
+
+			parser.expectr(ref i, TokenType.assign);
+
+			var message = parser.expectr(ref i, TokenType.string).literalValue;
+
+			parser.expectr(ref i, TokenType.semicolon);
+			messages.add(code, message);
+		}
+
+		return messages;
+	}
+}
