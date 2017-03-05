@@ -395,7 +395,7 @@ public class LexerTests is TestFixture
 		var token = lexer[0];
 		assertTokenMatches(token, TT.int);
 		Assert.areSameRef(token.literalValue, LiteralToken.invalidValue);
-		assertErrorsMatch([ErrorCode.err_NumberOutOfRange]);
+		assertErrorsMatch([ErrorCode.numberOutOfRange]);
 		assertIsEOF(lexer[1]);
 	}
 
@@ -408,13 +408,13 @@ public class LexerTests is TestFixture
 		var token = lexer[0];
 		assertTokenMatches(token, TT.int);
 		Assert.areSameRef(token.literalValue, LiteralToken.invalidValue);
-		assertErrorsMatch([ErrorCode.err_NumberOutOfRange]);
+		assertErrorsMatch([ErrorCode.numberOutOfRange]);
 		assertIsEOF(lexer[1]);
 	}
 
 	public test_InvalidDecimalInteger()
 	{
-		assertThrowsParseError(r"123__456", ErrorCode.err_MultipleConsecutiveUnderscores);
-		assertThrowsParseError(r"123_", ErrorCode.err_UnderscoreWithoutDigits);
+		assertThrowsParseError(r"123__456", ErrorCode.multipleConsecutiveUnderscores);
+		assertThrowsParseError(r"123_", ErrorCode.underscoreWithoutDigits);
 	}
 }

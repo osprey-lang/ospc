@@ -73,8 +73,8 @@ public inheritable NameError is CompileTimeError
 	{
 		name = formatName(name);
 		return name is null ?
-			ErrorCode.getMessage(ErrorCode.err_NameErrorWithoutName) :
-			ErrorCode.getMessage(ErrorCode.err_NameError, [name]);
+			ErrorCode.getMessage(ErrorCode.nameErrorWithoutName) :
+			ErrorCode.getMessage(ErrorCode.nameError, [name]);
 	}
 
 	/// Summary: Formats a name for use in an error message or the {name} property.
@@ -153,8 +153,8 @@ public inheritable UndefinedNameError is NameError
 	{
 		name = formatName(name);
 		return name is null ?
-			ErrorCode.getMessage(ErrorCode.err_UndefinedNameWithoutName) :
-			ErrorCode.getMessage(ErrorCode.err_UndefinedName, [name]);
+			ErrorCode.getMessage(ErrorCode.undefinedNameWithoutName) :
+			ErrorCode.getMessage(ErrorCode.undefinedName, [name]);
 	}
 }
 
@@ -212,7 +212,7 @@ public inheritable DuplicateNameError is NameError
 	{
 		name = formatName(name);
 		return name is null ?
-			ErrorCode.getMessage(ErrorCode.err_DuplicateNameWithoutName) :
-			ErrorCode.getMessage(ErrorCode.err_DuplicateName, [name]);
+			ErrorCode.getMessage(ErrorCode.duplicateNameWithoutName) :
+			ErrorCode.getMessage(ErrorCode.duplicateName, [name]);
 	}
 }

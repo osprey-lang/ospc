@@ -87,7 +87,7 @@ public inheritable Parser is ParserBase
 	public ensureAssignable(expression, errorCode = null)
 	{
 		if not isAssignable(expression) {
-			recoverableError(expression, errorCode ?? ErrorCode.err_ExpressionMustBeAssignable);
+			recoverableError(expression, errorCode ?? ErrorCode.expressionMustBeAssignable);
 		}
 	}
 
@@ -248,7 +248,7 @@ public inheritable Parser is ParserBase
 				construct = parseGlobalFunctionDeclaration(ref i, modifiers);
 			}
 			else {
-				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
+				fatalError(token, ErrorCode.expectedNamespaceMember);
 			}
 			members.add(construct);
 		}
@@ -312,7 +312,7 @@ public inheritable Parser is ParserBase
 			return parseUseMemberDirective(ref i, start);
 		}
 
-		fatalError(lex[i], ErrorCode.err_InvalidUseDirective);
+		fatalError(lex[i], ErrorCode.invalidUseDirective);
 	}
 
 	private parseUseMemberDirective(ref i, start)
@@ -358,7 +358,7 @@ public inheritable Parser is ParserBase
 				);
 			}
 
-			fatalError(lex[i], ErrorCode.err_InvalidUseMemberDirectiveAfterDot);
+			fatalError(lex[i], ErrorCode.invalidUseMemberDirectiveAfterDot);
 		}
 		else {
 			// use foo;   or   use foo as bar;
@@ -367,7 +367,7 @@ public inheritable Parser is ParserBase
 				alias = expectr(ref i, TokenType.identifier);
 			}
 
-			var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_InvalidUseMemberDirective);
+			var end = expectr(ref i, TokenType.semicolon, ErrorCode.invalidUseMemberDirective);
 
 			return new UseSingleMemberDirective(
 				getLocation(start, end),
@@ -486,7 +486,7 @@ public inheritable Parser is ParserBase
 
 		var name = parseQualifiedName(ref i);
 		if accept(i, TokenType.semicolon) {
-			fatalError(lex[i], ErrorCode.err_InvalidLocationForFileNamespace);
+			fatalError(lex[i], ErrorCode.invalidLocationForFileNamespace);
 		}
 		expectr(ref i, TokenType.curlyOpen);
 
@@ -518,7 +518,7 @@ public inheritable Parser is ParserBase
 				member = parseNamespaceDeclaration(ref i);
 			}
 			else {
-				fatalError(token, ErrorCode.err_ExpectedNamespaceMember);
+				fatalError(token, ErrorCode.expectedNamespaceMember);
 			}
 
 			members.add(member);
@@ -565,7 +565,7 @@ public inheritable Parser is ParserBase
 		var constants = new List(1);
 		do {
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
+			expectr(ref i, TokenType.assign, ErrorCode.constantWithoutValue);
 			var value = parseExpression(ref i);
 
 			constants.add(
@@ -899,7 +899,7 @@ public inheritable Parser is ParserBase
 			isSetter = true;
 		}
 		else if start.contextualType != ContextualType.get {
-			fatalError(start, ErrorCode.err_UnexpectedToken);
+			fatalError(start, ErrorCode.unexpectedToken);
 		}
 
 		// name is null for indexer; indexerParams is null for property
@@ -914,13 +914,13 @@ public inheritable Parser is ParserBase
 				/*allowEmpty=*/ false
 			);
 			if indexerParams.hasOptionalParameters {
-				recoverableError(indexerParams.first(@.isOptional), ErrorCode.err_IndexerCannotHaveOptionalParameters);
+				recoverableError(indexerParams.first(@.isOptional), ErrorCode.indexerCannotHaveOptionalParameters);
 			}
 			if indexerParams.hasVariadicParameter {
-				recoverableError(indexerParams.first(@.isVariadic), ErrorCode.err_IndexerCannotHaveVariadicParameter);
+				recoverableError(indexerParams.first(@.isVariadic), ErrorCode.indexerCannotHaveVariadicParameter);
 			}
 			if indexerParams.hasRefParameters {
-				recoverableError(indexerParams.first(@.isRef), ErrorCode.err_IndexerCannotHaveRefParameters);
+				recoverableError(indexerParams.first(@.isRef), ErrorCode.indexerCannotHaveRefParameters);
 			}
 
 			expectr(ref i, TokenType.squareClose);
@@ -933,13 +933,13 @@ public inheritable Parser is ParserBase
 		var body;
 		if acceptr(ref i, TokenType.semicolon) {
 			if not modifiers.\abstract {
-				recoverableError(lex[i - 1], ErrorCode.err_NonAbstractPropertyCannotHaveEmptyBody);
+				recoverableError(lex[i - 1], ErrorCode.nonAbstractPropertyCannotHaveEmptyBody);
 			}
 			// otherwise, leave body null
 		}
 		else {
 			if modifiers.\abstract {
-				recoverableError(lex[i], ErrorCode.err_AbstractPropertyMustHaveEmptyBody);
+				recoverableError(lex[i], ErrorCode.abstractPropertyMustHaveEmptyBody);
 			}
 
 			if not isSetter and acceptr(ref i, TokenType.fatArrow) {
@@ -1078,13 +1078,13 @@ public inheritable Parser is ParserBase
 		var body;
 		if acceptr(ref i, TokenType.semicolon) {
 			if not modifiers.\abstract {
-				recoverableError(lex[i - 1], ErrorCode.err_NonAbstractMethodCannotHaveEmptyBody);
+				recoverableError(lex[i - 1], ErrorCode.nonAbstractMethodCannotHaveEmptyBody);
 			}
 			// Otherwise, leave body null
 		}
 		else {
 			if modifiers.\abstract {
-				recoverableError(lex[i], ErrorCode.err_AbstractMethodMustHaveEmptyBody);
+				recoverableError(lex[i], ErrorCode.abstractMethodMustHaveEmptyBody);
 			}
 			body = parseBlockOrExtern(ref i);
 		}
@@ -1129,7 +1129,7 @@ public inheritable Parser is ParserBase
 		var constants = new List(1);
 		do {
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
+			expectr(ref i, TokenType.assign, ErrorCode.constantWithoutValue);
 			var value = parseExpression(ref i);
 
 			constants.add(
@@ -1244,13 +1244,13 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.parenClose);
 
 		if parameters.hasOptionalParameters {
-			recoverableError(parameters.first(@.isOptional), ErrorCode.err_OperatorCannotHaveOptionalParameters);
+			recoverableError(parameters.first(@.isOptional), ErrorCode.operatorCannotHaveOptionalParameters);
 		}
 		if parameters.hasVariadicParameter {
-			recoverableError(parameters.first(@.isVariadic), ErrorCode.err_OperatorCannotHaveVariadicParameter);
+			recoverableError(parameters.first(@.isVariadic), ErrorCode.operatorCannotHaveVariadicParameter);
 		}
 		if parameters.hasRefParameters {
-			recoverableError(parameters.first(@.isRef), ErrorCode.err_OperatorCannotHaveRefParameters);
+			recoverableError(parameters.first(@.isRef), ErrorCode.operatorCannotHaveRefParameters);
 		}
 
 		// If op is UnaryOperator.bitwiseNot, we always expect exactly one parameter.
@@ -1260,7 +1260,7 @@ public inheritable Parser is ParserBase
 		if op == UnaryOperator.bitwiseNot {
 			if parameters.length != 1 {
 				recoverableError(
-					opToken, ErrorCode.err_WrongParameterCountForUnaryOperator,
+					opToken, ErrorCode.wrongParameterCountForUnaryOperator,
 					[parameters.length]
 				);
 			}
@@ -1273,7 +1273,7 @@ public inheritable Parser is ParserBase
 			}
 			else if parameters.length != 2 {
 				recoverableError(
-					opToken, ErrorCode.err_WrongParameterCountForUnaryOrBinaryOperator,
+					opToken, ErrorCode.wrongParameterCountForUnaryOrBinaryOperator,
 					[parameters.length]
 				);
 			}
@@ -1281,7 +1281,7 @@ public inheritable Parser is ParserBase
 		else {
 			if parameters.length != 2 {
 				recoverableError(
-					opToken, ErrorCode.err_WrongParameterCountForBinaryOperator,
+					opToken, ErrorCode.wrongParameterCountForBinaryOperator,
 					[parameters.length]
 				);
 			}
@@ -1424,12 +1424,12 @@ public inheritable Parser is ParserBase
 		 */
 		var start = lex[i];
 		if not acceptExtension(i, ContextualType.extern) {
-			fatalError(start, ErrorCode.err_x_ExpectedExternKeyword);
+			fatalError(start, ErrorCode.expectedExternKeyword);
 		}
 		i += 1;
 
 		expectr(ref i, TokenType.parenOpen);
-		var externName = expectr(ref i, TokenType.string, ErrorCode.err_x_ExpectedExternMethodName);
+		var externName = expectr(ref i, TokenType.string, ErrorCode.expectedExternMethodName);
 
 		var locals;
 		while acceptr(ref i, TokenType.comma) {
@@ -1442,7 +1442,7 @@ public inheritable Parser is ParserBase
 				locals = value;
 			}
 			else {
-				fatalError(param, ErrorCode.err_x_UnknownExternParameter, [paramName]);
+				fatalError(param, ErrorCode.unknownExternParameter, [paramName]);
 			}
 		}
 
@@ -1550,7 +1550,7 @@ public inheritable Parser is ParserBase
 		} while acceptr(ref i, TokenType.comma);
 		variables = new NodeList(variables);
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new LocalVariableDeclaration(
 			getLocation(start, end),
@@ -1582,7 +1582,7 @@ public inheritable Parser is ParserBase
 		var constants = new List(1);
 		do {
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign, ErrorCode.err_ConstantWithoutValue);
+			expectr(ref i, TokenType.assign, ErrorCode.constantWithoutValue);
 			var value = parseExpression(ref i);
 
 			constants.add(
@@ -1591,7 +1591,7 @@ public inheritable Parser is ParserBase
 		} while acceptr(ref i, TokenType.comma);
 		constants = new NodeList(constants);
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new LocalConstantDeclaration(
 			getLocation(start, end),
@@ -1675,7 +1675,7 @@ public inheritable Parser is ParserBase
 		// If there is a label and we didn't find an iteration statement, that's a paddlin'.
 		// I mean, that's an error.
 		if loopLabel {
-			fatalError(loopLabel, ErrorCode.err_ExpectedLoopAfterLabel);
+			fatalError(loopLabel, ErrorCode.expectedLoopAfterLabel);
 		}
 
 		// Other statement kinds!
@@ -1788,7 +1788,7 @@ public inheritable Parser is ParserBase
 			condition = parseExpression(ref i);
 		}
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new DoWhileStatement(
 			getLocation(start, end),
@@ -1843,7 +1843,7 @@ public inheritable Parser is ParserBase
 			return parseBlock(ref i);
 		}
 
-		fatalError(lex[i], ErrorCode.err_InvalidElseClause);
+		fatalError(lex[i], ErrorCode.invalidElseClause);
 	}
 
 	/// Summary: Parses a jump statement (`return`, `yield`, `next`, `break` or `throw`)
@@ -1878,7 +1878,7 @@ public inheritable Parser is ParserBase
 		if token.match(TokenType.\throw) {
 			return parseThrowStatement(ref i);
 		}
-		fatalError(token, ErrorCode.err_ExpectedJumpStatement);
+		fatalError(token, ErrorCode.expectedJumpStatement);
 	}
 
 	/// Summary: Parses a `return` statement at the specified token index.
@@ -1899,7 +1899,7 @@ public inheritable Parser is ParserBase
 			value = parseExpression(ref i);
 		}
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new ReturnStatement(getLocation(start, end), value);
 	}
@@ -1919,7 +1919,7 @@ public inheritable Parser is ParserBase
 
 		var value = parseExpression(ref i);
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new YieldStatement(getLocation(start, end), value);
 	}
@@ -1943,7 +1943,7 @@ public inheritable Parser is ParserBase
 			i += 1;
 		}
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new NextStatement(getLocation(start, end), label);
 	}
@@ -1967,7 +1967,7 @@ public inheritable Parser is ParserBase
 			i += 1;
 		}
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new BreakStatement(getLocation(start, end), label);
 	}
@@ -1990,7 +1990,7 @@ public inheritable Parser is ParserBase
 			expr = parseExpression(ref i);
 		}
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new ThrowStatement(getLocation(start, end), expr);
 	}
@@ -2014,7 +2014,7 @@ public inheritable Parser is ParserBase
 		var finallyClause = parseFinallyClause(ref i);
 
 		if catchClauses.length == 0 and finallyClause is null {
-			recoverableError(tryClause, ErrorCode.err_TryStatementMustHaveCatchOrFinally);
+			recoverableError(tryClause, ErrorCode.tryStatementMustHaveCatchOrFinally);
 		}
 
 		return new TryStatement(
@@ -2091,7 +2091,7 @@ public inheritable Parser is ParserBase
 			var catchClause;
 			if type {
 				if haveGeneric {
-					recoverableError(type, ErrorCode.err_SpecificCatchClauseAfterGeneric);
+					recoverableError(type, ErrorCode.specificCatchClauseAfterGeneric);
 				}
 				catchClause = new SpecificCatchClause(
 					getLocation(start, end),
@@ -2102,7 +2102,7 @@ public inheritable Parser is ParserBase
 			}
 			else {
 				if haveGeneric {
-					recoverableError(start, ErrorCode.err_MultipleGenericCatchClauses);
+					recoverableError(start, ErrorCode.multipleGenericCatchClauses);
 				}
 				haveGeneric = true;
 				catchClause = new GenericCatchClause(
@@ -2155,7 +2155,7 @@ public inheritable Parser is ParserBase
 		var start = expectr(ref i, TokenType.\with);
 
 		var variable = expectr(ref i, TokenType.identifier);
-		expectr(ref i, TokenType.assign, ErrorCode.err_WithStatementVariableWithoutValue);
+		expectr(ref i, TokenType.assign, ErrorCode.withStatementVariableWithoutValue);
 		var expression = parseExpression(ref i);
 
 		var body = parseBlock(ref i);
@@ -2194,7 +2194,7 @@ public inheritable Parser is ParserBase
 		expectr(ref i, TokenType.parenOpen);
 		var arguments = parseArgumentList(ref i);
 		expectr(ref i, TokenType.parenClose);
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		if isBase {
 			return new BaseConstructorCall(getLocation(start, end), arguments);
@@ -2249,10 +2249,10 @@ public inheritable Parser is ParserBase
 			return parseParallelAssignment(ref i, expr);
 		}
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		if not isStatementExpression(expr) {
-			recoverableError(expr, ErrorCode.err_InvalidStatementExpression);
+			recoverableError(expr, ErrorCode.invalidStatementExpression);
 		}
 
 		return new ExpressionStatement(getLocation(expr, end), expr);
@@ -2270,7 +2270,7 @@ public inheritable Parser is ParserBase
 
 		var value = parseExpression(ref i);
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new SimpleAssignment(
 			getLocation(target, end),
@@ -2295,7 +2295,7 @@ public inheritable Parser is ParserBase
 
 		var value = parseExpression(ref i);
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		return new CompoundAssignment(
 			getLocation(target, end),
@@ -2322,7 +2322,7 @@ public inheritable Parser is ParserBase
 			targets.add(parsePrimaryExpression(ref i));
 		}
 
-		expectr(ref i, TokenType.assign, ErrorCode.err_ExpectedParallelAssignment);
+		expectr(ref i, TokenType.assign, ErrorCode.expectedParallelAssignment);
 
 		targets.each(ensureAssignable);
 		targets = new NodeList(targets);
@@ -2333,10 +2333,10 @@ public inheritable Parser is ParserBase
 		} while acceptr(ref i, TokenType.comma);
 		values = new NodeList(values);
 
-		var end = expectr(ref i, TokenType.semicolon, ErrorCode.err_ExpectedStatementTerminator);
+		var end = expectr(ref i, TokenType.semicolon, ErrorCode.expectedStatementTerminator);
 
 		if values.length != 1 and values.length != targets.length {
-			recoverableError(end, ErrorCode.err_ParallelAssignmentWrongValueCount, [targets.length, values.length]);
+			recoverableError(end, ErrorCode.parallelAssignmentWrongValueCount, [targets.length, values.length]);
 		}
 
 		return new ParallelAssignment(
@@ -2386,7 +2386,7 @@ public inheritable Parser is ParserBase
 		if accept(i, endToken) {
 			// Note: don't skip the end token
 			if not allowEmpty {
-				recoverableError(lex[i], ErrorCode.err_ExpectedArgument);
+				recoverableError(lex[i], ErrorCode.expectedArgument);
 			}
 			return EmptyLists.argument;
 		}
@@ -2397,7 +2397,7 @@ public inheritable Parser is ParserBase
 			var arg;
 			if accept(i, TokenType.\ref) {
 				if not allowRefArgs {
-					recoverableError(lex[i], ErrorCode.err_RefArgumentNotAllowed);
+					recoverableError(lex[i], ErrorCode.refArgumentNotAllowed);
 				}
 
 				arg = parseRefExpression(ref i);
@@ -2999,7 +2999,7 @@ public inheritable Parser is ParserBase
 					);
 				}
 				else {
-					var name = expectr(ref i, TokenType.identifier, ErrorCode.err_ExpectedMemberToAccess);
+					var name = expectr(ref i, TokenType.identifier, ErrorCode.expectedMemberToAccess);
 					inner = new MemberAccessExpression(
 						getLocation(inner, name),
 						inner, name
@@ -3131,7 +3131,7 @@ public inheritable Parser is ParserBase
 			return new GlobalAccessExpression(getLocation(start, end), end);
 		}
 
-		fatalError(start, ErrorCode.err_ExpectedPrimaryExpression, [start]);
+		fatalError(start, ErrorCode.expectedPrimaryExpression, [start]);
 	}
 
 	private parseNamedConstantExpression(ref i)
@@ -3188,7 +3188,7 @@ public inheritable Parser is ParserBase
 		}
 		else {
 			arguments = EmptyLists.argument;
-			expect(i, TokenType.\with, ErrorCode.err_ExpectedConstructorArgumentsOrInitializer);
+			expect(i, TokenType.\with, ErrorCode.expectedConstructorArgumentsOrInitializer);
 		}
 
 		var initializer;
@@ -3469,7 +3469,7 @@ public inheritable Parser is ParserBase
 		}
 
 		if not acceptAny(i, lambdaStarters) {
-			fatalError(lex[i], ErrorCode.err_InvalidLambdaExpression);
+			fatalError(lex[i], ErrorCode.invalidLambdaExpression);
 		}
 
 		// Must be a simple-lambda-expression
@@ -3582,7 +3582,7 @@ public inheritable Parser is ParserBase
 					);
 				}
 				else {
-					var member = expectr(ref i, TokenType.identifier, ErrorCode.err_ExpectedMemberToAccess);
+					var member = expectr(ref i, TokenType.identifier, ErrorCode.expectedMemberToAccess);
 					link = new SafeMemberAccess(
 						getLocation(start, member),
 						isSafe, member
@@ -3639,7 +3639,7 @@ public inheritable Parser is ParserBase
 		var variables = new List(1);
 		do {
 			var name = expectr(ref i, TokenType.identifier);
-			expectr(ref i, TokenType.assign, ErrorCode.err_LetInVariableWithoutValue);
+			expectr(ref i, TokenType.assign, ErrorCode.letInVariableWithoutValue);
 			var value = parseExpression(ref i);
 			variables.add(
 				new VariableDeclarator(
@@ -3797,7 +3797,7 @@ public inheritable Parser is ParserBase
 		 */
 		if accept(i, endToken) {
 			if not allowEmpty {
-				recoverableError(lex[i], ErrorCode.err_ExpectedParameter);
+				recoverableError(lex[i], ErrorCode.expectedParameter);
 			}
 			return EmptyLists.parameter;
 		}
@@ -3818,15 +3818,15 @@ public inheritable Parser is ParserBase
 				optionalCount += 1;
 			}
 			else if optionalCount > 0 {
-				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
+				recoverableError(name, ErrorCode.requiredParameterAfterOptional);
 			}
 
 			if isVariadic {
 				if accept(i, TokenType.comma) {
-					recoverableError(lex[i], ErrorCode.err_VariadicMustBeLastParameter);
+					recoverableError(lex[i], ErrorCode.variadicMustBeLastParameter);
 				}
 				if hasVariadicParam {
-					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
+					recoverableError(name, ErrorCode.multipleVariadicParameters);
 				}
 				hasVariadicParam = true;
 			}
@@ -3915,15 +3915,15 @@ public inheritable Parser is ParserBase
 				optionalCount += 1;
 			}
 			else if optionalCount > 0 {
-				recoverableError(name, ErrorCode.err_RequiredParameterAfterOptional);
+				recoverableError(name, ErrorCode.requiredParameterAfterOptional);
 			}
 
 			if isVariadic {
 				if accept(i, TokenType.comma) {
-					recoverableError(lex[i], ErrorCode.err_VariadicMustBeLastParameter);
+					recoverableError(lex[i], ErrorCode.variadicMustBeLastParameter);
 				}
 				if hasVariadicParam {
-					recoverableError(name, ErrorCode.err_MultipleVariadicParameters);
+					recoverableError(name, ErrorCode.multipleVariadicParameters);
 				}
 				hasVariadicParam = true;
 			}
@@ -3967,22 +3967,22 @@ public inheritable Parser is ParserBase
 			// Variadic, optional and 'this' parameters cannot be passed by reference
 			if isRef {
 				if isVariadic {
-					recoverableError(errorNode, ErrorCode.err_CannotPassVariadicByRef);
+					recoverableError(errorNode, ErrorCode.cannotPassVariadicByRef);
 				}
 				else if defaultValue {
-					recoverableError(defaultValue, ErrorCode.err_CannotPassOptionalByRef);
+					recoverableError(defaultValue, ErrorCode.cannotPassOptionalByRef);
 				}
 				else if hasThisPrefix {
-					recoverableError(errorNode, ErrorCode.err_CannotPassThisParameterByRef);
+					recoverableError(errorNode, ErrorCode.cannotPassThisParameterByRef);
 				}
 			}
 			// Variadic parameters cannot have a default value
 			if isVariadic and defaultValue {
-				recoverableError(defaultValue, ErrorCode.err_VariadicParameterCannotBeOptional);
+				recoverableError(defaultValue, ErrorCode.variadicParameterCannotBeOptional);
 			}
 			// Cannot mix optional parameters and variadic parameters in the same parameter list
 			if optionalCount > 0 and hasVariadicParam {
-				recoverableError(errorNode, ErrorCode.err_CannotMixVariadicAndOptionalParameters);
+				recoverableError(errorNode, ErrorCode.cannotMixVariadicAndOptionalParameters);
 			}
 	}
 
@@ -4041,7 +4041,7 @@ public inheritable Parser is ParserBase
 	private addModifier(modifiers, token, name, ref field)
 	{
 		if field is not null {
-			recoverableError(token, ErrorCode.err_DuplicateModifier, [name]);
+			recoverableError(token, ErrorCode.duplicateModifier, [name]);
 			return false;
 		}
 
@@ -4071,11 +4071,11 @@ public inheritable Parser is ParserBase
 	private addAccessibilityModifier(modifiers, token, name, ref field)
 	{
 		if field is not null {
-			recoverableError(token, ErrorCode.err_DuplicateModifier, [name]);
+			recoverableError(token, ErrorCode.duplicateModifier, [name]);
 			return false;
 		}
 		else if modifiers.hasAccessibility {
-			recoverableError(token, ErrorCode.err_MultipleAccessibilityModifiers);
+			recoverableError(token, ErrorCode.multipleAccessibilityModifiers);
 			return false;
 		}
 
@@ -4219,7 +4219,7 @@ public inheritable Parser is ParserBase
 			var argument = parseExpression(ref i);
 
 			if not memberName and not _namedArguments.isEmpty {
-				recoverableError(argument, ErrorCode.err_PositionalAnnotationArgumentMustComeBeforeNamed);
+				recoverableError(argument, ErrorCode.positionalAnnotationArgumentMustComeBeforeNamed);
 			}
 
 			if memberName {

@@ -94,7 +94,7 @@ internal static class NamedConstantValue
 	{
 		parser.recoverableError(
 			location,
-			ErrorCode.err_x_UnknownNamedConstant,
+			ErrorCode.unknownNamedConstant,
 			[type, name]
 		);
 	}

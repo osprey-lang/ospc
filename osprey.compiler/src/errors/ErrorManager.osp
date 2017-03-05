@@ -66,7 +66,7 @@ public abstract class ErrorManager
 	/// Summary: Signals that an error has occurred.
 	/// Param error: An {Error} that encapsulates the error. If this is not an
 	///              instance of {CompileTimeError}, it will be wrapped in one,
-	///              with the error code {ErrorCode.err_Unspecified} and no
+	///              with the error code {ErrorCode.unspecified} and no
 	///              source location.
 	/// Throws ArgumentTypeError:
 	///          {error} is not an {Error}.
@@ -83,8 +83,8 @@ public abstract class ErrorManager
 		if error is not CompileTimeError {
 			error = new CompileTimeError(
 				null, // No meaningful source location
-				ErrorCode.err_Unspecified,
-				getMessage(ErrorCode.err_Unspecified),
+				ErrorCode.unspecified,
+				getMessage(ErrorCode.unspecified),
 				error // innerError
 			);
 		}

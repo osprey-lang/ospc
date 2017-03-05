@@ -103,7 +103,7 @@ public class Modifiers
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
 		if invalidToken {
-			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForGlobalFunctionOrConstant);
+			parser.recoverableError(invalidToken, ErrorCode.invalidModifierForGlobalFunctionOrConstant);
 		}
 	}
 
@@ -116,16 +116,16 @@ public class Modifiers
 			\protected ?? \private ??
 			\overridable ?? \override;
 		if invalidToken {
-			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClass);
+			parser.recoverableError(invalidToken, ErrorCode.invalidModifierForClass);
 		}
 
 		if \static {
 			if \abstract or \inheritable {
-				parser.recoverableError(\abstract ?? \inheritable, ErrorCode.err_StaticClassCannotBeAbstractOrInheritable);
+				parser.recoverableError(\abstract ?? \inheritable, ErrorCode.staticClassCannotBeAbstractOrInheritable);
 			}
 		}
 		else if \abstract and \inheritable {
-			parser.recoverableError(\abstract, ErrorCode.err_ClassCannotBeBothAbstractAndInheritable);
+			parser.recoverableError(\abstract, ErrorCode.classCannotBeBothAbstractAndInheritable);
 		}
 	}
 
@@ -140,7 +140,7 @@ public class Modifiers
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
 			if invalidToken {
-				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticConstructor);
+				parser.recoverableError(invalidToken, ErrorCode.invalidModifierForStaticConstructor);
 			}
 		}
 		else {
@@ -148,7 +148,7 @@ public class Modifiers
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
 			if invalidToken {
-				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForConstructor);
+				parser.recoverableError(invalidToken, ErrorCode.invalidModifierForConstructor);
 			}
 		}
 	}
@@ -162,7 +162,7 @@ public class Modifiers
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
 		if invalidToken {
-			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForField);
+			parser.recoverableError(invalidToken, ErrorCode.invalidModifierForField);
 		}
 	}
 
@@ -176,16 +176,16 @@ public class Modifiers
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
 			if invalidToken {
-				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticMethod);
+				parser.recoverableError(invalidToken, ErrorCode.invalidModifierForStaticMethod);
 			}
 		}
 		else {
 			if \inheritable {
-				parser.recoverableError(\inheritable, ErrorCode.err_MethodCannotBeInheritable);
+				parser.recoverableError(\inheritable, ErrorCode.methodCannotBeInheritable);
 			}
 
 			if \abstract and \overridable {
-				parser.recoverableError(\overridable, ErrorCode.err_AbstractMethodCannotBeOverridable);
+				parser.recoverableError(\overridable, ErrorCode.abstractMethodCannotBeOverridable);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ public class Modifiers
 	public verifyForInvocator(parser)
 	{
 		if \static {
-			parser.recoverableError(\static, ErrorCode.err_InvocatorCannotBeStatic);
+			parser.recoverableError(\static, ErrorCode.invocatorCannotBeStatic);
 		}
 		verifyForMethod(parser);
 	}
@@ -211,16 +211,16 @@ public class Modifiers
 				\abstract ?? \inheritable ??
 				\overridable ?? \override;
 			if invalidToken {
-				parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForStaticProperty);
+				parser.recoverableError(invalidToken, ErrorCode.invalidModifierForStaticProperty);
 			}
 		}
 		else {
 			if \inheritable {
-				parser.recoverableError(\inheritable, ErrorCode.err_PropertyCannotBeInheritable);
+				parser.recoverableError(\inheritable, ErrorCode.propertyCannotBeInheritable);
 			}
 
 			if \abstract and \overridable {
-				parser.recoverableError(\overridable, ErrorCode.err_AbstractPropertyCannotBeOverridable);
+				parser.recoverableError(\overridable, ErrorCode.abstractPropertyCannotBeOverridable);
 			}
 		}
 	}
@@ -231,7 +231,7 @@ public class Modifiers
 	public verifyForIndexer(parser)
 	{
 		if \static {
-			parser.recoverableError(\static, ErrorCode.err_IndexerCannotBeStatic);
+			parser.recoverableError(\static, ErrorCode.indexerCannotBeStatic);
 		}
 		verifyForProperty(parser);
 	}
@@ -246,7 +246,7 @@ public class Modifiers
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
 		if invalidToken {
-			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForClassConstant);
+			parser.recoverableError(invalidToken, ErrorCode.invalidModifierForClassConstant);
 		}
 	}
 
@@ -256,7 +256,7 @@ public class Modifiers
 	public verifyForOperator(parser)
 	{
 		if hasModifiers {
-			parser.recoverableError(start, ErrorCode.err_InvalidModifierForOperator);
+			parser.recoverableError(start, ErrorCode.invalidModifierForOperator);
 		}
 	}
 
@@ -266,7 +266,7 @@ public class Modifiers
 	public verifyForIterator(parser)
 	{
 		if hasModifiers {
-			parser.recoverableError(start, ErrorCode.err_InvalidModifierForIterator);
+			parser.recoverableError(start, ErrorCode.invalidModifierForIterator);
 		}
 	}
 
@@ -281,7 +281,7 @@ public class Modifiers
 			\abstract ?? \inheritable ??
 			\overridable ?? \override;
 		if invalidToken {
-			parser.recoverableError(invalidToken, ErrorCode.err_InvalidModifierForEnum);
+			parser.recoverableError(invalidToken, ErrorCode.invalidModifierForEnum);
 		}
 	}
 
@@ -291,7 +291,7 @@ public class Modifiers
 	public verifyForNamespace(parser)
 	{
 		if not isEmpty {
-			parser.recoverableError(start, ErrorCode.err_InvalidNamespaceModifiers);
+			parser.recoverableError(start, ErrorCode.invalidNamespaceModifiers);
 		}
 	}
 }

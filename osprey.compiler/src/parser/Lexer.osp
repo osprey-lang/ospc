@@ -290,7 +290,7 @@ public class Lexer
 			}
 
 			if not foundEnd {
-				fatalError(ErrorCode.err_DelimitedCommentNotTerminated, startIndex, 2);
+				fatalError(ErrorCode.delimitedCommentNotTerminated, startIndex, 2);
 			}
 		}
 		else {
@@ -374,19 +374,19 @@ public class Lexer
 			if ch == '.' and isDigit(i + 1) {
 				// Decimals
 				if emptySection and startIndex != i {
-					fatalError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
+					fatalError(ErrorCode.underscoreWithoutDigits, i, 1);
 				}
 				if hasDecimals {
-					fatalError(ErrorCode.err_MultipleDecimalPoints, i, 1);
+					fatalError(ErrorCode.multipleDecimalPoints, i, 1);
 				}
 				hasDecimals = true;
 			}
 			else if ch == 'e' or ch == 'E' {
 				if not hasDecimals {
-					fatalError(ErrorCode.err_ExponentialPartBeforeDecimalPoint, i, 1);
+					fatalError(ErrorCode.exponentialPartBeforeDecimalPoint, i, 1);
 				}
 				if hasExp {
-					fatalError(ErrorCode.err_MultipleExponentialParts, i, 1);
+					fatalError(ErrorCode.multipleExponentialParts, i, 1);
 				}
 
 				i += 1; // skip e/E
@@ -401,7 +401,7 @@ public class Lexer
 				}
 
 				if not isDigit(i) {
-					fatalError(ErrorCode.err_InvalidExponentialPart, i, 1);
+					fatalError(ErrorCode.invalidExponentialPart, i, 1);
 				}
 
 				hasExp = true;
@@ -409,10 +409,10 @@ public class Lexer
 			}
 			else if ch == '_' {
 				if hasDecimals {
-					fatalError(ErrorCode.err_UnderscoreAfterDecimalPoint, i, 1);
+					fatalError(ErrorCode.underscoreAfterDecimalPoint, i, 1);
 				}
 				if emptySection {
-					fatalError(ErrorCode.err_MultipleConsecutiveUnderscores, i, 1);
+					fatalError(ErrorCode.multipleConsecutiveUnderscores, i, 1);
 				}
 				emptySection = true;
 			}
@@ -427,7 +427,7 @@ public class Lexer
 		}
 
 		if emptySection {
-			fatalError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
+			fatalError(ErrorCode.underscoreWithoutDigits, i, 1);
 		}
 
 		// Everything after this is suffixes.
@@ -471,7 +471,7 @@ public class Lexer
 			var ch = source[i];
 			if LexicalFacts.multipliers.tryGet(ch, ref multiplier) {
 				if hasDecimals {
-					fatalError(ErrorCode.err_MultiplierOnReal, i, 1);
+					fatalError(ErrorCode.multiplierOnReal, i, 1);
 				}
 				i += 1; // skip multiplier
 			}
@@ -489,7 +489,7 @@ public class Lexer
 			var ch = source[i];
 			if ch == 'u' or ch == 'U' {
 				if hasDecimals {
-					fatalError(ErrorCode.err_UnsignedOnReal, i, 1);
+					fatalError(ErrorCode.unsignedOnReal, i, 1);
 				}
 				i += 1; // skip u/U
 				return true;
@@ -509,7 +509,7 @@ public class Lexer
 		// NaN is not possible in this situation.
 		if value.isInfinite {
 			recoverableError(
-				ErrorCode.err_NumberOutOfRange,
+				ErrorCode.numberOutOfRange,
 				["Real", location.getText()],
 				location.startIndex,
 				location.endIndex - location.startIndex
@@ -542,7 +542,7 @@ public class Lexer
 
 		if value is null {
 			recoverableError(
-				ErrorCode.err_NumberOutOfRange,
+				ErrorCode.numberOutOfRange,
 				[isUnsigned ? "UInt" : "Int", location.getText()],
 				location.startIndex,
 				location.endIndex - location.startIndex
@@ -577,7 +577,7 @@ public class Lexer
 		i += 2; // Skip 0x/0X
 
 		if isEOF(i) or not LexicalFacts.hexDigits.containsKey(source[i]) {
-			fatalError(ErrorCode.err_HexNumberWithoutDigits, startIndex, 2);
+			fatalError(ErrorCode.hexNumberWithoutDigits, startIndex, 2);
 		}
 
 		var emptySection = true; // False if one or more hex digits encountered after '_'
@@ -591,7 +591,7 @@ public class Lexer
 			var ch = source[i];
 			if ch == '_' {
 				if emptySection {
-					fatalError(ErrorCode.err_MultipleConsecutiveUnderscores, i, 1);
+					fatalError(ErrorCode.multipleConsecutiveUnderscores, i, 1);
 				}
 				emptySection = true;
 			}
@@ -620,7 +620,7 @@ public class Lexer
 		}
 
 		if emptySection {
-			fatalError(ErrorCode.err_UnderscoreWithoutDigits, i, 1);
+			fatalError(ErrorCode.underscoreWithoutDigits, i, 1);
 		}
 
 		var isUnsigned = acceptUnsignedSuffix(ref i, false);
@@ -636,7 +636,7 @@ public class Lexer
 
 		if overflow {
 			recoverableError(
-				ErrorCode.err_NumberOutOfRange,
+				ErrorCode.numberOutOfRange,
 				[isUnsigned ? "UInt" : "Int", source.substringTo(startIndex, i)],
 				startIndex,
 				i - startIndex
@@ -694,7 +694,7 @@ public class Lexer
 				break;
 			}
 			else if isNewline(ch) {
-				fatalError(ErrorCode.err_NewlineInString, i, 1);
+				fatalError(ErrorCode.newlineInString, i, 1);
 			}
 			else {
 				i += ch.length; // Skip character
@@ -702,7 +702,7 @@ public class Lexer
 		}
 
 		if not foundEnd {
-			fatalError(ErrorCode.err_StringNotTerminated, startIndex, 1);
+			fatalError(ErrorCode.stringNotTerminated, startIndex, 1);
 		}
 
 		// Append any pending characters
@@ -760,7 +760,7 @@ public class Lexer
 		}
 
 		if not foundEnd {
-			fatalError(ErrorCode.err_StringNotTerminated, startIndex, 2);
+			fatalError(ErrorCode.stringNotTerminated, startIndex, 2);
 		}
 
 		var value = source.substringTo(startIndex + 2, i - 1);
@@ -798,20 +798,20 @@ public class Lexer
 				ch = scanEscapeSequence(ref i);
 			}
 			else if isNewline(ch) {
-				fatalError(ErrorCode.err_NewlineInCharLiteral, i, 1);
+				fatalError(ErrorCode.newlineInCharLiteral, i, 1);
 			}
 			else if ch == '\'' {
-				fatalError(ErrorCode.err_EmptyCharLiteral, i, 1);
+				fatalError(ErrorCode.emptyCharLiteral, i, 1);
 			}
 			else {
 				i += ch.length; // Skip character
 			}
 		}
 		if isEOF(i) {
-			fatalError(ErrorCode.err_CharLiteralNotTerminated, i, 1);
+			fatalError(ErrorCode.charLiteralNotTerminated, i, 1);
 		}
 		if source[i] != '\'' {
-			fatalError(ErrorCode.err_CharLiteralTooLong, i, 1);
+			fatalError(ErrorCode.charLiteralTooLong, i, 1);
 		}
 		i += 1; // Skip '
 
@@ -834,7 +834,7 @@ public class Lexer
 		 *   This method also parses the beginning of Unicode escapes, '\\u'.
 		 */
 		if isEOF(i) {
-			fatalError(ErrorCode.err_MissingEscapeSequence, i - 1, 1);
+			fatalError(ErrorCode.missingEscapeSequence, i - 1, 1);
 		}
 
 		var ch = source[i];
@@ -845,7 +845,7 @@ public class Lexer
 			return parseEscapeChar(this, ref i);
 		}
 
-		recoverableError(ErrorCode.err_InvalidEscapeSequence, i - 2, 2);
+		recoverableError(ErrorCode.invalidEscapeSequence, i - 2, 2);
 		return null;
 	}
 
@@ -856,7 +856,7 @@ public class Lexer
 		 *     '\\u{' hex-digits '}'
 		 */
 		if not isChar(i, '{') {
-			recoverableError(ErrorCode.err_InvalidUnicodeEscapeSequence, i, 1);
+			recoverableError(ErrorCode.invalidUnicodeEscapeSequence, i, 1);
 			return null;
 		}
 		i += 1; // skip {
@@ -867,7 +867,7 @@ public class Lexer
 		if not isChar(i, '}') {
 			// avoid multiple errors for the same sequence
 			if codePoint is not null {
-				recoverableError(ErrorCode.err_InvalidUnicodeEscapeSequence, i, 1);
+				recoverableError(ErrorCode.invalidUnicodeEscapeSequence, i, 1);
 			}
 			return null;
 		}
@@ -900,12 +900,12 @@ public class Lexer
 
 		if i == startIndex {
 			// Gotta have at least one hex digit
-			recoverableError(ErrorCode.err_InvalidUnicodeEscapeSequence, i, 1);
+			recoverableError(ErrorCode.invalidUnicodeEscapeSequence, i, 1);
 			return null;
 		}
 
 		if codePoint > LexicalFacts.maxCodePoint {
-			recoverableError(ErrorCode.err_UnicodeEscapeOutOfRange, startIndex, i - startIndex);
+			recoverableError(ErrorCode.unicodeEscapeOutOfRange, startIndex, i - startIndex);
 			return null;
 		}
 
@@ -1026,7 +1026,7 @@ public class Lexer
 			}
 			var ch = source[i];
 			fatalError(
-				ErrorCode.err_InvalidCharacter,
+				ErrorCode.invalidCharacter,
 				[ch, ch.codePoint.toString("X4")],
 				i,
 				1

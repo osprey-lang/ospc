@@ -79,5 +79,5 @@ public inheritable CompileTimeError is Error
 	public get errorCode => _errorCode;
 
 	private static get defaultMessage =>
-		ErrorCode.getMessage(ErrorCode.err_Unspecified);
+		ErrorCode.getMessage(ErrorCode.unspecified);
 }

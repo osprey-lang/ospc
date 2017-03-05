@@ -306,7 +306,7 @@ public abstract class ParserBase
 		var tok = lex[i];
 		if not tok.match(type) {
 			if errorCode is null {
-				errorCode = ErrorCode.err_UnexpectedToken;
+				errorCode = ErrorCode.unexpectedToken;
 			}
 			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(
@@ -329,7 +329,7 @@ public abstract class ParserBase
 		var tok = lex[i];
 		if not tok.match(type) {
 			if errorCode is null {
-				errorCode = ErrorCode.err_UnexpectedToken;
+				errorCode = ErrorCode.unexpectedToken;
 			}
 			// Failed expectations are never recoverable
 			throw new UnexpectedTokenError(

@@ -50,7 +50,7 @@ public inheritable ParseError is CompileTimeError
 	}
 
 	private static get defaultMessage =>
-		ErrorCode.getMessage(ErrorCode.err_Syntax);
+		ErrorCode.getMessage(ErrorCode.syntax);
 }
 
 /// Summary: Represents an error that occurs when an unexpected token is encountered.
@@ -108,7 +108,7 @@ public inheritable UnexpectedTokenError is ParseError
 	}
 
 	private static get defaultMessage =>
-		ErrorCode.getMessage(ErrorCode.err_UnexpectedToken);
+		ErrorCode.getMessage(ErrorCode.unexpectedToken);
 
 	private static getExpectation(actualToken, expectedType)
 	{
