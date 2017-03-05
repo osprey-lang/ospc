@@ -5,9 +5,9 @@ param(
   [string]$LIB = "${Env:OSP}\lib"
 )
 
-function shouldRebuild {
+function ShouldBuildResource {
   param(
-    [string]$source,
+    [string[]]$sources,
     [string]$target
   )
 
@@ -15,27 +15,47 @@ function shouldRebuild {
     return $True
   }
 
-  $sourceTime = (Get-Item $source).LastWriteTime
   $targetTime = (Get-Item $target).LastWriteTime
-  return $targetTime -lt $sourceTime
+  ForEach ($source in $sources) {
+    $sourceTime = (Get-Item $source).LastWriteTime
+    if ($targetTime -lt $sourceTime) {
+      return $True
+    }
+  }
+  return $False
 }
 
-if (shouldRebuild -source "osprey.compiler/res/messages.txt" -target "osprey.compiler/src/errors/ErrorCode.osp") {
+function BuildResource {
+  param(
+    [string[]]$sources,
+    [string]$target,
+    [scriptblock]$task
+  )
+
+  if (ShouldBuildResource -sources $sources -target $target) {
+    &$task
+  }
+}
+
+BuildResource `
+  -sources "osprey.compiler/res/messages.txt", "osprey.compiler/src/errors/ErrorCode.base.osp" `
+  -target "osprey.compiler/src/errors/ErrorCode.osp" `
+{
   # Generate error codes
   Push-Location "osprey.compiler"
 
-  Write-Output "[!] Generating error code list..."
+  Write-Host "[!] Generating error code list..." -ForegroundColor "Cyan"
   & python scripts\generate_error_codes.py `
     --messages="res/messages.txt" `
     --template="src/errors/ErrorCode.base.osp" `
     --output="src/errors/ErrorCode.osp"
 
-  Write-Output ""
+  Write-Host ""
 
   Pop-Location
 }
 
-Write-Output "[!] Compiling osprey.compiler..."
+Write-Host "[!] Compiling osprey.compiler..." -ForegroundColor "Cyan"
 
 & $OSPC "/verbose" `
   "/libpath" $LIB `
@@ -51,8 +71,8 @@ if ($?) {
 }
 
 if ($?) {
-  Write-Output ""
-  Write-Output "[!] Compiling ospc..."
+  Write-Host ""
+  Write-Host "[!] Compiling ospc..." -ForegroundColor "Cyan"
   & $OSPC "/verbose" `
     "/libpath" $LIB `
     "/import" osprey.compiler `
