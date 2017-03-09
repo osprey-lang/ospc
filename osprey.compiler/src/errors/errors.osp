@@ -6,6 +6,7 @@
 use "CompileTimeError.osp";
 use "ErrorCode.osp";
 use "ErrorManager.osp";
+use "ErrorMessageParser.osp";
 use "ErrorMessageReader.osp";
 use "NameError.osp";
 use "ParseError.osp";
