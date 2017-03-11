@@ -35,8 +35,6 @@ public abstract class ParseTreeVisitor
 
 	public abstract visitConstructorDeclaration(decl, arg);
 
-	public abstract visitThisParameter(param, arg);
-
 	public abstract visitEnumDeclaration(decl, arg);
 
 	public abstract visitEnumMember(decl, arg);

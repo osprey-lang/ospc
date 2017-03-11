@@ -3411,7 +3411,8 @@ public inheritable Parser is ParserBase
 
 		return new HashMember(
 			getLocation(key, value),
-			key, value
+			key,
+			value
 		);
 	}
 
@@ -3488,7 +3489,8 @@ public inheritable Parser is ParserBase
 
 		return new SimpleLambdaExpression(
 			getLocation(start, body),
-			parameters, body
+			parameters,
+			body
 		);
 	}
 
@@ -3509,7 +3511,11 @@ public inheritable Parser is ParserBase
 			parameters = new ParameterList([
 				new Parameter(
 					paramName.location,
-					paramName, null, false, false
+					paramName,
+					null,
+					false,
+					false,
+					false
 				)
 			]);
 			i += 1;
@@ -3844,7 +3850,11 @@ public inheritable Parser is ParserBase
 			parameters.add(
 				new Parameter(
 					getLocation(start, lex[i - 1]),
-					name, defaultValue, isVariadic, isRef
+					name,
+					defaultValue,
+					isVariadic,
+					isRef,
+					/*hasThisPrefix=*/ false
 				)
 			);
 		} while acceptr(ref i, TokenType.comma);
@@ -3938,20 +3948,16 @@ public inheritable Parser is ParserBase
 				hasVariadicParam
 			);
 
-			var param;
-			if hasThisPrefix {
-				param = new ThisParameter(
+			parameters.add(
+				new Parameter(
 					getLocation(start, lex[i - 1]),
-					name, defaultValue, isVariadic
-				);
-			}
-			else {
-				param = new Parameter(
-					getLocation(start, lex[i - 1]),
-					name, defaultValue, isVariadic, isRef
-				);
-			}
-			parameters.add(param);
+					name,
+					defaultValue,
+					isVariadic,
+					isRef,
+					hasThisPrefix
+				)
+			);
 		} while acceptr(ref i, TokenType.comma);
 
 		return new ParameterList(

@@ -739,9 +739,9 @@ public class VariableDeclarator is ParseNode
 	}
 }
 
-public inheritable Parameter is ParseNode
+public class Parameter is ParseNode
 {
-	public new(location, name, defaultValue, isVariadic, isRef)
+	public new(location, name, defaultValue, isVariadic, isRef, hasThisPrefix)
 	{
 		new base(location);
 
@@ -749,6 +749,7 @@ public inheritable Parameter is ParseNode
 		this._defaultValue = defaultValue;
 		this._isVariadic = isVariadic;
 		this._isRef = isRef;
+		this._hasThisPrefix = hasThisPrefix;
 	}
 
 	private _name;
@@ -769,28 +770,20 @@ public inheritable Parameter is ParseNode
 
 	private _isRef;
 	/// Summary: Determines whether the parameter is passed by reference.
+	/// Remarks: If this property is true, {hasThisPrefix} is false. Ref parameters cannot have a
+	///          `this.` prefix.
 	public get isRef => _isRef;
 
-	public overridable get hasThisPrefix => false;
-
-	overridable override accept(visitor, arg)
-	{
-		return visitor.visitParameter(this, arg);
-	}
-}
-
-public class ThisParameter is Parameter
-{
-	public new(location, name, defaultValue, isVariadic)
-	{
-		new base(location, name, defaultValue, isVariadic, false);
-	}
-
-	override get hasThisPrefix => true;
+	private _hasThisPrefix;
+	/// Summary: Determines whether the parameter has a `this.` prefix. Such parameters are only
+	///          permitted in instance constructors.
+	/// Remarks: If this property is true, {isRef} is false. Parameters with a `this.` prefix
+	///          cannot be passed by reference.
+	public get hasThisPrefix => _hasThisPrefix;
 
 	override accept(visitor, arg)
 	{
-		return visitor.visitThisParameter(this, arg);
+		return visitor.visitParameter(this, arg);
 	}
 }
 

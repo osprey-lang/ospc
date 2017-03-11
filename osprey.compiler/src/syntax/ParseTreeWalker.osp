@@ -79,12 +79,6 @@ public abstract class ParseTreeWalker is ParseTreeVisitor
 		return null;
 	}
 
-	overridable override visitThisParameter(param, arg)
-	{
-		visitParameter(param, arg);
-		return null;
-	}
-
 	overridable override visitEnumDeclaration(decl, arg)
 	{
 		decl.annotations.acceptAll(this, arg);
