@@ -10,22 +10,18 @@ public inheritable ParameterList is NodeList
 {
 	public new()
 	{
-		new this([], 0, 0, false);
+		new this([]);
+
+		this._optionalParameterCount = 0;
+		this._hasVariadicParameter = false;
+		this._refParameterCount = 0;
 	}
 	public new(items)
 	{
 		new base(items);
 	}
-	public new(items, optionalParameterCount, refParameterCount, hasVariadicParameter)
-	{
-		new base(items);
 
-		_optionalParameterCount = optionalParameterCount;
-		_refParameterCount      = refParameterCount;
-		_hasVariadicParameter   = hasVariadicParameter;
-	}
-
-	private _optionalParameterCount;
+	internal _optionalParameterCount;
 	/// Summary: Gets the total number of optional parameters in this parameter list.
 	public get optionalParameterCount
 	{
@@ -38,7 +34,7 @@ public inheritable ParameterList is NodeList
 	/// Summary: Determines whether the parameter list has any optional parameters.
 	public get hasOptionalParameters => optionalParameterCount > 0;
 
-	private _hasVariadicParameter;
+	internal _hasVariadicParameter;
 	/// Summary: Determines whether the parameter list has a variadic parameter.
 	/// Remarks: Variadic parameters can only appear at the end of the parameter list.
 	public get hasVariadicParameter
@@ -49,7 +45,7 @@ public inheritable ParameterList is NodeList
 		return _hasVariadicParameter;
 	}
 
-	private _refParameterCount;
+	internal _refParameterCount;
 	/// Summary: Gets the total number of ref parameters in this parameter list.
 	public get refParameterCount
 	{

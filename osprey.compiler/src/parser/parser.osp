@@ -2410,7 +2410,9 @@ public inheritable Parser is ParserBase
 		} while acceptr(ref i, TokenType.comma) and
 			not accept(i, endToken);
 
-		return new ArgumentList(arguments, hasRefArguments);
+		return new ArgumentList(arguments) with {
+			_hasRefArguments: hasRefArguments,
+		};
 	}
 
 	/// Summary: Parses a `ref` expression at the specified token index.
@@ -3859,12 +3861,10 @@ public inheritable Parser is ParserBase
 			);
 		} while acceptr(ref i, TokenType.comma);
 
-		return new ParameterList(
-			parameters,
-			optionalCount,
-			null, // refParameterCount
-			hasVariadicParam
-		);
+		return new ParameterList(parameters) with {
+			_optionalParameterCount: 0,
+			_hasVariadicParameter: hasVariadicParam,
+		};
 	}
 
 	/// Summary: Parses a constructor paremter list at the specified token index. This
@@ -3960,12 +3960,10 @@ public inheritable Parser is ParserBase
 			);
 		} while acceptr(ref i, TokenType.comma);
 
-		return new ParameterList(
-			parameters,
-			optionalCount,
-			null, // refParameterCount
-			hasVariadicParam
-		);
+		return new ParameterList(parameters) with {
+			_optionalParameterCount: optionalCount,
+			_hasVariadicParameter: hasVariadicParam
+		};
 	}
 
 	private verifyParameter(errorNode, isRef, isVariadic, defaultValue, hasThisPrefix, optionalCount, hasVariadicParam)
@@ -4241,7 +4239,9 @@ public inheritable Parser is ParserBase
 			}
 		} while acceptr(ref i, TokenType.comma);
 
-		positionalArguments = new ArgumentList(_positionalArguments);
+		positionalArguments = new ArgumentList(_positionalArguments) with {
+			_hasRefArguments: false,
+		};
 		namedArguments = new NodeList(_namedArguments);
 	}
 

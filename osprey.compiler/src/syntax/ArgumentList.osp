@@ -10,19 +10,16 @@ public inheritable ArgumentList is NodeList
 {
 	public new()
 	{
-		new this([], false);
+		new this([]);
+
+		this._hasRefArguments = false;
 	}
 	public new(items)
 	{
 		new base(items);
 	}
-	public new(items, hasRefArguments)
-	{
-		new base(items);
-		_hasRefArguments = bool(hasRefArguments);
-	}
 
-	private _hasRefArguments;
+	internal _hasRefArguments;
 	/// Summary: Determines whether the argument list contains any {RefExpression}s;
 	///          that is, whether any argument is passed by reference.
 	public get hasRefArguments
