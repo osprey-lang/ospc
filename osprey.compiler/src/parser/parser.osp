@@ -3825,9 +3825,6 @@ public inheritable Parser is ParserBase
 				defaultValue = parseExpression(ref i);
 				optionalCount += 1;
 			}
-			else if optionalCount > 0 {
-				recoverableError(name, ErrorCode.requiredParameterAfterOptional);
-			}
 
 			if isVariadic {
 				if accept(i, TokenType.comma) {
@@ -3839,26 +3836,18 @@ public inheritable Parser is ParserBase
 				hasVariadicParam = true;
 			}
 
-			verifyParameter(
+			var parameter = new Parameter(
+					getLocation(start, lex[i - 1]),
 				name,
-				isRef,
-				isVariadic,
 				defaultValue,
-				/*hasThisPrefix=*/ false,
-				optionalCount,
-				hasVariadicParam
+				isVariadic,
+				isRef,
+				/*hasThisPrefix=*/ false
 			);
 
-			parameters.add(
-				new Parameter(
-					getLocation(start, lex[i - 1]),
-					name,
-					defaultValue,
-					isVariadic,
-					isRef,
-					/*hasThisPrefix=*/ false
-				)
-			);
+			verifyParameter(parameter, optionalCount, hasVariadicParam);
+
+			parameters.add(parameter);
 		} while acceptr(ref i, TokenType.comma);
 
 		return new ParameterList(parameters) with {
@@ -3924,9 +3913,6 @@ public inheritable Parser is ParserBase
 				defaultValue = parseExpression(ref i);
 				optionalCount += 1;
 			}
-			else if optionalCount > 0 {
-				recoverableError(name, ErrorCode.requiredParameterAfterOptional);
-			}
 
 			if isVariadic {
 				if accept(i, TokenType.comma) {
@@ -3938,26 +3924,18 @@ public inheritable Parser is ParserBase
 				hasVariadicParam = true;
 			}
 
-			verifyParameter(
+			var parameter = new Parameter(
+				getLocation(start, lex[i - 1]),
 				name,
-				isRef,
-				isVariadic,
 				defaultValue,
-				hasThisPrefix,
-				optionalCount,
-				hasVariadicParam
+				isVariadic,
+				isRef,
+				hasThisPrefix
 			);
 
-			parameters.add(
-				new Parameter(
-					getLocation(start, lex[i - 1]),
-					name,
-					defaultValue,
-					isVariadic,
-					isRef,
-					hasThisPrefix
-				)
-			);
+			verifyParameter(parameter, optionalCount, hasVariadicParam);
+
+			parameters.add(parameter);
 		} while acceptr(ref i, TokenType.comma);
 
 		return new ParameterList(parameters) with {
@@ -3966,28 +3944,35 @@ public inheritable Parser is ParserBase
 		};
 	}
 
-	private verifyParameter(errorNode, isRef, isVariadic, defaultValue, hasThisPrefix, optionalCount, hasVariadicParam)
+	private verifyParameter(parameter, optionalCount, hasVariadicParam)
 	{
-			// Variadic, optional and 'this' parameters cannot be passed by reference
-			if isRef {
-				if isVariadic {
-					recoverableError(errorNode, ErrorCode.cannotPassVariadicByRef);
-				}
-				else if defaultValue {
-					recoverableError(defaultValue, ErrorCode.cannotPassOptionalByRef);
-				}
-				else if hasThisPrefix {
-					recoverableError(errorNode, ErrorCode.cannotPassThisParameterByRef);
-				}
+		// Variadic, optional and 'this' parameters cannot be passed by reference
+		if parameter.isRef {
+			if parameter.isVariadic {
+				recoverableError(parameter.name, ErrorCode.cannotPassVariadicByRef);
 			}
-			// Variadic parameters cannot have a default value
-			if isVariadic and defaultValue {
-				recoverableError(defaultValue, ErrorCode.variadicParameterCannotBeOptional);
+			else if parameter.isOptional {
+				recoverableError(parameter.defaultValue, ErrorCode.cannotPassOptionalByRef);
+			}
+			else if parameter.hasThisPrefix {
+				recoverableError(parameter.name, ErrorCode.cannotPassThisParameterByRef);
+			}
+		}
+		// Variadic parameters cannot have a default value
+		if parameter.isVariadic and parameter.isOptional {
+			recoverableError(parameter.defaultValue, ErrorCode.variadicParameterCannotBeOptional);
+		}
+
+		if optionalCount > 0 {
+			// A required parameter cannot come after an optional parameter
+			if not parameter.isOptional {
+				recoverableError(parameter.name, ErrorCode.requiredParameterAfterOptional);
 			}
 			// Cannot mix optional parameters and variadic parameters in the same parameter list
-			if optionalCount > 0 and hasVariadicParam {
-				recoverableError(errorNode, ErrorCode.cannotMixVariadicAndOptionalParameters);
+			if hasVariadicParam {
+				recoverableError(parameter.name, ErrorCode.cannotMixVariadicAndOptionalParameters);
 			}
+		}
 	}
 
 	/// Summary: Parses zero or more member modifiers at the specified index.
