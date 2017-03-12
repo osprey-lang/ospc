@@ -2,5 +2,7 @@ use "compiler/compiler.osp";
 use "errors/errors.osp";
 use "parser/parser.osp";
 use "syntax/syntax.osp";
+use "LineCache.osp";
+use "LineSpan.osp";
 use "SourceFile.osp";
 use "SourceLocation.osp";

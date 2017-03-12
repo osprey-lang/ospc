@@ -20,90 +20,32 @@ public class SourceFile
 	///          the program is being compiled without debug symbols.
 	public get hash => _hash;
 
-	// Known lines in the source file, as a list of `LineInfo` instances.
-	private lines = [];
+	// Initialized to a {LineCache} on demand.
+	private lineCache;
 
-	private getNearestLine(sourceIndex)
+	private getLineCache()
 	{
-		var lineCount = lines.length;
-		var iMin = 0, iMax = lineCount - 1;
-
-		while iMax >= iMin {
-			var iMid = (iMin + iMax) / 2;
-			var line = lines[iMid];
-
-			if sourceIndex < line.startIndex {
-				// Search the lower half
-				iMax = iMid - 1;
-			}
-			else if sourceIndex >= line.endIndex {
-				if iMid == lineCount {
-					// The nearest line is the last; return it.
-					// When getLineNumber walks the source from
-					// this location, it will add lines to the
-					// cache as it encounters their ends.
-					return line;
-				}
-
-				// Otherwise, the nearest line may still be in
-				// the cache somewhere, so search the upper half
-				iMin = iMid + 1;
-			}
-			else {
-				return line;
-			}
+		if lineCache is null {
+			lineCache = new LineCache(_source);
 		}
-
-		// Line numbers start at 1!
-		return new LineInfo with { lineNumber: 1 };
-	}
-
-	private appendLineInfo(lineNumber, startIndex, endIndex)
-	{
-		var lineCount = lines.length;
-		if lineCount > 0 {
-			var lastLine = lines.last();
-			if lineNumber <= lastLine.lineNumber {
-				return; // The line is already in the cache
-			}
-
-			if lineNumber != lastLine.lineNumber + 1 {
-				throw new ArgumentRangeError(
-					"lineNumber",
-					"Lines must be added consecutively (got {0}, expected {1})."
-						.format([lineNumber, lastLine.lineNumber + 1])
-				);
-			}
-
-			// The last line might be a partial; update its range
-			// to run up to the startIndex of the next line, i.e.
-			// the line we're adding
-			lastLine.endIndex = startIndex;
-		}
-		else {
-			if lineNumber != 1 or startIndex != 0 {
-				throw new ArgumentRangeError(
-					null,
-					"The first line must be numbered 1 and start at index 0."
-				);
-			}
-		}
-
-		lines.add(new LineInfo with
-		{
-			lineNumber: lineNumber,
-			startIndex: startIndex,
-			endIndex:   endIndex,
-		});
+		return lineCache;
 	}
 
 	/// Summary: Finds the line number corresponding to the specified source index.
 	/// Param index: The index of the character whose line number to find.
 	/// Returns: The 1-based line number of the specified index within the file source.
+	/// Throws TypeConversionError:
+	///          {index} could not be converted to an Int.
+	/// Throws ArgumentRangeError:
+	///          {index} is less than zero or greater than the length of {source}.
 	public getLineNumber(index)
 	{
-		var column;
-		return getLineNumber(index, 1, ref column);
+		index = int(index);
+		if index < 0 or index > source.length {
+			throw new ArgumentRangeError("index");
+		}
+
+		return getLineCache().getEnclosingLineNumber(index);
 	}
 	/// Summary: Finds the line number and column corresponding to the specified
 	///          source index.
@@ -112,6 +54,8 @@ public class SourceFile
 	///                This is used when calculating the column number.
 	/// Param column:  (ref) Receives the 1-based column number of the syntax element.
 	/// Returns: The 1-based line number of the specified index within the file source.
+	/// Throws TypeConversionError:
+	///          {index} or {tabSize} could not be converted to an Int.
 	/// Throws ArgumentRangeError:
 	///          {index} is less than zero or greater than the length of {source}.
 	///
@@ -127,32 +71,16 @@ public class SourceFile
 			throw new ArgumentRangeError("tabSize");
 		}
 
-		var nearestLine = getNearestLine(index);
+		var lineSpan = getLineCache().getEnclosingLineSpan(index);
 
-		var line = nearestLine.lineNumber;
+		// In order to find the column, we have to walk the source. We will of course
+		// start at the line's startIndex.
 		var col = 0;
-
-		var curLineStart = nearestLine.startIndex;
-		var i = curLineStart;
+		var i = lineSpan.startIndex;
 		while i < index {
-			const newlines = "\r\n\u{85}\u{2028}\u{2029}";
-
 			var ch = source[i];
 			i += 1;
-			if newlines.contains(ch) {
-				// \r\n counts as a single unit
-				if i < source.length and ch == '\r' and source[i] == '\n' {
-					i += 1;
-				}
-
-				// Add the last line to the cache
-				appendLineInfo(line, curLineStart, i);
-
-				col = 0;
-				line += 1;
-				curLineStart = i;
-			}
-			else if ch == '\t' {
+			if ch == '\t' {
 				col += tabSize - col % tabSize;
 			}
 			else {
@@ -160,12 +88,8 @@ public class SourceFile
 			}
 		}
 
-		// Append the current line, even if it's partial.
-		// We'll expand it later if we ever look past it.
-		appendLineInfo(line, curLineStart, index);
-
 		column = col + 1;
-		return line;
+		return lineSpan.lineNumber;
 	}
 
 	/// Summary: Opens the specified source file, without computing the SHA-1 hash of
@@ -225,11 +149,4 @@ public class SourceFile
 	}
 
 	private static anonName = "<anonymous>";
-}
-
-internal class LineInfo
-{
-	public lineNumber = 1;
-	public startIndex = 0;
-	public endIndex   = 0;
 }

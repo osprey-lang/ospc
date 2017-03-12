@@ -62,8 +62,7 @@ public abstract class Syntax
 	/// Returns: The 1-based line number of this syntax element within the source file.
 	public getLineNumber()
 	{
-		var column;
-		return getLineNumber(1, ref column);
+		return location.getLineNumber();
 	}
 	/// Summary: Gets the line number of this syntax element.
 	/// Param tabSize: The size of a tab character (`'\t'`), in number of characters.

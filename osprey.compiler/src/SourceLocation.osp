@@ -40,8 +40,7 @@ public class SourceLocation
 	/// Returns: The 1-based line number of this source location within the source file.
 	public getLineNumber()
 	{
-		var column;
-		return getLineNumber(1, ref column);
+		return sourceFile.getLineNumber(startIndex);
 	}
 	/// Summary: Gets the line number of this source location.
 	/// Param tabSize: The size of a tab character (`'\t'`), in number of characters.

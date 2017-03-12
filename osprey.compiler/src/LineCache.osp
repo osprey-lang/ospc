@@ -1,0 +1,151 @@
+use aves.*;
+
+namespace osprey.compiler;
+
+/// Summary: Contains a cache of textual lines for a string, usually the contents of a source
+///          file. Lines can be looked up by source index or (1-based) line number, and are
+///          scanned from the source on demand.
+public class LineCache
+{
+	/// Summary: Creates a new {LineCache} from the specified source text.
+	/// Param source: The source text.
+	/// Throws TypeConversionError:
+	///          {source} could not be converted to a String.
+	public new(source)
+	{
+		this.source = string(source);
+	}
+
+	private source;
+	/// Summary: End indexes of each line. End indexes are exclusive. The start index of each
+	///          line is the end index of the *previous* line.
+	/// Remarks: This field is initialized with a phantom line of sorts, so the first actual line
+	///          (at `lineEnds[1]`) has a previous end index to use as start index.
+	private lineEnds = [0];
+
+	/// Summary: Gets the span of the line enclosing the specified index.
+	/// Param index: The source index whose enclosing line to obtain.
+	/// Returns: A {LineSpan} for the line at {index}.
+	/// Throws TypeConversionError:
+	///          {index} could not be converted to an Int.
+	/// Throws ArgumentRangeError:
+	///          {index} is less than zero or greater than the length of the source.
+	public getEnclosingLineSpan(index)
+	{
+		index = int(index);
+		if index < 0 or index > source.length {
+			throw new ArgumentRangeError("index");
+		}
+
+		if source.isEmpty {
+			// Empty source is handled specially. Every valid index (i.e. 0) is EOF,
+			// but there are no characters to scan lines from. So we pretend there's
+			// exactly one line.
+			return new LineSpan(1, 0, 0);
+		}
+
+		var lineNumber = getEnclosingLineNumber(index);
+		var startIndex = lineEnds[lineNumber - 1];
+		var endIndex = lineEnds[lineNumber];
+		return new LineSpan(lineNumber, startIndex, endIndex);
+	}
+
+	/// Summary: Gets the 1-based line number of the line enclosing the specified index.
+	/// Param index: The source index whose enclosing line number to obtain.
+	/// Returns: The 1-based line number of the line at {index}.
+	/// Throws TypeConversionError:
+	///          {index} could not be converted to an Int.
+	/// Throws ArgumentRangeError:
+	///          {index} is less than zero or greater than the length of the source.
+	public getEnclosingLineNumber(index)
+	{
+		index = int(index);
+		if index < 0 or index > source.length {
+			throw new ArgumentRangeError("index");
+		}
+
+		if source.isEmpty {
+			// Empty source is handled specially. Every valid index (i.e. 0) is EOF,
+			// but there are no characters to scan lines from. So we pretend there's
+			// exactly one line.
+			return 1;
+		}
+
+		// Try to look up the line in the cache first.
+		var lineNumber = findCachedLineNumber(index);
+		if lineNumber is null {
+			// Not found, we have to scan the source for lines.
+			// Note: EOF (index == source.length) on non-empty source will run through
+			// the entire loop, and the line number will be the previous line.
+			lineNumber = lineEnds.length - 1;
+			var lastEnd = lineEnds.last();
+			while lastEnd <= index and lastEnd < source.length {
+				lineNumber = scanNextLine();
+				lastEnd = lineEnds.last();
+			}
+		}
+
+		return lineNumber;
+	}
+
+	private findCachedLineNumber(index)
+	{
+		// lineEnds[0] is always 0, so the first real line can have a start index.
+		var iMin = 1;
+		var iMax = lineEnds.length - 1;
+
+		while iMax >= iMin {
+			var iMid = (iMin + iMax) / 2;
+			var startIndex = lineEnds[iMid - 1];
+			var endIndex = lineEnds[iMid];
+
+			if index < startIndex {
+				// Search the lower half.
+				iMax = iMid - 1;
+			}
+			else if index >= endIndex {
+				// Search the upper half.
+				iMin = iMid + 1;
+			}
+			else {
+				// The index is within the line.
+				return iMid;
+			}
+		}
+
+		// Not found!
+		return null;
+	}
+
+	private scanNextLine()
+	{
+		// The next line starts where the last line ended.
+		var startIndex = lineEnds.last();
+		var endIndex = findLineEnd(startIndex);
+
+		return lineEnds.add(endIndex);
+	}
+
+	private findLineEnd(startIndex)
+	{
+		var length = source.length;
+
+		var i = startIndex;
+		while i < length {
+			var ch = source[i];
+			i += 1;
+
+			if newlines.contains(ch) {
+				// Treat \r\n as a unit
+				if i < length and ch == '\r' and source[i] == '\n' {
+					i += 1;
+				}
+				break;
+			}
+		}
+
+		return i;
+	}
+
+	private const newlines = "\r\n\u{85}\u{2028}\u{2029}";
+}

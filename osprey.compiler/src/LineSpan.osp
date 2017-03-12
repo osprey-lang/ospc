@@ -1,0 +1,45 @@
+use aves.*;
+
+namespace osprey.compiler;
+
+/// Summary: Contains information about a single line of text within a source file. This
+///          class differs from {SourceLocation} in two respects: (1) it does not refer back
+///          to the source file it came from, and (2) it always spans an entire line of text,
+///          whereas a {SourceLocation} may span multiple lines or part of a line.
+public class LineSpan
+{
+	internal new(lineNumber, startIndex, endIndex)
+	{
+		this._lineNumber = int(lineNumber);
+		this._startIndex = int(startIndex);
+		this._endIndex = int(endIndex);
+	}
+
+	private _lineNumber;
+	/// Summary: Gets the 1-based line number of this line.
+	public get lineNumber => _lineNumber;
+
+	private _startIndex;
+	/// Summary: Gets the 0-based inclusive start index of this line within its source file.
+	public get startIndex => _startIndex;
+
+	private _endIndex;
+	/// Summary: Gets the 0-based exclusive end index of this line within its source file.
+	public get endIndex => _endIndex;
+
+	/// Summary: Gets the length of the line.
+	public get length => endIndex - startIndex;
+
+	override toString()
+	{
+		return "<Line {0}: {1} to {2}>".format([_lineNumber, _startIndex, _endIndex]);
+	}
+
+	operator ==(a, b)
+	{
+		return b is LineSpan and
+			a._lineNumber == b._lineNumber and
+			a._startIndex == b._startIndex and
+			a._endIndex == b._endIndex;
+	}
+}
