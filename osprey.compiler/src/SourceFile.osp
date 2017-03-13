@@ -45,7 +45,7 @@ public class SourceFile
 			throw new ArgumentRangeError("index");
 		}
 
-		return getLineCache().getEnclosingLineNumber(index);
+		return getLineCache().getLineNumberAt(index);
 	}
 	/// Summary: Finds the line number and column corresponding to the specified
 	///          source index.
@@ -71,7 +71,7 @@ public class SourceFile
 			throw new ArgumentRangeError("tabSize");
 		}
 
-		var lineSpan = getLineCache().getEnclosingLineSpan(index);
+		var lineSpan = getLineCache().getLineSpanAt(index);
 
 		// In order to find the column, we have to walk the source. We will of course
 		// start at the line's startIndex.

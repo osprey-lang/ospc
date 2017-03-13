@@ -23,14 +23,47 @@ public class LineCache
 	///          (at `lineEnds[1]`) has a previous end index to use as start index.
 	private lineEnds = [0];
 
-	/// Summary: Gets the span of the line enclosing the specified index.
+	/// Summary: Gets the span of the specified line, identified by 1-based line number.
+	/// Param lineNumber: The 1-based line number.
+	/// Returns: A {LineSpan} for line {lineNumber}.
+	/// Throws TypeConversionError:
+	///          {lineNumber} could not be converted to an Int.
+	/// Throws ArgumentRangeError:
+	///          {lineNumber} is less than 1 or greater than the total line count.
+	public getLineSpan(lineNumber)
+	{
+		lineNumber = int(lineNumber);
+		if lineNumber < 1 {
+			throw new ArgumentRangeError("lineNumber");
+		}
+
+		if lineEnds.length <= lineNumber {
+			var lastEnd = lineEnds.last();
+			while lineEnds.length <= lineNumber and lastEnd < source.length {
+				scanNextLine();
+				lastEnd = lineEnds.last();
+			}
+
+			if lineEnds.length <= lineNumber {
+				throw new ArgumentRangeError("lineNumber");
+			}
+		}
+
+		return new LineSpan(
+			lineNumber,
+			lineEnds[lineNumber - 1],
+			lineEnds[lineNumber]
+		);
+	}
+
+	/// Summary: Gets the span of the line at the specified index.
 	/// Param index: The source index whose enclosing line to obtain.
 	/// Returns: A {LineSpan} for the line at {index}.
 	/// Throws TypeConversionError:
 	///          {index} could not be converted to an Int.
 	/// Throws ArgumentRangeError:
 	///          {index} is less than zero or greater than the length of the source.
-	public getEnclosingLineSpan(index)
+	public getLineSpanAt(index)
 	{
 		index = int(index);
 		if index < 0 or index > source.length {
@@ -44,20 +77,22 @@ public class LineCache
 			return new LineSpan(1, 0, 0);
 		}
 
-		var lineNumber = getEnclosingLineNumber(index);
-		var startIndex = lineEnds[lineNumber - 1];
-		var endIndex = lineEnds[lineNumber];
-		return new LineSpan(lineNumber, startIndex, endIndex);
+		var lineNumber = getLineNumberAt(index);
+		return new LineSpan(
+			lineNumber,
+			lineEnds[lineNumber - 1],
+			lineEnds[lineNumber]
+		);
 	}
 
-	/// Summary: Gets the 1-based line number of the line enclosing the specified index.
+	/// Summary: Gets the 1-based line number of the line at the specified index.
 	/// Param index: The source index whose enclosing line number to obtain.
 	/// Returns: The 1-based line number of the line at {index}.
 	/// Throws TypeConversionError:
 	///          {index} could not be converted to an Int.
 	/// Throws ArgumentRangeError:
 	///          {index} is less than zero or greater than the length of the source.
-	public getEnclosingLineNumber(index)
+	public getLineNumberAt(index)
 	{
 		index = int(index);
 		if index < 0 or index > source.length {
@@ -86,6 +121,59 @@ public class LineCache
 		}
 
 		return lineNumber;
+	}
+
+	/// Summary: Gets a list of the line spans of the lines intersected by the specified source
+	///          location.
+	/// Param location: A {SourceLocation} value.
+	/// Returns: A List of {LineSpan} values for each line intersected by {location}.
+	public getAllLines(location)
+	{
+		return getAllLines(location.startIndex, location.endIndex);
+	}
+	/// Summary: Gets a list of the lines intersected by the specified source character range.
+	/// Param startIndex: The inclusive start index.
+	/// Param endIndex: The exclusive end index. This value must be greater than or equal to
+	///          {startIndex}.
+	/// Returns: A list of {LineSpan} values for each line intersected by the character range.
+	/// Throws TypeConversionError:
+	///          {startIndex} or {endIndex} could not be converted to an Int.
+	/// Throws ArgumentRangeError:
+	///          {startIndex} is less than zero or greater than the length of {source}.
+	///
+	///          {endIndex} is less than {startIndex} or greater than the length of {source}.
+	public getAllLines(startIndex, endIndex)
+	{
+		startIndex = int(startIndex);
+		if startIndex < 0 or startIndex > source.length {
+			throw new ArgumentRangeError("startIndex");
+		}
+		endIndex = int(endIndex);
+		if endIndex < startIndex or endIndex > source.length {
+			throw new ArgumentRangeError("endIndex");
+		}
+
+		if startIndex == endIndex {
+			return [getLineNumberAt(startIndex)];
+		}
+		else {
+			// The endIndex is exclusive. If the character range ends at a newline, endIndex will
+			// be one character past it, and we'd get two lines rather than one. So we need to
+			// subtract 1 from endIndex.
+			var startLineNumber = getLineNumberAt(startIndex);
+			var endLineNumber = getLineNumberAt(endIndex - 1);
+
+			var lines = new List(endLineNumber - startLineNumber + 1);
+			while startLineNumber <= endLineNumber {
+				lines.add(new LineSpan(
+					startLineNumber,
+					lineEnds[startLineNumber - 1],
+					lineEnds[startLineNumber]
+				));
+				startLineNumber += 1;
+			}
+			return lines;
+		}
 	}
 
 	private findCachedLineNumber(index)
